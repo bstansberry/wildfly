@@ -49,7 +49,7 @@
         </copy>
         <!-- Convert .bat files to DOS line endings -->
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.bat" eol="crlf" />
-        <!-- Convert .sh files to Unix line endings -->    	
+        <!-- Convert .sh files to Unix line endings -->
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.sh" eol="lf" />
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.conf" eol="lf" />
         <!-- These files contain digested passwords, which should not be visible to external users -->
@@ -802,6 +802,10 @@
 
         <module-def name="org.jboss.as.ejb3">
             <maven-resource group="org.jboss.as" artifact="jboss-as-ejb3"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.fibo">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-fibo"/>
         </module-def>
 
         <module-def name="org.jboss.as.host-controller">

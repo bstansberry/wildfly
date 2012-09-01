@@ -8,6 +8,7 @@
       <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
       <subsystem>configuration/subsystems/ejb3.xml</subsystem>
+      <subsystem>configuration/subsystems/fibo.xml</subsystem>
       <subsystem>configuration/subsystems/infinispan.xml</subsystem>
       <subsystem>configuration/subsystems/jaxrs.xml</subsystem>
       <subsystem>configuration/subsystems/jca.xml</subsystem>
@@ -27,5 +28,5 @@
       <subsystem>configuration/subsystems/web.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>
       <subsystem>configuration/subsystems/weld.xml</subsystem>
-   </subsystems>  
+   </subsystems>
 </config>
