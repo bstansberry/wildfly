@@ -76,7 +76,6 @@ public interface SubsystemRegistration {
      */
     ManagementResourceRegistration registerDeploymentModel(ResourceDefinition resourceDefinition);
 
-
     /**
      * Registers the {@link XMLElementWriter} that can handle marshalling
      * the subsystem's configuration to XML.
@@ -84,6 +83,14 @@ public interface SubsystemRegistration {
      * @param writer the writer
      */
     void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer);
+
+    /**
+     * Registers the {@link XMLElementWriter} that can handle marshalling subsystem-specific aspects
+     * of a deployment's configuration to XML.
+     *
+     * @param writer the writer
+     */
+    void registerDeploymentXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer);
 
     /**
      * Register transformers for a specific model versions.

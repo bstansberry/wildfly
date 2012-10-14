@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -336,6 +337,22 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
         operation.get(OP).set(DESCRIBE);
         operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(PROFILE, profileName)).toModelNode());
+
+        ModelNode rsp = getValue().execute(operation, null, null, null);
+        if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME).asString())) {
+            ModelNode msgNode = rsp.get(FAILURE_DESCRIPTION);
+            String msg = msgNode.isDefined() ? msgNode.toString() : MESSAGES.failedProfileOperationsRetrieval();
+            throw new RuntimeException(msg);
+        }
+        return rsp.require(RESULT);
+    }
+
+    @Override
+    public ModelNode getDeploymentOperations(String deploymentName) {
+        ModelNode operation = new ModelNode();
+
+        operation.get(OP).set(DESCRIBE);
+        operation.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, deploymentName)).toModelNode());
 
         ModelNode rsp = getValue().execute(operation, null, null, null);
         if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME).asString())) {

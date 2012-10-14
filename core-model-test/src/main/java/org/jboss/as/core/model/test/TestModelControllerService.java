@@ -332,6 +332,11 @@ class TestModelControllerService extends ModelTestModelControllerService {
             }
 
             @Override
+            public ModelNode getDeploymentOperations(String deploymentName) {
+                return null;
+            }
+
+            @Override
             public LocalHostControllerInfo getLocalHostInfo() {
                 return info;
             }

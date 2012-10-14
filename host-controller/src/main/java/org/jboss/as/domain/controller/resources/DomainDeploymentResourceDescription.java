@@ -21,10 +21,17 @@
 */
 package org.jboss.as.domain.controller.resources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.operations.DeploymentDescribeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
@@ -36,12 +43,21 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
+import org.jboss.dmr.ModelType;
 
 /**
+ * {@link ResourceDefinition} implementation for domain-level deployment resource.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class DomainDeploymentResourceDescription extends DeploymentResourceDescription {
+
+    private static OperationDefinition DESCRIBE = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, DomainRootDescription.getResourceDescriptionResolver(DEPLOYMENT, false))
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.OBJECT)
+            .setPrivateEntry()
+            .setReadOnly()
+            .build();
 
     private OperationDefinition addDefinition;
     private DomainDeploymentResourceDescription(DeploymentResourceParent parent, OperationDefinition addDefinition, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
@@ -68,6 +84,8 @@ public class DomainDeploymentResourceDescription extends DeploymentResourceDescr
             resourceRegistration.registerOperationHandler(DeploymentAttributes.DEPLOY_DEFINITION, ServerGroupDeploymentDeployHandler.INSTANCE);
             resourceRegistration.registerOperationHandler(DeploymentAttributes.REDEPLOY_DEFINITION, ServerGroupDeploymentRedeployHandler.INSTANCE);
             resourceRegistration.registerOperationHandler(DeploymentAttributes.UNDEPLOY_DEFINITION, ServerGroupDeploymentUndeployHandler.INSTANCE);
+        } else {
+            resourceRegistration.registerOperationHandler(DESCRIBE, DeploymentDescribeHandler.INSTANCE);
         }
     }
 

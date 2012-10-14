@@ -35,6 +35,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -121,9 +122,18 @@ public interface DomainController {
      *
      * @param profileName the name of the profile
      *
-     * @return the operations
+     * @return the operations as a {@link ModelNode} of type {@link ModelType#LIST}, each element of which is an operation
      */
     ModelNode getProfileOperations(String profileName);
+
+    /**
+     * Get the operations needed to create the given subsystem-specific configurations for the given deployment.
+     *
+     * @param deploymentName the name of the deployment
+     *
+     * @return the operations as a {@link ModelNode} of type {@link ModelType#LIST}, each element of which is an operation
+     */
+    ModelNode getDeploymentOperations(String deploymentName);
 
     /**
      * Gets the file repository backing this domain controller

@@ -192,7 +192,7 @@ public class DomainXml extends CommonXml {
             writeNewLine(writer);
         }
         if (modelNode.hasDefined(DEPLOYMENT)) {
-            writeDomainDeployments(writer, modelNode.get(DEPLOYMENT));
+            writeDomainDeployments(writer, modelNode.get(DEPLOYMENT), context);
             writeNewLine(writer);
         }
         if (modelNode.hasDefined(DEPLOYMENT_OVERLAY)) {
@@ -915,7 +915,8 @@ public class DomainXml extends CommonXml {
         writer.writeEndElement();
     }
 
-    private void writeDomainDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {
+    private void writeDomainDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode,
+                                        final ModelMarshallingContext context) throws XMLStreamException {
 
         final Set<String> deploymentNames = modelNode.keys();
         if (deploymentNames.size() > 0) {
@@ -930,6 +931,9 @@ public class DomainXml extends CommonXml {
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);
                 }
+
+                writeDeploymentSubsystems(writer, deployment, context);
+
                 writer.writeEndElement();
             }
             writer.writeEndElement();

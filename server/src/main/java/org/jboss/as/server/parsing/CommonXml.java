@@ -53,6 +53,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_NETWORK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
@@ -79,9 +80,12 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -97,6 +101,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
@@ -1029,6 +1034,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);
             final ModelNode deploymentAdd = Util.getEmptyOperation(ADD, deploymentAddress);
+            list.add(deploymentAdd);
 
             // Handle elements
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -1050,6 +1056,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case PROPERTIES:
                         parseProperties(reader, deploymentAdd, expectedNs);
                         break;
+                    case DEPLOYMENT_SUBSYSTEM:
+                        parseDeploymentSubsystems(reader, deploymentAddress, list);
                     default:
                         throw unexpectedElement(reader);
                 }
@@ -1059,7 +1067,42 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             if (allowedAttributes.contains(Attribute.ENABLED)) {
                 deploymentAdd.get(ENABLED).set(enabled);
             }
-            list.add(deploymentAdd);
+
+        }
+    }
+
+    private void parseDeploymentSubsystems(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
+        // Attributes
+        requireNoAttributes(reader);
+
+        // Content
+        final Map<String, List<ModelNode>> deploymentOps = new LinkedHashMap<String, List<ModelNode>>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            if (Element.forName(reader.getLocalName()) != Element.DEPLOYMENT_SUBSYSTEM) {
+                throw unexpectedElement(reader);
+            }
+            String namespace = reader.getNamespaceURI();
+            if (deploymentOps.containsKey(namespace)) {
+                throw MESSAGES.duplicateDeclaration(reader.getLocalName(), reader.getLocation());
+            }
+            // parse subsystem
+            final List<ModelNode> subsystems = new ArrayList<ModelNode>();
+            reader.handleAny(subsystems);
+
+            deploymentOps.put(namespace, subsystems);
+        }
+
+        for (List<ModelNode> subsystems : deploymentOps.values()) {
+            for (final ModelNode update : subsystems) {
+                // Process relative subsystem path address
+                final ModelNode subsystemAddress = address.clone();
+                for (final Property path : update.get(OP_ADDR).asPropertyList()) {
+                    subsystemAddress.add(path.getName(), path.getValue().asString());
+                }
+                update.get(OP_ADDR).set(subsystemAddress);
+                list.add(update);
+            }
         }
     }
 
@@ -1632,6 +1675,25 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writeAttribute(writer, Attribute.RELATIVE_TO, contentItem.require(RELATIVE_TO).asString());
             writer.writeEndElement();
         }
+    }
+
+    protected static void writeDeploymentSubsystems(final XMLExtendedStreamWriter writer, final ModelNode deploymentNode,
+                                                    final ModelMarshallingContext context) throws XMLStreamException {
+        if (deploymentNode.hasDefined(SUBSYSTEM)) {
+            String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
+            for (String subsystemName : deploymentNode.get(SUBSYSTEM).keys()) {
+                try {
+                    ModelNode subsystem = deploymentNode.get(SUBSYSTEM, subsystemName);
+                    XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemDeploymentWriter(subsystemName);
+                    if (subsystemWriter != null) {
+                        subsystemWriter.writeContent(writer, new SubsystemMarshallingContext(subsystem, writer));
+                    }
+                } finally {
+                    writer.setDefaultNamespace(defaultNamespace);
+                }
+            }
+        }
+
     }
 
     protected void writeVault(XMLExtendedStreamWriter writer, ModelNode vault) throws XMLStreamException {

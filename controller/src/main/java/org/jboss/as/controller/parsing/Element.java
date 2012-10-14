@@ -54,6 +54,7 @@ public enum Element {
     DEPLOYMENTS("deployments"),
     DEPLOYMENT_OVERLAY("deployment-overlay"),
     DEPLOYMENT_OVERLAYS("deployment-overlays"),
+    DEPLOYMENT_SUBSYSTEM("deployment-subsystem"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
     EXTENSION("extension"),

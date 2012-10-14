@@ -1254,6 +1254,11 @@ public class ThreadsSubsystemTestCase {
                 }
 
                 @Override
+                public void registerDeploymentXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
+                    Assert.assertNotNull(writer);
+                }
+
+                @Override
                 public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer) {
                     return null;
                 }

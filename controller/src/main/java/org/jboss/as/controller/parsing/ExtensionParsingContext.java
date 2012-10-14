@@ -67,26 +67,21 @@ public interface ExtensionParsingContext {
     void setSubsystemXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<List<ModelNode>> reader);
 
     /**
-     * Set the parser for the per-deployment configuration for this element, if any.
+     * Do not use; use {@link #setDeploymentXmlMapping(String, String, XMLElementReader)}.
      *
      * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
      * @param reader the element reader. Cannot be {@code null}
      *
-     * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
-     *                               {@code subsystemName}
+     * @throws UnsupportedOperationException always; this operation is not supported and will be removed in a
+     *                     future release
      *
-     * @deprecated use {@link #setSubsystemXmlMapping(String, String, XMLElementReader)}
+     * @deprecated use {@link #setDeploymentXmlMapping(String, String, XMLElementReader)}
      */
     @Deprecated
     void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader);
 
     /**
      * Set the parser for the per-deployment configuration for this element, if any.
-     * <p>
-     * <strong>Note that this method is not currently implemented.</strong>
-     * </p>
-     *
-     * (TODO: round this out or remove it.)
      *
      * @param subsystemName the name of the subsystem. Cannot be {@code null}
      * @param namespaceUri the URI of the subsystem's XML namespace, in string form. Cannot be {@code null}
@@ -95,9 +90,7 @@ public interface ExtensionParsingContext {
      * @throws IllegalStateException if another {@link Extension} has already registered a subsystem with the given
      *                               {@code subsystemName}
      *
-     * @deprecated currently not used and will be removed in a future release if not used.
      */
-    @Deprecated
     void setDeploymentXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<ModelNode> reader);
 
     /**

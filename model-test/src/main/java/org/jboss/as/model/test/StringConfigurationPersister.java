@@ -82,6 +82,7 @@ public class StringConfigurationPersister extends AbstractConfigurationPersister
                     bytes = output.toByteArray();
                 }
             } catch (Exception e) {
+                e.printStackTrace(System.out);
                 throw new ConfigurationPersistenceException("Failed to marshal configuration", e);
             }
         }

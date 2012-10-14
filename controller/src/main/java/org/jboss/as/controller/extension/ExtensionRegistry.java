@@ -23,6 +23,7 @@
 package org.jboss.as.controller.extension;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
@@ -430,12 +431,19 @@ public class ExtensionRegistry {
 
         @Override
         public void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader) {
-            // ignored
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void setDeploymentXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<ModelNode> reader) {
-            // ignored
+            assert subsystemName != null : "subsystemName is null";
+            assert namespaceUri != null : "namespaceUri is null";
+            synchronized (extension) {
+                extension.getSubsystemInfo(subsystemName).addParsingNamespace(namespaceUri);
+                if (extension.xmlMapper != null) {
+                    extension.xmlMapper.registerRootElement(new QName(namespaceUri, DEPLOYMENT_SUBSYSTEM), reader);
+                }
+            }
         }
 
         @Override
@@ -592,6 +600,11 @@ public class ExtensionRegistry {
         @Override
         public void registerXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
             writerRegistry.registerSubsystemWriter(name, writer);
+        }
+
+        @Override
+        public void registerDeploymentXMLElementWriter(XMLElementWriter<SubsystemMarshallingContext> writer) {
+            writerRegistry.registerSubsystemDeploymentWriter(name, writer);
         }
 
         @Override

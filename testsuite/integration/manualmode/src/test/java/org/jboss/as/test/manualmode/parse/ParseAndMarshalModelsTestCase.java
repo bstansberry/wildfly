@@ -1102,6 +1102,11 @@ public class ParseAndMarshalModelsTestCase {
             return null;
         }
 
+        @Override
+        public ModelNode getDeploymentOperations(String deploymentName) {
+            return null;
+        }
+
         public HostFileRepository getLocalFileRepository() {
             return null;
         }

@@ -34,8 +34,14 @@ public class SubsystemMarshallingContext {
 
     private final ModelNode modelNode;
     private final XMLExtendedStreamWriter writer;
+    private final Element rootElement;
 
     public SubsystemMarshallingContext(final ModelNode modelNode, final XMLExtendedStreamWriter writer) {
+        this(Element.SUBSYSTEM, modelNode, writer);
+    }
+
+    public SubsystemMarshallingContext(final Element rootElement, final ModelNode modelNode, final XMLExtendedStreamWriter writer) {
+        this.rootElement = rootElement;
         this.modelNode = modelNode;
         this.writer = writer;
     }
@@ -50,19 +56,19 @@ public class SubsystemMarshallingContext {
             // Unknown namespace; it becomes default
             writer.setDefaultNamespace(namespaceURI);
             if (empty) {
-                writer.writeEmptyElement(Element.SUBSYSTEM.getLocalName());
+                writer.writeEmptyElement(rootElement.getLocalName());
             }
             else {
-                writer.writeStartElement(Element.SUBSYSTEM.getLocalName());
+                writer.writeStartElement(rootElement.getLocalName());
             }
             writer.writeNamespace(null, namespaceURI);
         }
         else {
             if (empty) {
-                writer.writeEmptyElement(namespaceURI, Element.SUBSYSTEM.getLocalName());
+                writer.writeEmptyElement(namespaceURI, rootElement.getLocalName());
             }
             else {
-                writer.writeStartElement(namespaceURI, Element.SUBSYSTEM.getLocalName());
+                writer.writeStartElement(namespaceURI, rootElement.getLocalName());
             }
         }
 

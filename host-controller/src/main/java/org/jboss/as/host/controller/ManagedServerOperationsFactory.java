@@ -530,6 +530,11 @@ public final class ManagedServerOperationsFactory {
                 addOp.get(ENABLED).set(!details.hasDefined(ENABLED) || details.get(ENABLED).asBoolean());
 
                 updates.add(addOp);
+
+                ModelNode node = domainController.getDeploymentOperations(name);
+                if (node.isDefined()) {
+                    updates.addAll(node.asList());
+                }
             }
         }
     }

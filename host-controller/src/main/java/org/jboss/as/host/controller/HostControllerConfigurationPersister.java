@@ -204,8 +204,6 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     }
 
     @Override
-    @Deprecated
-    @SuppressWarnings("deprecation")
     public void unregisterSubsystemDeploymentWriter(String name) {
         domainPersister.unregisterSubsystemDeploymentWriter(name);
     }

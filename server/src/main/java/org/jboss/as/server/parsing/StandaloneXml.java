@@ -1010,7 +1010,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         if (modelNode.hasDefined(DEPLOYMENT)) {
-            writeServerDeployments(writer, modelNode.get(DEPLOYMENT));
+            writeServerDeployments(writer, modelNode.get(DEPLOYMENT), context);
             writeNewLine(writer);
         }
 
@@ -1023,7 +1023,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeEndDocument();
     }
 
-    private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
+    private void writeServerDeployments(final XMLExtendedStreamWriter writer, final ModelNode modelNode, ModelMarshallingContext context)
             throws XMLStreamException {
 
         Set<String> deploymentNames = modelNode.keys();
@@ -1065,6 +1065,9 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     }
                     writer.writeEndElement();
                 }
+
+                writeDeploymentSubsystems(writer, deployment, context);
+
                 writer.writeEndElement();
             }
             if (deploymentWritten) {
