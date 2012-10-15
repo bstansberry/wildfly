@@ -20,7 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.controller.client.helpers.standalone;
 
+import java.util.Map;
 import java.util.UUID;
+
+import org.jboss.dmr.ModelNode;
 
 
 public interface DeploymentAction {
@@ -103,4 +106,13 @@ public interface DeploymentAction {
      *   Will not be <code>null</code> otherwise
      */
     String getReplacedDeploymentUnitUniqueName();
+
+    /**
+     * Get the subsystem-specific deployer configurations.
+     *
+     * @return a map keyed by subsystem name whose values are a map of subsystem deployer configuration
+     *            attribute names to the {@link ModelNode} of their value, or, if the {@link #getType() type}
+     *            is not {@link Type#ADD} or {@link Type#FULL_REPLACE}, {@code null}
+     */
+    Map<String, Map<String, ModelNode>> getSubsystemConfigurations();
 }

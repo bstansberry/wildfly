@@ -23,10 +23,12 @@
 package org.jboss.as.controller.client.helpers.domain;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Encapsulates a related set of actions a {@link DomainDeploymentManager} should
@@ -126,5 +128,6 @@ public interface DeploymentSetPlan {
      * actions} are to be applied to the server groups in the domain.
      */
     List<Set<ServerGroupDeploymentPlan>> getServerGroupDeploymentPlans();
+
 
 }

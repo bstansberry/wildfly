@@ -42,8 +42,10 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.Operation;
@@ -149,6 +151,20 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
             }
             }
             steps.add(step);
+
+            Map<String, Map<String, ModelNode>> subsystemConfigs = action.getSubsystemConfigurations();
+            if (subsystemConfigs != null) {
+                for (Map.Entry<String, Map<String, ModelNode>> entry : subsystemConfigs.entrySet()) {
+                    ModelNode configStep = createDeploymentSubsystemOperation(uniqueName, entry.getKey());
+                    Map<String, ModelNode> config = entry.getValue();
+                    if (config != null) {
+                        for (Map.Entry<String, ModelNode> configEntry : config.entrySet()) {
+                            configStep.get(configEntry.getKey()).set(configEntry.getValue());
+                        }
+                    }
+                    steps.add(configStep);
+                }
+            }
         }
 
         return builder.build();
@@ -157,5 +173,12 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
     private void configureDeploymentOperation(ModelNode op, String operationName, String uniqueName) {
         op.get(OP).set(operationName);
         op.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
+    }
+
+    private ModelNode createDeploymentSubsystemOperation(String uniqueName, String subsystemName) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(DEPLOYMENT, uniqueName).add(SUBSYSTEM, subsystemName);
+        return op;
     }
 }

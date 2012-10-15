@@ -25,13 +25,17 @@ package org.jboss.as.controller.client.helpers.standalone.impl;
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Describes a set of actions to take to change the deployment content available
@@ -49,7 +53,8 @@ public class DeploymentPlanImpl implements DeploymentPlan {
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
 
-    DeploymentPlanImpl(List<DeploymentActionImpl> actions, DeploymentMetadata userdata, boolean globalRollback, boolean shutdown, long gracefulTimeout) {
+    DeploymentPlanImpl(List<DeploymentActionImpl> actions, DeploymentMetadata userdata, boolean globalRollback,
+                       boolean shutdown, long gracefulTimeout) {
         if (actions == null)
             throw MESSAGES.nullVar("actions");
         this.deploymentActions.addAll(actions);

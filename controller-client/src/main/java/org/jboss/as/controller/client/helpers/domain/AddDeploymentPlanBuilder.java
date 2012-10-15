@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Variant of a {@link DeploymentPlanBuilder} that exposes
@@ -61,6 +62,17 @@ public interface AddDeploymentPlanBuilder extends DeploymentActionsCompleteBuild
      * @return a builder that can continue building the overall deployment plan
      */
     AddDeploymentPlanBuilder addMetadata(Map<String, Object> userdata);
+
+    /**
+     * Add some subsystem-specific deployer configuration to the {@link DeploymentPlan}.
+     *
+     * @param subsystemName the name of the subsystem whose deployers are being configured
+     * @param configuration a map of subsystem deployer configuration
+     *            attribute names to the {@link ModelNode} of their value
+     *
+     * @return a builder that can continue building the overall deployment plan
+     */
+    AddDeploymentPlanBuilder addDeployerConfiguration(String subsystemName, Map<String,ModelNode> configuration);
 
     /**
      * Indicates that the specified deployment content should be deployed but not started.

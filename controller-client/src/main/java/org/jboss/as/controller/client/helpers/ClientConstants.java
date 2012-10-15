@@ -47,6 +47,7 @@ public class ClientConstants {
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String STEPS = "steps";
+    public static final String SUBSYSTEM = "subsystem";
     public static final String SUCCESS = "success";
     public static final String TO_REPLACE = "to-replace";
 

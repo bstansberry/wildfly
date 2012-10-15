@@ -49,6 +49,7 @@ import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBu
 import org.jboss.as.controller.client.helpers.standalone.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.UndeployDeploymentPlanBuilder;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
 
 /**
  * {@link DeploymentPlanBuilder} implementation meant to handle in-VM calls.
@@ -146,7 +147,8 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public DeploymentPlan build() {
-        DeploymentPlan dp = new DeploymentPlanImpl(Collections.unmodifiableList(deploymentActions), new DeploymentMetadata(metadata), globalRollback, shutdown, gracefulShutdownPeriod);
+        DeploymentPlan dp = new DeploymentPlanImpl(Collections.unmodifiableList(deploymentActions), new DeploymentMetadata(metadata),
+                globalRollback, shutdown, gracefulShutdownPeriod);
         cleanupInFinalize = false;
         return dp;
     }
@@ -215,6 +217,12 @@ class DeploymentPlanBuilderImpl
     @Override
     public AddDeploymentPlanBuilder addMetadata(Map<String, Object> userdata) {
         return new DeploymentPlanBuilderImpl(this, userdata);
+    }
+
+    @Override
+    public AddDeploymentPlanBuilder addDeployerConfiguration(String subsystemName, Map<String, ModelNode> configuration) {
+        DeploymentActionImpl.addDeployerConfiguration(getLastAction(), subsystemName, configuration);
+        return new DeploymentPlanBuilderImpl(this);
     }
 
     @Override

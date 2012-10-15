@@ -20,11 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.controller.client.helpers.standalone.impl;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
+
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.ControllerClientMessages;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Implementation of {@link DeploymentAction}.
@@ -63,6 +70,11 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
         return new DeploymentActionImpl(Type.REMOVE, deploymentName, null, null, false, null);
     }
 
+    public static void addDeployerConfiguration(DeploymentAction action, String subsystemName, Map<String, ModelNode> configuration) {
+        DeploymentActionImpl impl = (DeploymentActionImpl) action;
+        impl.addDeployerConfiguration(subsystemName, configuration);
+    }
+
     private final UUID uuid = UUID.randomUUID();
     private final Type type;
     private final String deploymentUnitName;
@@ -70,6 +82,7 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final InputStream contents;
     private final String newContentFileName;
     private final boolean internalStream;
+    private final transient ModelNode subsystemConfigurations = new ModelNode();
 
     private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, InputStream contents, boolean internalStream, String replacedDeploymentUnitName) {
         this.type = type;
@@ -110,5 +123,37 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     public boolean isInternalStream() {
         return internalStream;
+    }
+
+    @Override
+    public Map<String, Map<String, ModelNode>> getSubsystemConfigurations() {
+        final Map<String, Map<String, ModelNode>> result = new HashMap<String, Map<String, ModelNode>>();
+        if (subsystemConfigurations.isDefined()) {
+            for (Property property : subsystemConfigurations.asPropertyList()) {
+                ModelNode config = property.getValue();
+                Map<String, ModelNode> params = new HashMap<String, ModelNode>();
+                if  (config.isDefined()) {
+                    for (Property param : subsystemConfigurations.asPropertyList()) {
+                        params.put(param.getName(), param.getValue());
+                    }
+                }
+                result.put(property.getName(), params);
+            }
+        }
+        return result;
+    }
+
+    private void addDeployerConfiguration(String subsystemName, Map<String, ModelNode> configuration) {
+
+        if (type != Type.ADD && type != Type.FULL_REPLACE) {
+            throw ControllerClientMessages.MESSAGES.invalidPrecedingAction(type);
+        }
+
+        ModelNode configModel = new ModelNode();
+        for (Map.Entry<String, ModelNode> entry : configuration.entrySet()) {
+            ModelNode val = entry.getValue();
+            configModel.get(entry.getKey()).set(val == null ? new ModelNode() : val.clone());
+        }
+        subsystemConfigurations.get(SUBSYSTEM, subsystemName).set(configModel);
     }
 }

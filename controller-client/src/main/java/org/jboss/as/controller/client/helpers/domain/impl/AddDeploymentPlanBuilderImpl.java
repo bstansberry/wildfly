@@ -33,6 +33,7 @@ import org.jboss.as.controller.client.helpers.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
+import org.jboss.dmr.ModelNode;
 
 
 /**
@@ -69,6 +70,12 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
     @Override
     public AddDeploymentPlanBuilderImpl addMetadata(Map<String, Object> userdata) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan().addMetadata(userdata);
+        return new AddDeploymentPlanBuilderImpl(this, currentSet);
+    }
+
+    @Override
+    public AddDeploymentPlanBuilder addDeployerConfiguration(String subsystemName, Map<String, ModelNode> configuration) {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan().addDeployerConfiguration(subsystemName, configuration);
         return new AddDeploymentPlanBuilderImpl(this, currentSet);
     }
 

@@ -42,6 +42,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLBACK_ON
 import static org.jboss.as.controller.client.helpers.ClientConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.STEPS;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import static org.jboss.as.controller.client.helpers.ClientConstants.TO_REPLACE;
 
 import java.io.IOException;
@@ -152,6 +153,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
                     step.get(RUNTIME_NAME).set(action.getNewContentFileName());
                     step.get(CONTENT).get(0).get("hash").set(action.getNewContentHash());
                     actionSteps.add(step);
+                    addDeployerConfigurationSteps(action, uniqueName, actionSteps);
                 }
                 for (String group : serverGroups) {
                     ModelNode groupStep = configureDeploymentOperation(ADD, uniqueName, group);
@@ -178,6 +180,7 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
                 step.get(RUNTIME_NAME).set(action.getNewContentFileName());
                 step.get(CONTENT).get(0).get("hash").set(action.getNewContentHash());
                 actionSteps.add(step);
+                addDeployerConfigurationSteps(action, uniqueName, actionSteps);
                 break;
             }
             case REDEPLOY: {
@@ -228,6 +231,23 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
         }
 
         return builder.build();
+    }
+
+    private void addDeployerConfigurationSteps(DeploymentActionImpl action, String uniqueName, List<ModelNode> actionSteps) {
+
+        Map<String, Map<String, ModelNode>> subsystemConfigs = action.getSubsystemConfigurations();
+        if (subsystemConfigs != null) {
+            for (Map.Entry<String, Map<String, ModelNode>> entry : subsystemConfigs.entrySet()) {
+                ModelNode configStep = createDeploymentSubsystemOperation(uniqueName, entry.getKey());
+                Map<String, ModelNode> config = entry.getValue();
+                if (config != null) {
+                    for (Map.Entry<String, ModelNode> configEntry : config.entrySet()) {
+                        configStep.get(configEntry.getKey()).set(configEntry.getValue());
+                    }
+                }
+                actionSteps.add(configStep);
+            }
+        }
     }
 
     private Set<String> getCurrentDomainDeployments() {
@@ -300,6 +320,13 @@ class DomainDeploymentManagerImpl implements DomainDeploymentManager {
             op.get(OP_ADDR).add("server-group", serverGroup);
         }
         op.get(OP_ADDR).add(DEPLOYMENT, uniqueName);
+        return op;
+    }
+
+    private ModelNode createDeploymentSubsystemOperation(String uniqueName, String subsystemName) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(DEPLOYMENT, uniqueName).add(SUBSYSTEM, subsystemName);
         return op;
     }
 
