@@ -790,12 +790,13 @@ public interface DomainManagementMessages {
     @Message(id = Message.NONE, value = "n")
     String shortNo();
 
-     /** IllegalStateException to indicate that none unique username
+    /**
+     * IllegalStateException to indicate a non-unique username
      *
      * @param username - The username specified.
      * @return an {@link IllegalArgumentException} for the failure.
      */
-    @Message(id = 15270, value = "The specified username %s is none unique, the user query return %s rows")
+    @Message(id = 15270, value = "The specified username %s is non-unique, the user query returns %s rows")
     IllegalStateException noneUniqueUserId(final String username, int rowCount);
 
 
@@ -805,7 +806,7 @@ public interface DomainManagementMessages {
      * @param e - exception
      * @return an {@link IOException} for the failure.
      */
-    @Message(id = 15271, value = "Failed to close the result set and the database connection!")
+    @Message(id = 15271, value = "Failed to close the result set and the database connection")
     IOException closeSafelyException(@Cause Throwable e);
 
     /**
@@ -823,7 +824,7 @@ public interface DomainManagementMessages {
      * @param e - exception
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15274, value = "JDBC class not found %s")
+    @Message(id = 15274, value = "JDBC driver class %s not found")
     StartException jdbcDriverClassNotFoundException(@Cause Throwable e, String className);
 
     /**
@@ -841,7 +842,7 @@ public interface DomainManagementMessages {
      * @param e - exception
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15276, value = "The database connection pool reaper failed to terminate connection")
+    @Message(id = 15276, value = "The database connection pool reaper failed to terminate a connection")
     RuntimeException reaperTerminationConnectionException(@Cause Throwable e);
 
     /*
