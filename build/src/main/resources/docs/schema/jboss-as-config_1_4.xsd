@@ -169,10 +169,10 @@
                 <xs:sequence>
                     <xs:element name="outbound-connections" minOccurs="0">
                         <xs:complexType>
-                            <xs:choice minOccurs="0">
+                            <xs:sequence>
                                 <xs:element name="ldap" type="ldapType" minOccurs="0" />
-                                <xs:element name="database" type="host-databaseType" minOccurs="0" />
-                            </xs:choice>
+                                <xs:element name="datasource" type="datasourceType" minOccurs="0" />
+                            </xs:sequence>
                         </xs:complexType>
                     </xs:element>
                     <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
@@ -192,10 +192,11 @@
                 <xs:sequence>
                     <xs:element name="outbound-connections" minOccurs="0">
                         <xs:complexType>
-                            <xs:choice minOccurs="0">
+                            <xs:sequence minOccurs="0">
                                 <xs:element name="ldap" type="ldapType" minOccurs="0" />
-                                <xs:element name="database" type="server-databaseType" minOccurs="0" />
-                            </xs:choice>
+                                <xs:element name="datasource" type="datasourceType" minOccurs="0" />
+                                <xs:element name="datasource-ref" type="datasource-refType" minOccurs="0" />
+                            </xs:sequence>
                         </xs:complexType>
                     </xs:element>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
@@ -204,67 +205,41 @@
         </xs:complexContent>
     </xs:complexType>
 
-	<xs:complexType name="host-databaseType">
-        <xs:annotation>
-            <xs:documentation>
-                The Database connection definition.
-            </xs:documentation>
-        </xs:annotation>
-         <xs:sequence>
-            <xs:element name="datasource" type="datasourceType" minOccurs="0" />
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:complexType name="server-databaseType">
-        <xs:annotation>
-            <xs:documentation>
-                The Database connection definition.
-            </xs:documentation>
-        </xs:annotation>
-         <xs:sequence>
-            <xs:element name="datasource" type="datasource-refType" minOccurs="0" />
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="datasourceType">
     	<xs:sequence>
-			<xs:element name="module" type="xs:token" maxOccurs="1">
-				<xs:annotation>
-					<xs:documentation>
-			            <![CDATA[[
-			              The name of the module that contains the JDBC driver module
-			             ]]>
-					</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="connection-url" type="xs:token" maxOccurs="1"	minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>
-			            <![CDATA[[
+            <xs:element name="driver" type="jdbc-driverType" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="connection-url" type="xs:token" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
 			              The JDBC driver connection URL Ex: <connection-url>jdbc:hsqldb:hsql://localhost:1701</connection-url>
 			             ]]>
-					</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="driver-class" type="xs:token" maxOccurs="1" minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>
-			            <![CDATA[[
-			              The fully qualifed name of the JDBC driver class Ex: <driver-class>org.hsqldb.jdbcDriver</driver-class>
-			             ]]>
-					</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="driver" type="xs:token" maxOccurs="1"	minOccurs="0">
-				<xs:annotation>
-					<xs:documentation>
-			            <![CDATA[[
-			              An unique reference to the classloader module which contains the JDBC driver
-			              The accepted format is driverName#majorVersion.minorVersion
-			             ]]>
-					</xs:documentation>
-				</xs:annotation>
-			</xs:element>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="connection-property" type="propertyType" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              The connection-property element allows you to pass in arbitrary connection
+              properties to the Driver.connect(url, props) method. Each connection-property
+              specifies a string name/value pair with the property name coming from the
+              name attribute and the value coming from the value attribute. Ex:
+              <connection-property name="char.encoding" value="UTF-8"/>
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="new-connection-sql" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              Specify an SQL statement to execute whenever a connection is added
+              to the connection pool.
+              ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
 			<xs:element name="pool" type="poolType" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>
@@ -274,7 +249,7 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="security" type="datasource-credentialsType" maxOccurs="1"	minOccurs="0">
+			<xs:element name="security" type="datasource-credentialsType" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>
 			            <![CDATA[[
@@ -283,6 +258,24 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+            <xs:element name="validation" type="datasource-validationType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              Specifies the validation settings
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="timeout" type="datasource-timeoutType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              Specifies the time out settings
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
 		</xs:sequence>
 		<xs:attribute name="name" type="xs:string" use="required">
 			<xs:annotation>
@@ -291,6 +284,15 @@
 				</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+        <xs:attribute name="url-delimiter" type="xs:token" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+              Specifies the delimeter for URLs in connection-url for HA datasources
+             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
  	<xs:complexType name="datasource-refType">
@@ -299,47 +301,97 @@
 				The data source definition.
 			</xs:documentation>
 		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="datasourceType">
-				<xs:attribute name="ref" type="xs:string" use="required">
-					<xs:annotation>
-						<xs:documentation>
-				            <![CDATA[[
-				              Specify the data-source that should be used as connection provider Ex: java:jboss/datasources/auth
-				             ]]>
-						</xs:documentation>
-					</xs:annotation>
-				</xs:attribute>
-			</xs:extension>
-		</xs:complexContent>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the connection.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ref" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+                      Specify the JNDI name of the separately configured data-source that should be used as connection
+                      provider Ex: java:jboss/datasources/auth
+                     ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
-	<xs:complexType name="poolType">
-	    <xs:sequence>
-	      <xs:element name="min-pool-size" type="xs:nonNegativeInteger" maxOccurs="1" minOccurs="0">
-	        <xs:annotation>
-	          <xs:documentation>
-	            <![CDATA[[
-	              The min-pool-size element indicates the minimum number of connections
-	              a pool should hold. These are not created until a Subject is known from a
-	              request for a connection. This default to 0. Ex: <min-pool-size>1</min-pool-size>
-	             ]]>
-	          </xs:documentation>
-	        </xs:annotation>
-	      </xs:element>
-	      <xs:element name="max-pool-size" type="xs:nonNegativeInteger"  maxOccurs="1" minOccurs="0">
-	        <xs:annotation>
-	          <xs:documentation>
-	            <![CDATA[[
-	              The max-pool-size element indicates the maximum number of connections
-	              for a pool. No more connections will be created in each sub-pool.
-	              This defaults to 20.
-	             ]]>
-	          </xs:documentation>
-	        </xs:annotation>
-	      </xs:element>
-	    </xs:sequence>
-	</xs:complexType>
+    <xs:complexType name="jdbc-driverType">
+        <xs:annotation>
+            <xs:documentation>
+                Definition of the JDBC driver to use for a connection pool.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="module" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+			              The name of the module that contains the JDBC driver module
+			             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="driver-class" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+			              The fully qualifed name of the JDBC driver class Ex: driver-class="org.hsqldb.jdbcDriver"
+			             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="poolType">
+        <xs:annotation>
+            <xs:documentation>
+                Sizing characteristics for a connection pool.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="min-pool-size" type="xs:nonNegativeInteger" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+              The min-pool-size element indicates the minimum number of connections
+              a pool should hold.
+             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-pool-size" type="xs:nonNegativeInteger" use="optional" default="20">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+              The max-pool-size element indicates the maximum number of connections
+              for a pool.
+             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="prefill" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+          Whether to attempt to prefill the connection pool.
+         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="use-strict-min" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+          Defines if the min-pool-size should be considered strictly, preventing the reaping of idle
+          connections if doing so would temporarily result in a below minimum size pool.
+         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
 
 	<xs:complexType name="datasource-credentialsType">
 	    <xs:sequence>
@@ -364,6 +416,130 @@
 	        </xs:annotation>
 	      </xs:element>
 	    </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="datasource-validationType">
+        <xs:sequence>
+
+            <xs:element name="check-valid-connection-sql" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              Specify an SQL statement to check validity of a pool connection. This
+              may be called when managed connection is taken from pool for use.
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="valid-connection-checker" type="valid-connection-checkerType" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              An org.jboss.jca.adapters.jdbc.ValidConnectionChecker that provides
+              a SQLException isValidConnection(Connection e) method to validate is a connection
+              is valid. An exception means the connection is destroyed. This overrides
+              the check-valid-connection-sql when present. Ex:
+              <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.vendor.OracleValidConnectionChecker"/>
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="validate-on-match" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+          The validate-on-match element indicates whether or not connection
+          level validation should be done the pool attempts to hand out an use an existing connection for use.
+          This is typically exclusive to the use of background validation
+         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="background-validation" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+          An element to specify that connections should be validated on a background
+          thread versus being validated prior to use
+         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="background-validation-millis" type="xs:nonNegativeInteger" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+          The background-validation-millis element specifies the time, in milliseconds, after which connections
+          in the pool need to be validated. A value of less than one disables background validation.
+         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="use-fast-fail" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+          Whether fail a connection allocation on the first connection if it
+          is invalid (true) or keep trying until the pool is exhausted of all potential
+          connections (false) default false.
+         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="valid-connection-checkerType">
+        <xs:sequence>
+            <xs:element name="config-property" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="module" use="optional" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+              The name of the module in which the connection checker class can be found.
+             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="class-name" type="xs:token" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+			              The fully qualifed name of the connection checker class
+			              Ex: class-name="org.jboss.jca.adapters.jdbc.vendor.OracleValidConnectionChecker"
+			             ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="datasource-timeoutType">
+        <xs:sequence>
+            <xs:element name="blocking-timeout-millis" type="xs:nonNegativeInteger" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              The blocking-timeout-millis element indicates the maximum time in
+              milliseconds to block while waiting for a connection before throwing an exception.
+              Note that this blocks only while waiting for a permit for a connection, and
+              will never throw an exception if creating a new connection takes an inordinately
+              long time. The default is 30000 (30 seconds).
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="idle-timeout-minutes" type="xs:nonNegativeInteger" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[[
+              The idle-timeout-minutes elements indicates the maximum time in minutes
+              a connection may be idle before being closed.
+             ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="ldapType">

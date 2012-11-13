@@ -22,7 +22,10 @@
 
 package org.jboss.as.domain.management;
 
+
 import java.io.IOException;
+import java.sql.Driver;
+import java.sql.SQLException;
 import java.util.Set;
 
 import javax.naming.NamingException;
@@ -797,17 +800,7 @@ public interface DomainManagementMessages {
      * @return an {@link IllegalArgumentException} for the failure.
      */
     @Message(id = 15270, value = "The specified username %s is non-unique, the user query returns %s rows")
-    IllegalStateException noneUniqueUserId(final String username, int rowCount);
-
-
-    /**
-     * IOException to indicate a failure when closing result set and the database connection
-     *
-     * @param e - exception
-     * @return an {@link IOException} for the failure.
-     */
-    @Message(id = 15271, value = "Failed to close the result set and the database connection")
-    IOException closeSafelyException(@Cause Throwable e);
+    IllegalStateException nonUniqueUserId(final String username, int rowCount);
 
     /**
      * StartException to indicate a failure when loading the JDBC driver
@@ -815,8 +808,8 @@ public interface DomainManagementMessages {
      * @param e - exception
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15273, value = "Failed to to load JDBC driver %s")
-    StartException jdbcNotLoadedException(@Cause Throwable e, String driverName);
+    @Message(id = 15273, value = "Failed to to instantiate JDBC driver %s")
+    OperationFailedException jdbcNotLoadedException(@Cause Throwable e, String driverName);
 
     /**
      * StartException to indicate the JDBC class was not found
@@ -824,32 +817,44 @@ public interface DomainManagementMessages {
      * @param e - exception
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15274, value = "JDBC driver class %s not found")
-    StartException jdbcDriverClassNotFoundException(@Cause Throwable e, String className);
+    @Message(id = 15274, value = "JDBC driver class %s not found using module %s")
+    OperationFailedException jdbcDriverClassNotFoundException(@Cause Throwable e, String className, String moduleName);
 
     /**
-     * StartException to indicate it failed to startup the database connection manager service
+     * Exception to indicate timeout obtaining a connection
      *
-     * @param e - exception
+     * @param timeout the timeout in ms
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15275, value = "Failed to startup database connection manager service")
-    StartException databaseConnectionManagerServiceStartupException(@Cause Throwable e);
+    @Message(id = 15275, value = "Failed to acquire to acquire a free connection within the timeout period of %d ms; all connections are in use")
+    IllegalStateException timeoutObtainingConnection(long timeout);
 
     /**
-     * StartException to indicate it failed to startup the database connection manager service
+     * Exception to indicate interruption while obtaining a connection
      *
-     * @param e - exception
-     * @return an {@link StartException} for the failure.
+     * @param cause the cause
+     * @return an {@link RuntimeException} for the failure.
      */
-    @Message(id = 15276, value = "The database connection pool reaper failed to terminate a connection")
-    RuntimeException reaperTerminationConnectionException(@Cause Throwable e);
+    @Message(id = 15276, value = "Interrupted while waiting to acquire a free connection")
+    RuntimeException interruptedObtainingConnection(@Cause InterruptedException cause);
+
+    @Message(id = 15277, value = "The connection pool has been stopped")
+    IllegalStateException connectionPoolStopped();
+
+    @Message(id = 15278, value = "Failed to create a new connection to fill the connection pool %s")
+    IllegalStateException unexpectedThrowableWhileCreatingConnection(String poolName, @Cause Throwable t);
+
+    @Message(id = 15279, value = "Wrong driver class [%s] for connection URL: %s")
+    SQLException wrongDriverClassForURL(Class<? extends Driver> driverClass, String url);
+
+    @Message(id = 15280, value = "Could not create connection using any of the URLs: %s")
+    SQLException noValidURLAvailable(String urlSelectorData);
+
+    @Message(id = 15281, value = "Invalid min-pool-size [%d] -- it cannot be greater than max-pool-size [%d]")
+    IllegalArgumentException minSizeCannotBeGreaterThanMaxSize(int minSize, int maxPoolSize);
 
     /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
-     * this range commencing 15200.
-     */
-
-
-
+    * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
+    * this range commencing 15200.
+    */
 }

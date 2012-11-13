@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLES_FIELD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_ROLES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SQL_SELECT_ROLES;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.ROLES_FIELD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_ROLES;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SQL_SELECT_ROLES;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
@@ -34,7 +34,6 @@ import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,7 +41,9 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.domain.management.DomainManagementLogger;
 import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.database.FallibleConnection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -63,12 +64,11 @@ public class DatabaseSubjectSupplemental implements Service<SubjectSupplementalS
     public static final String SERVICE_SUFFIX = "database_authorization";
     private static final String COMMA = ",";
 
-    private String table;
     private String sqlStatement;
 
     public DatabaseSubjectSupplemental(String realmName, ModelNode database) {
         if (database.hasDefined(SIMPLE_SELECT_ROLES)) {
-            table = database.require(SIMPLE_SELECT_TABLE).asString() ;
+            String table = database.require(SIMPLE_SELECT_TABLE).asString() ;
             String userNameField = database.require(SIMPLE_SELECT_USERNAME_FIELD).asString() ;
             String userRolesField = database.require(ROLES_FIELD).asString();
             sqlStatement = String.format("select %s from %s where %s=?",userRolesField,table,userNameField);
@@ -125,12 +125,14 @@ public class DatabaseSubjectSupplemental implements Service<SubjectSupplementalS
 
     private Set<RealmRole> getRoles(ConnectionManager connectionManager, String userName) throws IOException {
         Set<RealmRole> response = Collections.emptySet();
+        FallibleConnection failableConnection = null;
         Connection dbc = null;
         ResultSet rs = null;
         try {
-            dbc = (Connection) connectionManager.getConnection();
+            failableConnection = (FallibleConnection) connectionManager.getConnection();
+            dbc = failableConnection.getConnection();
 
-            PreparedStatement preparedStatement = dbc.prepareStatement(sqlStatement, ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+            PreparedStatement preparedStatement = dbc.prepareStatement(sqlStatement, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setString(1,userName);
             rs = preparedStatement.executeQuery();
             response = new HashSet<RealmRole>();
@@ -145,24 +147,31 @@ public class DatabaseSubjectSupplemental implements Service<SubjectSupplementalS
                 }
             }
         } catch (Exception e) {
+            if (failableConnection != null) {
+                failableConnection.recordFailureOnConnection();
+            }
             throw MESSAGES.cannotPerformVerification(e);
         } finally {
-            try {
-                closeSafely(rs, dbc);
-            } catch (SQLException e) {
-                throw MESSAGES.closeSafelyException(e);
-            }
+            closeSafely(rs, dbc);
         }
         return response;
     }
 
-    private void closeSafely(ResultSet rs, Connection dbc) throws SQLException {
+    private void closeSafely(ResultSet rs, Connection dbc) {
         if (rs != null) {
-            rs.close();
+            try {
+                rs.close();
+            } catch (Exception e) {
+                DomainManagementLogger.ROOT_LOGGER.closeSafelyException(ResultSet.class.getSimpleName(), e);
+            }
         }
 
         if (dbc != null) {
-            dbc.close();
+            try {
+                dbc.close();
+            } catch (Exception e) {
+                DomainManagementLogger.ROOT_LOGGER.closeSafelyException(Connection.class.getSimpleName(), e);
+            }
         }
     }
 

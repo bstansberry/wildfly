@@ -28,16 +28,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE_CONNECTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATA_SOURCE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -55,13 +51,19 @@ import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
+import static org.jboss.as.controller.parsing.ParseUtils.readElementText;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.CONNECTION_PROPERTIES;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE_CONNECTION;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DATA_SOURCE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
@@ -77,12 +79,14 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.domain.management.connections.database.ConnectionPropertyResourceDefinition;
 import org.jboss.as.domain.management.connections.database.DatabaseConnectionResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.AbstractPlugInAuthResourceDefinition;
@@ -208,6 +212,7 @@ public class ManagementXml {
 
     private void parseConnections_1_4(final XMLExtendedStreamReader reader, final ModelNode address,
             final Namespace expectedNs, final List<ModelNode> list, boolean allowDataSourceConnection) throws XMLStreamException {
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -216,9 +221,15 @@ public class ManagementXml {
                     parseLdapConnection(reader, address, list);
                     break;
                 }
-                case DATABASE: {
-                    parseDatabaseOutboundConnection(reader, address, expectedNs, list, allowDataSourceConnection);
+                case DATASOURCE: {
+                    parseDataSource(reader, list, address, expectedNs);
                     break;
+                }
+                case DATASOURCE_REF: {
+                    if (!allowDataSourceConnection) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseDatasourceRef(reader, address, list);
                 }
                 default: {
                     throw unexpectedElement(reader);
@@ -279,31 +290,6 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseDatabaseOutboundConnection(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, boolean allowDataSourceConnection)
-            throws XMLStreamException {
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case DATABASE_DATASOURCE: {
-                    final String refValue  = reader.getAttributeValue(null, Attribute.REF.getLocalName());
-                    if (refValue != null) {
-                        if (!allowDataSourceConnection) {
-                            throw unexpectedElement(reader);
-                        }
-                        parseDatabaseDatasource(reader, address, list);
-                    } else {
-                        parseDataSource(reader, list, address, expectedNs);
-                    }
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
     private void parseDataSource(final XMLExtendedStreamReader reader, final List<ModelNode> list, final ModelNode address, Namespace expectedNs) throws XMLStreamException {
         final ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
@@ -323,6 +309,10 @@ public class ManagementXml {
                         add.get(OP_ADDR).set(address).add(DATABASE_CONNECTION, value);
                         break;
                     }
+                    case URL_DELIMITER: {
+                        DatabaseConnectionResourceDefinition.URL_DELIMITER.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
                     default: {
                         throw unexpectedAttribute(reader, i);
                     }
@@ -333,35 +323,47 @@ public class ManagementXml {
         if (required.size() > 0) {
             throw missingRequired(reader, required);
         }
-        Set<Element> requiredElement = EnumSet.of(Element.CONNECTION_URL, Element.DRIVER_CLASS,Element.MODULE, Element.POOL, Element.SECURITY);
+
+        Set<Element> requiredElement = EnumSet.of(Element.CONNECTION_URL, Element.DRIVER);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             requiredElement.remove(element);
             switch (element) {
                 case CONNECTION_URL: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_URL.parseAndSetParameter(value, add, reader);
+                    final String value = readElementText(reader);
+                    DatabaseConnectionResourceDefinition.CONNECTION_URL.parseAndSetParameter(value, add, reader);
                     break;
                 }
-                case DRIVER_CLASS: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_DRIVE.parseAndSetParameter(value, add, reader);
+                case DRIVER: {
+                    parseDriver(reader, add);
                     break;
                 }
-                case MODULE: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_MODULE.parseAndSetParameter(value, add, reader);
+                case CONNECTION_PROPERTY: {
+                    parseConnectionProperty(reader, add.get(OP_ADDR), list);
+                    break;
+                }
+                case NEW_CONNECTION_SQL: {
+                    final String value = readElementText(reader);
+                    DatabaseConnectionResourceDefinition.NEW_CONNECTION_SQL.parseAndSetParameter(value, add, reader);
                     break;
                 }
                 case POOL: {
-                    parsePool(reader, add, expectedNs);
+                    parseDatabaseConnectionPool(reader, add);
                     break;
                 }
                 case SECURITY: {
                     parseDsSecurity(reader, add, expectedNs);
                     break;
                 }
+                case VALIDATION: {
+                    parseConnectionValidation(reader, add, expectedNs);
+                    break;
+                }
+                case TIMEOUT: {
+                    parseConnectionPoolTimeouts(reader, add);
+                    break;
+                }
                 default:
                     throw unexpectedElement(reader);
             }
@@ -370,65 +372,233 @@ public class ManagementXml {
             throw missingRequired(reader, requiredElement);
         }
 
+    }
+
+    private void parseConnectionProperty(XMLExtendedStreamReader reader, ModelNode parentAddress, List<ModelNode> list) throws XMLStreamException {
+
+        final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
+        requireNoContent(reader);
+
+        PathAddress address = PathAddress.pathAddress(parentAddress).append(ConnectionPropertyResourceDefinition.PATH_ELEMENT.getKey(), array[0]);
+        ModelNode propAdd = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address.toModelNode());
+        ConnectionPropertyResourceDefinition.CONNECTION_PROPERTY_VALUE.parseAndSetParameter(array[1], propAdd, reader);
+
+        list.add(propAdd);
+    }
+
+    private void parseDriver(XMLExtendedStreamReader reader, ModelNode add) throws XMLStreamException {
+
+        Set<Attribute> required = EnumSet.of(Attribute.MODULE, Attribute.DRIVER_CLASS);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case MODULE: {
+                        DatabaseConnectionResourceDefinition.DRIVER_MODULE_NAME.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case DRIVER_CLASS: {
+                        DatabaseConnectionResourceDefinition.DRIVER_CLASS_NAME.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        requireNoContent(reader);
     }
 
     private void parseDsSecurity(XMLExtendedStreamReader reader, final ModelNode operation, Namespace expectedNs) throws XMLStreamException {
-        Set<Element> requiredElement = EnumSet.of(Element.PASSWORD, Element.USER_NAME);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
-            requiredElement.remove(element);
             switch (element) {
                 case PASSWORD: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_PASSWORD.parseAndSetParameter(value, operation, reader);
+                    final String value = readElementText(reader);
+                    DatabaseConnectionResourceDefinition.PASSWORD.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case USER_NAME: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_USERNAME.parseAndSetParameter(value, operation, reader);
+                    final String value = readElementText(reader);
+                    DatabaseConnectionResourceDefinition.USERNAME.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default:
                     throw unexpectedElement(reader);
             }
         }
-        if (requiredElement.size() > 0) {
-            throw missingRequired(reader, requiredElement);
-        }
 
     }
 
-    private void parsePool(XMLExtendedStreamReader reader, final ModelNode operation, Namespace expectedNs)
+    private void parseDatabaseConnectionPool(XMLExtendedStreamReader reader, final ModelNode operation)
             throws XMLStreamException {
-        Set<Element> requiredElement = EnumSet.of(Element.MAX_POOL_SIZE, Element.MIN_POOL_SIZE);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            requiredElement.remove(element);
-            switch (element) {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
                 case MAX_POOL_SIZE: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_MAX_POOL_SIZE.parseAndSetParameter(value, operation, reader);
+                    DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case MIN_POOL_SIZE: {
-                    final String value = reader.getElementText();
-                    DatabaseConnectionResourceDefinition.DATABASE_MIN_POOL_SIZE.parseAndSetParameter(value, operation, reader);
+                    DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case PREFILL: {
+                    DatabaseConnectionResourceDefinition.POOL_PREFILL.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case USE_STRICT_MIN: {
+                    DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default: {
-                    throw unexpectedElement(reader);
+                    throw unexpectedAttribute(reader, i);
                 }
             }
         }
-        if (requiredElement.size() > 0) {
-            throw missingRequired(reader, requiredElement);
-        }
+
+        requireNoContent(reader);
 
     }
 
-    private void parseDatabaseDatasource(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseConnectionValidation(XMLExtendedStreamReader reader, ModelNode operation, Namespace expectedNs) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case BACKGROUND_VALIDATION: {
+                    DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case BACKGROUND_VALIDATION_MILLIS: {
+                    DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case USE_FAST_FAIL: {
+                    DatabaseConnectionResourceDefinition.USE_FAST_FAIL.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case VALIDATE_ON_MATCH: {
+                    DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CHECK_VALID_CONNECTION_SQL: {
+                    final String value = readElementText(reader);
+                    DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case VALID_CONNECTION_CHECKER: {
+                    parseValidConnectionChecker(reader, operation, expectedNs);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseValidConnectionChecker(XMLExtendedStreamReader reader, ModelNode operation, Namespace expectedNs) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case MODULE: {
+                    DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_MODULE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case CLASS_NAME: {
+                    DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CONFIG_PROPERTY: {
+                    final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
+                    requireNoContent(reader);
+                    DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_PROPERTIES.parseAndAddParameterElement(array[0], array[1], operation, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseConnectionPoolTimeouts(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case BLOCKING_TIMEOUT_MILLIS: {
+                    DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case IDLE_TIMEOUT_MINUTES: {
+                    DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        requireNoContent(reader);
+    }
+
+    private void parseDatasourceRef(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
 
         final ModelNode add = new ModelNode();
         add.get(OP).set(ADD);
@@ -441,21 +611,20 @@ public class ManagementXml {
             final String value = reader.getAttributeValue(i);
             if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case NAME: {
-                        add.get(OP_ADDR).set(address).add(DATABASE_CONNECTION, value);
-                        break;
-                    }
-                    case REF: {
-                        DatabaseConnectionResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, add, reader);
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    add.get(OP_ADDR).set(address).add(DATABASE_CONNECTION, value);
+                    break;
+                }
+                case REF: {
+                    DatabaseConnectionResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, add, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
                 }
             }
         }
@@ -893,7 +1062,7 @@ public class ManagementXml {
                         break;
                     case PASSWORD: {
                         // TODO - Support for this attribute can later be removed, would suggest removing at the
-                        //        start of AS 7.2.x development.
+                        //        start of AS 8.x development.
                         ROOT_LOGGER.passwordAttributeDeprecated();
                         required.remove(Attribute.KEYSTORE_PASSWORD);
                         KeystoreAttributes.KEYSTORE_PASSWORD.parseAndSetParameter(value, addOperation, reader);
@@ -2106,30 +2275,92 @@ public class ManagementXml {
         } else if (management.hasDefined(DATABASE_CONNECTION)) {
             for (Property variable : management.get(DATABASE_CONNECTION).asPropertyList()) {
                 ModelNode connection = variable.getValue();
-                if (connection.hasDefined(MODULE)) {
-                    writer.writeStartElement(Element.DATABASE.getLocalName());
-                    writer.writeStartElement(Element.DATABASE_DATASOURCE.getLocalName());
+                if (!connection.hasDefined(DATA_SOURCE)) {
+                    writer.writeStartElement(Element.DATASOURCE.getLocalName());
+
                     writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
-                    DatabaseConnectionResourceDefinition.DATABASE_MODULE.marshallAsElement(connection, writer);
-                    DatabaseConnectionResourceDefinition.DATABASE_DRIVE.marshallAsElement(connection, writer);
-                    DatabaseConnectionResourceDefinition.DATABASE_URL.marshallAsElement(connection, writer);
-                    writer.writeStartElement(Element.SECURITY.getLocalName());
-                    DatabaseConnectionResourceDefinition.DATABASE_USERNAME.marshallAsElement(connection, writer);
-                    DatabaseConnectionResourceDefinition.DATABASE_PASSWORD.marshallAsElement(connection, writer);
-                    writer.writeEndElement();
-                    writer.writeStartElement(Element.POOL.getLocalName());
-                    DatabaseConnectionResourceDefinition.DATABASE_MAX_POOL_SIZE.marshallAsElement(connection, writer);
-                    DatabaseConnectionResourceDefinition.DATABASE_MIN_POOL_SIZE.marshallAsElement(connection, writer);
-                    writer.writeEndElement();
-                    writer.writeEndElement();
-                    writer.writeEndElement();
-                } else if (connection.hasDefined(DATA_SOURCE)) {
-                    writer.writeStartElement(Element.DATABASE.getLocalName());
-                    writer.writeEmptyElement(Element.DATABASE_DATASOURCE.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
-                    DatabaseConnectionResourceDefinition.DATA_SOURCE.marshallAsAttribute(connection, writer);
+
+                    writer.writeEmptyElement(Element.DRIVER.getLocalName());
+                    DatabaseConnectionResourceDefinition.DRIVER_MODULE_NAME.marshallAsAttribute(connection, writer);
+                    DatabaseConnectionResourceDefinition.DRIVER_CLASS_NAME.marshallAsAttribute(connection, writer);
+
+                    DatabaseConnectionResourceDefinition.CONNECTION_URL.marshallAsElement(connection, writer);
+
+                    if (connection.hasDefined(CONNECTION_PROPERTIES)) {
+                        for (Property property : connection.get(CONNECTION_PROPERTIES).asPropertyList()) {
+                            writer.writeEmptyElement(Element.CONNECTION_PROPERTY.getLocalName());
+                            writer.writeAttribute(NAME, property.getName());
+                            ConnectionPropertyResourceDefinition.CONNECTION_PROPERTY_VALUE.marshallAsAttribute(property.getValue(), writer);
+                        }
+                    }
+
+                    DatabaseConnectionResourceDefinition.NEW_CONNECTION_SQL.marshallAsElement(connection, writer);
+
+                    boolean poolRequired = DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.isMarshallable(connection) ||
+                            DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.isMarshallable(connection) ||
+                            DatabaseConnectionResourceDefinition.POOL_PREFILL.isMarshallable(connection) ||
+                            DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.isMarshallable(connection);
+
+                    if (poolRequired) {
+                        writer.writeStartElement(Element.POOL.getLocalName());
+                        DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.POOL_PREFILL.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.marshallAsAttribute(connection, writer);
+                        writer.writeEndElement();
+                    }
+
+                    if (DatabaseConnectionResourceDefinition.USERNAME.isMarshallable(connection)
+                            || DatabaseConnectionResourceDefinition.PASSWORD.isMarshallable(connection)) {
+                        writer.writeStartElement(Element.SECURITY.getLocalName());
+                        DatabaseConnectionResourceDefinition.USERNAME.marshallAsElement(connection, writer);
+                        DatabaseConnectionResourceDefinition.PASSWORD.marshallAsElement(connection, writer);
+                        writer.writeEndElement();
+                    }
+
+                    boolean validationCheckerRequired = DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.isMarshallable(connection);
+                    boolean validationRequired = validationCheckerRequired
+                            || DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.isMarshallable(connection)
+                            || DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.isMarshallable(connection)
+                            || DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.isMarshallable(connection)
+                            || DatabaseConnectionResourceDefinition.USE_FAST_FAIL.isMarshallable(connection)
+                            || DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.isMarshallable(connection);
+
+                    if (validationRequired) {
+                        writer.writeStartElement(Element.VALIDATION.getLocalName());
+
+                        DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.USE_FAST_FAIL.marshallAsAttribute(connection, writer);
+
+                        DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.marshallAsElement(connection, writer);
+
+                        if (validationCheckerRequired) {
+                            writer.writeStartElement(Element.VALID_CONNECTION_CHECKER.getLocalName());
+                            DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_MODULE.marshallAsAttribute(connection, writer);
+                            DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.marshallAsAttribute(connection, writer);
+
+                            DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_PROPERTIES.marshallAsElement(connection, writer);
+
+                            writer.writeEndElement();
+                        }
+                        writer.writeEndElement();
+                    }
+
+                    if (DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.isMarshallable(connection)
+                            || DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.isMarshallable(connection)) {
+                        writer.writeEmptyElement(Element.TIMEOUT.getLocalName());
+                        DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.marshallAsAttribute(connection, writer);
+                        DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.marshallAsAttribute(connection, writer);
+                    }
+
                     writer.writeEndElement();
 
+                } else {
+                    writer.writeEmptyElement(Element.DATASOURCE_REF.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
+                    DatabaseConnectionResourceDefinition.DATA_SOURCE.marshallAsAttribute(connection, writer);
                 }
             }
         }

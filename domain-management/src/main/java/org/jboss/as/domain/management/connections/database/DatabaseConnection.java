@@ -21,6 +21,8 @@
  */
 package org.jboss.as.domain.management.connections.database;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -44,358 +46,324 @@ import java.util.Properties;
  *
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
-public class DatabaseConnection implements Connection {
+final class DatabaseConnection extends AbstractFallibleConnection {
 
     private final DatabaseConnectionPool pool;
     private final Connection conn;
-    private volatile boolean inuse;
-    private volatile long timestamp;
+    private final ConnectionWrapper wrapper;
+    private boolean inuse;
+    private long timestamp;
+    private long lastValidatedTime;
 
 
     public DatabaseConnection(Connection conn, DatabaseConnectionPool pool) {
-        this.conn=conn;
-        this.pool=pool;
-        this.inuse=false;
-        this.timestamp=0;
+        this.conn = conn;
+        this.wrapper = new ConnectionWrapper();
+        this.pool = pool;
+        this.inuse = false;
+        this.timestamp = 0;
+    }
+
+    protected Connection getUnderlyingConnection() {
+        return wrapper;
     }
 
     private synchronized void updateTimeStamp() {
-        timestamp=System.currentTimeMillis();
+        timestamp = System.currentTimeMillis();
     }
 
-    public synchronized boolean lease() {
-       if(inuse)  {
-           return false;
-       } else {
-          inuse=true;
-          updateTimeStamp();
-          return true;
-       }
-    }
-
-    public boolean validate() {
-        try {
-            updateTimeStamp();
-            conn.getMetaData();
-        } catch (Exception e) {
-            return false;
+    @Override
+    public Connection getConnection() {
+        if (!inuse) {
+            throw new IllegalStateException();
         }
-        return true;
+        return super.getConnection();
     }
 
-    public synchronized  boolean inUse() {
+    synchronized void lease() {
+        inuse = true;
+    }
+
+    synchronized boolean isInUse() {
         return inuse;
     }
 
-    public synchronized long getLastUse() {
+    synchronized long getLastUse() {
         return timestamp;
     }
 
-    public void close() throws SQLException {
-        updateTimeStamp();
-        pool.returnConnection(this);
+    void prepareToDestroy() {
+        state.compareAndSet(State.NORMAL, State.DESTROY);
     }
 
-    protected synchronized void terminateConnection() throws SQLException {
-        inuse=false;
-        conn.close();
+    synchronized void terminateConnection() {
+        inuse = false;
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            ROOT_LOGGER.terminateConnectionException(this, e);
+        } finally {
+            state.set(State.DESTROYED);
+        }
     }
 
-    protected synchronized void expireLease() {
+    synchronized void expireLease() {
         updateTimeStamp();
-        inuse=false;
+        inuse = false;
     }
 
-    protected Connection getConnection() {
-        updateTimeStamp();
-        return conn;
+    public long getLastValidatedTime() {
+        return lastValidatedTime;
     }
 
-    @Override
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareStatement(sql);
+    void setLastValidatedTime(long lastValidatedTime) {
+        this.lastValidatedTime = lastValidatedTime;
     }
 
-    @Override
-    public CallableStatement prepareCall(String sql) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareCall(sql);
-    }
+    private class ConnectionWrapper implements Connection {
+        @Override
+        public void close() throws SQLException {
+            pool.returnConnection(DatabaseConnection.this);
+        }
 
-    @Override
-    public Statement createStatement() throws SQLException {
-        updateTimeStamp();
-        return conn.createStatement();
-    }
+        @Override
+        public PreparedStatement prepareStatement(String sql) throws SQLException {
+            return conn.prepareStatement(sql);
+        }
 
-    @Override
-    public String nativeSQL(String sql) throws SQLException {
-        updateTimeStamp();
-        return conn.nativeSQL(sql);
-    }
+        @Override
+        public CallableStatement prepareCall(String sql) throws SQLException {
+            return conn.prepareCall(sql);
+        }
 
-    @Override
-    public void setAutoCommit(boolean autoCommit) throws SQLException {
-        updateTimeStamp();
-        conn.setAutoCommit(autoCommit);
-    }
+        @Override
+        public Statement createStatement() throws SQLException {
+            return conn.createStatement();
+        }
 
-    @Override
-    public boolean getAutoCommit() throws SQLException {
-        updateTimeStamp();
-        return conn.getAutoCommit();
-    }
+        @Override
+        public String nativeSQL(String sql) throws SQLException {
+            return conn.nativeSQL(sql);
+        }
 
-    @Override
-    public void commit() throws SQLException {
-        updateTimeStamp();
-        conn.commit();
-    }
+        @Override
+        public void setAutoCommit(boolean autoCommit) throws SQLException {
+            conn.setAutoCommit(autoCommit);
+        }
 
-    @Override
-    public void rollback() throws SQLException {
-        updateTimeStamp();
-        conn.rollback();
-    }
+        @Override
+        public boolean getAutoCommit() throws SQLException {
+            return conn.getAutoCommit();
+        }
 
-    @Override
-    public boolean isClosed() throws SQLException {
-        updateTimeStamp();
-        return conn.isClosed();
-    }
+        @Override
+        public void commit() throws SQLException {
+            conn.commit();
+        }
 
-    @Override
-    public DatabaseMetaData getMetaData() throws SQLException {
-        updateTimeStamp();
-        return conn.getMetaData();
-    }
+        @Override
+        public void rollback() throws SQLException {
+            conn.rollback();
+        }
 
-    @Override
-    public void setReadOnly(boolean readOnly) throws SQLException {
-        updateTimeStamp();
-        conn.setReadOnly(readOnly);
-    }
+        @Override
+        public boolean isClosed() throws SQLException {
+            return conn.isClosed();
+        }
 
-    @Override
-    public boolean isReadOnly() throws SQLException {
-        updateTimeStamp();
-        return conn.isReadOnly();
-    }
+        @Override
+        public DatabaseMetaData getMetaData() throws SQLException {
+            return conn.getMetaData();
+        }
 
-    @Override
-    public void setCatalog(String catalog) throws SQLException {
-        updateTimeStamp();
-        conn.setCatalog(catalog);
-    }
+        @Override
+        public void setReadOnly(boolean readOnly) throws SQLException {
+            conn.setReadOnly(readOnly);
+        }
 
-    @Override
-    public String getCatalog() throws SQLException {
-        updateTimeStamp();
-        return conn.getCatalog();
-    }
+        @Override
+        public boolean isReadOnly() throws SQLException {
+            return conn.isReadOnly();
+        }
 
-    @Override
-    public void setTransactionIsolation(int level) throws SQLException {
-        updateTimeStamp();
-        conn.setTransactionIsolation(level);
-    }
+        @Override
+        public void setCatalog(String catalog) throws SQLException {
+            conn.setCatalog(catalog);
+        }
 
-    @Override
-    public int getTransactionIsolation() throws SQLException {
-        updateTimeStamp();
-        return conn.getTransactionIsolation();
-    }
+        @Override
+        public String getCatalog() throws SQLException {
+            return conn.getCatalog();
+        }
 
-    @Override
-    public SQLWarning getWarnings() throws SQLException {
-        updateTimeStamp();
-        return conn.getWarnings();
-    }
+        @Override
+        public void setTransactionIsolation(int level) throws SQLException {
+            conn.setTransactionIsolation(level);
+        }
 
-    @Override
-    public void clearWarnings() throws SQLException {
-        updateTimeStamp();
-        conn.clearWarnings();
-    }
+        @Override
+        public int getTransactionIsolation() throws SQLException {
+            return conn.getTransactionIsolation();
+        }
 
-    @Override
-    public boolean isWrapperFor(Class<?> clazz) throws SQLException {
-        updateTimeStamp();
-        return conn.isWrapperFor(clazz);
-    }
+        @Override
+        public SQLWarning getWarnings() throws SQLException {
+            return conn.getWarnings();
+        }
 
-    @Override
-    public <T> T unwrap(Class<T> clazz) throws SQLException {
-        updateTimeStamp();
-        return conn.unwrap(clazz);
-    }
+        @Override
+        public void clearWarnings() throws SQLException {
+            conn.clearWarnings();
+        }
 
-    @Override
-    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-        updateTimeStamp();
-        return conn.createArrayOf(typeName, elements);
-    }
+        @Override
+        public boolean isWrapperFor(Class<?> clazz) throws SQLException {
+            return conn.isWrapperFor(clazz);
+        }
 
-    @Override
-    public Blob createBlob() throws SQLException {
-        updateTimeStamp();
-        return conn.createBlob();
-    }
+        @Override
+        public <T> T unwrap(Class<T> clazz) throws SQLException {
+            return conn.unwrap(clazz);
+        }
 
-    @Override
-    public Clob createClob() throws SQLException {
-        updateTimeStamp();
-        return conn.createClob();
-    }
+        @Override
+        public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+            return conn.createArrayOf(typeName, elements);
+        }
 
-    @Override
-    public NClob createNClob() throws SQLException {
-        updateTimeStamp();
-        return conn.createNClob();
-    }
+        @Override
+        public Blob createBlob() throws SQLException {
+            return conn.createBlob();
+        }
 
-    @Override
-    public SQLXML createSQLXML() throws SQLException {
-        updateTimeStamp();
-        return conn.createSQLXML();
-    }
+        @Override
+        public Clob createClob() throws SQLException {
+            return conn.createClob();
+        }
 
-    @Override
-    public Statement createStatement(int resultSet, int resultSetConcurrency) throws SQLException {
-        updateTimeStamp();
-        return conn.createStatement(resultSet,resultSetConcurrency);
-    }
+        @Override
+        public NClob createNClob() throws SQLException {
+            return conn.createNClob();
+        }
 
-    @Override
-    public Statement createStatement(int resultSet, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        updateTimeStamp();
-        return conn.createStatement(resultSet,resultSetConcurrency, resultSetHoldability);
-    }
+        @Override
+        public SQLXML createSQLXML() throws SQLException {
+            return conn.createSQLXML();
+        }
 
-    @Override
-    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-        updateTimeStamp();
-        return conn.createStruct(typeName, attributes);
-    }
+        @Override
+        public Statement createStatement(int resultSet, int resultSetConcurrency) throws SQLException {
+            return conn.createStatement(resultSet,resultSetConcurrency);
+        }
 
-    @Override
-    public Properties getClientInfo() throws SQLException {
-        updateTimeStamp();
-        return conn.getClientInfo();
-    }
+        @Override
+        public Statement createStatement(int resultSet, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+            return conn.createStatement(resultSet,resultSetConcurrency, resultSetHoldability);
+        }
 
-    @Override
-    public String getClientInfo(String name) throws SQLException {
-        updateTimeStamp();
-        return conn.getClientInfo(name);
-    }
+        @Override
+        public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+            return conn.createStruct(typeName, attributes);
+        }
 
-    @Override
-    public int getHoldability() throws SQLException {
-        updateTimeStamp();
-        return conn.getHoldability();
-    }
+        @Override
+        public Properties getClientInfo() throws SQLException {
+            return conn.getClientInfo();
+        }
 
-    @Override
-    public Map<String, Class<?>> getTypeMap() throws SQLException {
-        updateTimeStamp();
-        return conn.getTypeMap();
-    }
+        @Override
+        public String getClientInfo(String name) throws SQLException {
+            return conn.getClientInfo(name);
+        }
 
-    @Override
-    public boolean isValid(int timeout) throws SQLException {
-        updateTimeStamp();
-        return conn.isValid(timeout);
-    }
+        @Override
+        public int getHoldability() throws SQLException {
+            return conn.getHoldability();
+        }
 
-    @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareCall(sql, resultSetType, resultSetConcurrency);
-    }
+        @Override
+        public Map<String, Class<?>> getTypeMap() throws SQLException {
+            return conn.getTypeMap();
+        }
 
-    @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-    }
+        @Override
+        public boolean isValid(int timeout) throws SQLException {
+            return conn.isValid(timeout);
+        }
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareStatement(sql,autoGeneratedKeys);
-    }
+        @Override
+        public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+            return conn.prepareCall(sql, resultSetType, resultSetConcurrency);
+        }
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareStatement(sql, columnIndexes);
-    }
+        @Override
+        public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+            return conn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+        }
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareStatement(sql, columnNames);
-    }
+        @Override
+        public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+            return conn.prepareStatement(sql,autoGeneratedKeys);
+        }
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareStatement(sql, resultSetType, resultSetConcurrency);
-    }
+        @Override
+        public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+            return conn.prepareStatement(sql, columnIndexes);
+        }
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        updateTimeStamp();
-        return conn.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-    }
+        @Override
+        public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+            return conn.prepareStatement(sql, columnNames);
+        }
 
-    @Override
-    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        updateTimeStamp();
-        conn.releaseSavepoint(savepoint);
-    }
+        @Override
+        public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+            return conn.prepareStatement(sql, resultSetType, resultSetConcurrency);
+        }
 
-    @Override
-    public void rollback(Savepoint savepoint) throws SQLException {
-        updateTimeStamp();
-        conn.rollback(savepoint);
-    }
+        @Override
+        public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+            return conn.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+        }
 
-    @Override
-    public void setClientInfo(Properties properties) throws SQLClientInfoException {
-        updateTimeStamp();
-        conn.setClientInfo(properties);
-    }
+        @Override
+        public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+            conn.releaseSavepoint(savepoint);
+        }
 
-    @Override
-    public void setClientInfo(String name, String value) throws SQLClientInfoException {
-        updateTimeStamp();
-        conn.setClientInfo(name, value);
-    }
+        @Override
+        public void rollback(Savepoint savepoint) throws SQLException {
+            conn.rollback(savepoint);
+        }
 
-    @Override
-    public void setHoldability(int holdability) throws SQLException {
-        updateTimeStamp();
-        conn.setHoldability(holdability);
-    }
+        @Override
+        public void setClientInfo(Properties properties) throws SQLClientInfoException {
+            conn.setClientInfo(properties);
+        }
 
-    @Override
-    public Savepoint setSavepoint() throws SQLException {
-        updateTimeStamp();
-        return conn.setSavepoint();
-    }
+        @Override
+        public void setClientInfo(String name, String value) throws SQLClientInfoException {
+            conn.setClientInfo(name, value);
+        }
 
-    @Override
-    public Savepoint setSavepoint(String name) throws SQLException {
-        updateTimeStamp();
-        return conn.setSavepoint(name);
-    }
+        @Override
+        public void setHoldability(int holdability) throws SQLException {
+            conn.setHoldability(holdability);
+        }
 
-    @Override
-    public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        updateTimeStamp();
-        conn.setTypeMap(map);
+        @Override
+        public Savepoint setSavepoint() throws SQLException {
+            return conn.setSavepoint();
+        }
+
+        @Override
+        public Savepoint setSavepoint(String name) throws SQLException {
+            return conn.setSavepoint(name);
+        }
+
+        @Override
+        public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
+            conn.setTypeMap(map);
+        }
     }
 }

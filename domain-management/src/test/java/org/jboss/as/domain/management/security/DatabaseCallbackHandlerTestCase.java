@@ -22,14 +22,14 @@
 package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERS_PASSWORD_FIELD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE_CONNECTION;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PLAIN_TEXT;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERS_PASSWORD_FIELD;
 
 import java.io.IOException;
 
@@ -40,7 +40,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import junit.framework.Assert;
 
 import org.jboss.as.domain.management.connections.ConnectionManager;
-import org.jboss.as.domain.management.connections.database.DatabaseConnectionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
@@ -57,12 +56,12 @@ public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionT
     private DatabaseCallbackHandler databaseCallbackHandler;
     private ModelNode cNode;
 
-    public void initCallbackHandler(final DatabaseConnectionManagerService dcs) throws Exception {
+    public void initCallbackHandler(final ConnectionManager connectionManager) throws Exception {
           databaseCallbackHandler = new DatabaseCallbackHandler(TEST_REALM, cNode) {
           @Override
             public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
                 InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
-                cm.setValue(new ImmediateValue<ConnectionManager>(dcs));
+                cm.setValue(new ImmediateValue<ConnectionManager>(connectionManager));
                 return cm;
             }
         };
@@ -105,7 +104,7 @@ public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionT
           @Override
             public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
                 InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
-                cm.setValue(new ImmediateValue<ConnectionManager>(dcs));
+                cm.setValue(new ImmediateValue<ConnectionManager>(connectionPool));
                 return cm;
             }
         };
@@ -124,7 +123,7 @@ public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionT
           @Override
             public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
                 InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
-                cm.setValue(new ImmediateValue<ConnectionManager>(dcs));
+                cm.setValue(new ImmediateValue<ConnectionManager>(connectionPool));
                 return cm;
             }
         };

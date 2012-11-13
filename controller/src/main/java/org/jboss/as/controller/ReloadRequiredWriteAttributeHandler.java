@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import java.util.List;
+
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 
@@ -38,6 +40,10 @@ public class ReloadRequiredWriteAttributeHandler extends AbstractWriteAttributeH
 
     public ReloadRequiredWriteAttributeHandler(final ParameterValidator validator) {
         super(validator);
+    }
+
+    public ReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {
+        this(definitions == null ? null : definitions.toArray(new AttributeDefinition[definitions.size()]));
     }
 
     public ReloadRequiredWriteAttributeHandler(final AttributeDefinition... definitions) {

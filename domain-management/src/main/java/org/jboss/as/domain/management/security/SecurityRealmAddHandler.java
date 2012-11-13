@@ -23,7 +23,6 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
@@ -34,7 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.ALLOWED_USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;

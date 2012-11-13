@@ -24,7 +24,13 @@ package org.jboss.as.domain.management;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.sql.Driver;
+import java.sql.SQLException;
+
+import org.jboss.as.domain.management.connections.database.DatabaseConnectionPool;
+import org.jboss.as.domain.management.connections.database.FallibleConnection;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
@@ -44,6 +50,7 @@ public interface DomainManagementLogger extends BasicLogger {
      */
     DomainManagementLogger ROOT_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, DomainManagementLogger.class.getPackage().getName());
 
+    DomainManagementLogger DATABASE_POOL_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, DatabaseConnectionPool.class.getPackage().getName());
     /**
      * Logs a warning message indicating the user and password were found in the properties file.
      */
@@ -68,15 +75,69 @@ public interface DomainManagementLogger extends BasicLogger {
     void passwordAttributeDeprecated();
 
     /**
-     * Indicate it failed to shutdown the database connection manager service
+     * Indicate a failure to close a connection to a database used to store users
      *
+     * @param conn the connection
+     * @param e - exception
      */
     @LogMessage(level = WARN)
-    @Message(id = 15203, value = "Failed to shutdown database connection manager service")
-    void databaseConnectionManagerServiceShutdown();
-    /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
-     * also contains messages in this range commencing 15220.
-     */
+    @Message(id = 15203, value = "Caught throwable while terminating connection %s")
+    void terminateConnectionException(FallibleConnection conn, @Cause Throwable e);
 
+    /**
+     * Log message indicate a failure when closing a result set or a database connection
+     *
+     * @param type the type of object that could not be closed
+     * @param e - exception
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15204, value = "Failed to close the %s")
+    void closeSafelyException(String type, @Cause Throwable e);
+
+    /**
+     * Log message indicate a failure when creating a database connection for future use in the connection pool.
+     *
+     * @param poolname the name of the pool
+     * @param e - exception
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15205, value = "Failed to create a new connection to fill connection pool %s")
+    void failedToCreateConnectionForPool(String poolname, @Cause SQLException e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15206, value = "Destroying returned connection, maximum pool size exceeded %s")
+    void maxPoolSizeExceededDestroyingReturnedConnection(FallibleConnection conn);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15207, value = "Destroying connection that could not be successfully validated: %s")
+    void connectionInvalid(FallibleConnection dc, @Cause SQLException e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15208, value = "Throwable while trying to match managed connection, destroying connection: %s")
+    void throwableWhileValidatingConnection(FallibleConnection dc, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15209, value = "Failed to create a new connection to fill the connection pool %s")
+    void unexpectedThrowableWhileCreatingConnection(String poolName, @Cause Throwable t);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15210, value = "Destroying active connection in pool: %s (%s)")
+    void destroyingActiveConnection(String poolName, FallibleConnection conn);
+
+    /*
+    * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
+    * also contains messages in this range commencing 15220.
+    */
+
+    @LogMessage(level = WARN)
+    @Message(id = 15211, value = "Wrong driver class [%s] for connection URL: %s")
+    void wrongDriverClassForURL(Class<? extends Driver> driverClass, String url);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15212, value = "Failed to create connection for %s")
+    void failedToCreateConnectionForURL(String url, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15213, value = "Exception trying to create valid connection checker for pool %s (disabling)")
+    void failedToCreateValidConnectionChecker(String poolName, @Cause Exception e);
 }

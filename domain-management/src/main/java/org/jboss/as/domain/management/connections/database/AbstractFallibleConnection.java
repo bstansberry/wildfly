@@ -19,57 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.domain.management.connections.database;
 
+import java.sql.Connection;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * The reaper thread maintain the database pool, by monitoring dead connection or unused connection
+ * Holder for a database connection that allows the user of the connection to record any failures
+ * associated with the connection.
  *
- * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
+ * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-class ConnectionReaper extends Thread {
+public abstract class AbstractFallibleConnection implements FallibleConnection {
 
-    private final DatabaseConnectionPool pool;
-    private volatile long delay = 300000;
-    private boolean terminate;
+    protected final AtomicReference<State> state = new AtomicReference<State>(State.NORMAL);
 
-    ConnectionReaper(DatabaseConnectionPool pool, long delay) {
-        this.pool = pool;
-        this.delay = delay;
+    @Override
+    public Connection getConnection() {
+        if (state.get() != State.NORMAL) {
+            throw new IllegalStateException();
+        }
+        return getUnderlyingConnection();
     }
 
     @Override
-    public void run() {
-        while (!terminate) {
-            synchronized (this) {
-                try {
-                    wait(getDelay());
-                    pool.reapConnections();
-                } catch (InterruptedException e) {
-                }
-            }
-
-        }
+    public void recordFailureOnConnection() {
+        state.compareAndSet(State.NORMAL, State.DESTROY);
     }
 
-    /**
-     * @return the execution delay in milliseconds
-     */
-    public long getDelay() {
-        return delay;
+    public State getState() {
+        return state.get();
     }
 
-    /**
-     * @param delay - set the execution delay in milliseconds
-     */
-    public void setDelay(long delay) {
-        this.delay = delay;
-        this.interrupt();
-    }
+    protected abstract Connection getUnderlyingConnection();
 
 
-    public void terminate() {
-        this.terminate = true;
-        this.interrupt();
-    }
 }

@@ -30,12 +30,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -46,18 +47,21 @@ import org.jboss.dmr.ModelType;
  */
 public class DatabaseAuthenticationResourceDefinition extends DatabaseResourceDefinition {
 
-    public static final SimpleAttributeDefinition SIMPLE_SELECT_USERS_FIELD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SIMPLE_SELECT_USERS, ModelType.BOOLEAN, false)
+    public static final SimpleAttributeDefinition SIMPLE_SELECT_USERS_FIELD =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SIMPLE_SELECT_USERS, ModelType.BOOLEAN, false)
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition PASSWORD_FIELD = new SimpleAttributeDefinitionBuilder(
-            ModelDescriptionConstants.PASSWORD_FIELD, ModelType.STRING, false).setXmlName("password-field")
+    public static final SimpleAttributeDefinition PASSWORD_FIELD =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PASSWORD_FIELD, ModelType.STRING, false)
+            .setXmlName(Attribute.PASSWORD_FIELD.getLocalName())
             .setAlternatives(ModelDescriptionConstants.PASSWORD_FIELD)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setValidateNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition SQL_SELECT_USERS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SQL_SELECT_USERS, ModelType.STRING, false)
-            .setXmlName("sql")
+    public static final SimpleAttributeDefinition SQL_SELECT_USERS =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SQL_SELECT_USERS, ModelType.STRING, false)
+            .setXmlName(Attribute.SQL.getLocalName())
             .setAlternatives(ModelDescriptionConstants.SQL_SELECT_USERS_ROLES_STATEMENT)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setValidateNull(false)
@@ -80,6 +84,11 @@ public class DatabaseAuthenticationResourceDefinition extends DatabaseResourceDe
     }
 
     @Override
+    void validateAttributeCombination(ModelNode model) throws OperationFailedException {
+        validateAuthenticationAttributeCombination(model);
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         SecurityRealmChildWriteAttributeHandler handler = new DatabaseResourceWriteHandler();
         handler.registerAttributes(resourceRegistration);
@@ -94,17 +103,12 @@ public class DatabaseAuthenticationResourceDefinition extends DatabaseResourceDe
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-            validateAutenticationAttributeCombination(operation);
+            validateAuthenticationAttributeCombination(operation);
             super.updateModel(context, operation);
         }
     }
 
-
-    void validateAttributeCombination(ModelNode operation) throws OperationFailedException {
-        validateAttributeCombination(operation);
-    }
-
-    static void validateAutenticationAttributeCombination(ModelNode operation) throws OperationFailedException {
+    static void validateAuthenticationAttributeCombination(ModelNode operation) throws OperationFailedException {
         boolean simpleSelectDefined = operation.hasDefined(ModelDescriptionConstants.USERNAME_FIELD)
                 && operation.hasDefined(ModelDescriptionConstants.PASSWORD_FIELD)
                 && operation.hasDefined(ModelDescriptionConstants.SIMPLE_SELECT_TABLE);

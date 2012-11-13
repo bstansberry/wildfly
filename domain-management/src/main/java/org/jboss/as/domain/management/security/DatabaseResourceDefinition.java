@@ -30,12 +30,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -92,7 +92,7 @@ public abstract class DatabaseResourceDefinition extends SimpleResourceDefinitio
                     final ModelNode model = resource.getModel();
                     validateAttributeCombination(model);
 
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.MODEL);
             super.execute(context, operation);

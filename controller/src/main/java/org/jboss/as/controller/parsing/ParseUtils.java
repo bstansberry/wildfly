@@ -414,8 +414,6 @@ public final class ParseUtils {
         }
     }
 
-
-
     public static ModelNode parsePossibleExpression(String value) {
         ModelNode result = new ModelNode();
         int openIdx = value.indexOf("${");
@@ -430,5 +428,11 @@ public final class ParseUtils {
 
     public static String getWarningMessage(final String msg, final Location location) {
         return MESSAGES.parsingProblem(location.getLineNumber(), location.getColumnNumber(), msg);
+    }
+
+    public static String readElementText(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        String elementText = reader.getElementText();
+        elementText = elementText == null || elementText.trim().length() == 0 ? null : elementText.trim();
+        return elementText;
     }
 }

@@ -30,12 +30,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -46,18 +47,21 @@ import org.jboss.dmr.ModelType;
  */
 public class DatabaseAuthorizationResourceDefinition extends DatabaseResourceDefinition {
 
-    public static final SimpleAttributeDefinition SIMPLE_SELECT_ROLES_FIELD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SIMPLE_SELECT_ROLES, ModelType.BOOLEAN, false)
+    public static final SimpleAttributeDefinition SIMPLE_SELECT_ROLES_FIELD =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SIMPLE_SELECT_ROLES, ModelType.BOOLEAN, false)
             .setDefaultValue(new ModelNode(false))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition ROLES_FIELD = new SimpleAttributeDefinitionBuilder(
-            ModelDescriptionConstants.ROLES_FIELD, ModelType.STRING, false).setXmlName("roles-field")
+    public static final SimpleAttributeDefinition ROLES_FIELD =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ROLES_FIELD, ModelType.STRING, false)
+            .setXmlName(Attribute.ROLES_FILED.getLocalName())
             .setAlternatives(ModelDescriptionConstants.ROLES_FIELD)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setValidateNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition SQL_SELECT_ROLES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SQL_SELECT_ROLES, ModelType.STRING, false)
-            .setXmlName("sql")
+    public static final SimpleAttributeDefinition SQL_SELECT_ROLES =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SQL_SELECT_ROLES, ModelType.STRING, false)
+            .setXmlName(Attribute.SQL.getLocalName())
             .setAlternatives(ModelDescriptionConstants.SQL_SELECT_USERS_ROLES_STATEMENT)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setValidateNull(false)
@@ -80,6 +84,11 @@ public class DatabaseAuthorizationResourceDefinition extends DatabaseResourceDef
     }
 
     @Override
+    void validateAttributeCombination(ModelNode model) throws OperationFailedException {
+        validateAuthorizationAttributeCombination(model);
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         SecurityRealmChildWriteAttributeHandler handler = new DatabaseResourceWriteHandler();
         handler.registerAttributes(resourceRegistration);
@@ -95,11 +104,6 @@ public class DatabaseAuthorizationResourceDefinition extends DatabaseResourceDef
             validateAuthorizationAttributeCombination(operation);
             super.updateModel(context, operation);
         }
-    }
-
-
-    void validateAttributeCombination(ModelNode operation) throws OperationFailedException {
-        validateAttributeCombination(operation);
     }
 
     static void validateAuthorizationAttributeCombination(ModelNode operation) throws OperationFailedException {

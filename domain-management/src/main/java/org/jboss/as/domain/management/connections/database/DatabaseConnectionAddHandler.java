@@ -34,6 +34,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.Services;
+import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -63,31 +66,46 @@ public class DatabaseConnectionAddHandler extends AbstractAddStepHandler {
                                   final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ModelNode resolvedModel = createResolvedDatabaseConfiguration(context, model);
+
+        ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
+        ModelNode dsName = DatabaseConnectionResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, fullModel);
+        boolean useDataSource = dsName.isDefined();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final DatabaseConnectionManagerService connectionManagerService = new DatabaseConnectionManagerService(resolvedModel);
+        final DatabaseConnectionManagerService connectionManagerService = new DatabaseConnectionManagerService(useDataSource);
 
-        ServiceBuilder<DatabaseConnectionManagerService> serviceBuilder = serviceTarget.addService(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(name), connectionManagerService)
+        ServiceBuilder<ConnectionManager> serviceBuilder = serviceTarget.addService(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(name), connectionManagerService)
         .setInitialMode(ServiceController.Mode.ON_DEMAND);
 
-        if (resolvedModel.hasDefined(DatabaseConnectionResourceDefinition.DATA_SOURCE.getName())) {
-            ServiceName datasourceService = ServiceName.JBOSS.append("data-source").append(resolvedModel.get(DatabaseConnectionResourceDefinition.DATA_SOURCE.getName()).asString());
+        if (useDataSource) {
+            ServiceName datasourceService = ServiceName.JBOSS.append("data-source").append(dsName.asString());
             serviceBuilder.addDependency(datasourceService,DataSource.class,connectionManagerService.getDatasource());
+        } else {
+            ServiceController<PoolConfiguration> poolConfigSC = PoolConfigService.addService(name, context, fullModel,
+                    serviceTarget, verificationHandler);
+            if (newControllers != null) {
+                newControllers.add(poolConfigSC);
+            }
+
+            // Add an attachment to the context so ConnectionPropertyAdd/Remove know we've handled the properties
+            if (!context.isBooting()) { // Don't bother if we're booting
+                PoolConfigService.PoolConfigServiceSet set = context.getAttachment(PoolConfigService.PoolConfigServiceSet.ATTACHMENT_KEY);
+                if (set == null) {
+                    set = new PoolConfigService.PoolConfigServiceSet();
+                    context.attach(PoolConfigService.PoolConfigServiceSet.ATTACHMENT_KEY, set);
+                }
+                set.add(name);
+            }
+            serviceBuilder.addDependency(poolConfigSC.getName(), PoolConfiguration.class, connectionManagerService.getPoolConfig());
+
+            Services.addDomainManagementExecutorServiceDependency(serviceBuilder, connectionManagerService.getExecutorService());
         }
 
-        ServiceController<DatabaseConnectionManagerService> sc = serviceBuilder.install();
+        ServiceController<ConnectionManager> sc = serviceBuilder.install();
         if (newControllers != null) {
             newControllers.add(sc);
         }
-    }
-
-    static ModelNode createResolvedDatabaseConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        final ModelNode resolvedModel = new ModelNode();
-        for (AttributeDefinition attr : DatabaseConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS) {
-            resolvedModel.get(attr.getName()).set(attr.resolveModelAttribute(context, model));
-        }
-        return resolvedModel;
     }
 
 

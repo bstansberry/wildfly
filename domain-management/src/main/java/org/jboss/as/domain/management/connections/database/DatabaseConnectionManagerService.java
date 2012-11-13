@@ -22,13 +22,11 @@
 
 package org.jboss.as.domain.management.connections.database;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.sql.DataSource;
 
 import org.jboss.as.domain.management.connections.ConnectionManager;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -43,32 +41,18 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
-public class DatabaseConnectionManagerService implements Service<DatabaseConnectionManagerService>, ConnectionManager {
+public class DatabaseConnectionManagerService implements Service<ConnectionManager> {
 
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
-    private volatile ModelNode resolvedConfiguration;
-    private DatabaseConnectionPool databaseConnectionPool;
+
+    private AbstractDatabaseConnectionManager connectionManager;
     private final InjectedValue<DataSource> dataSource = new InjectedValue<DataSource>();
+    private final InjectedValue<PoolConfiguration> poolConfig = new InjectedValue<PoolConfiguration>();
+    private final InjectedValue<ScheduledExecutorService> executorService = new InjectedValue<ScheduledExecutorService>();
+    private final boolean useDataSource;
 
-    public DatabaseConnectionManagerService(final ModelNode resolvedConfiguration) {
-        setResolvedConfiguration(resolvedConfiguration);
-    }
-
-    void setResolvedConfiguration(final ModelNode resolvedConfiguration) {
-        // Validate
-        if (resolvedConfiguration.hasDefined(DatabaseConnectionResourceDefinition.DATA_SOURCE.getName())) {
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATA_SOURCE.getName());
-        } else {
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_MODULE.getName());
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_DRIVE.getName());
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_URL.getName());
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_USERNAME.getName());
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_PASSWORD.getName());
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_MAX_POOL_SIZE.getName());
-            resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_MIN_POOL_SIZE.getName());
-        }
-        // Store
-        this.resolvedConfiguration = resolvedConfiguration;
+    public DatabaseConnectionManagerService(boolean useDataSource) {
+        this.useDataSource = useDataSource;
     }
 
     /*
@@ -76,71 +60,47 @@ public class DatabaseConnectionManagerService implements Service<DatabaseConnect
     */
 
     public synchronized void start(StartContext context) throws StartException {
-        try {
-            if (resolvedConfiguration.hasDefined(DatabaseConnectionResourceDefinition.DATA_SOURCE.getName())) {
-                databaseConnectionPool = new DatabaseConnectionPool(getDatasource().getValue());
-            } else {
-                databaseConnectionPool = new DatabaseConnectionPool(resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_MODULE.getName()).asString(),
-                        resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_DRIVE.getName()).asString(),
-                        resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_URL.getName()).asString(),
-                        resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_USERNAME.getName()).asString(),
-                        resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_PASSWORD.getName()).asString(),
-                        resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_MIN_POOL_SIZE.getName()).asInt(),
-                        resolvedConfiguration.require(DatabaseConnectionResourceDefinition.DATABASE_MAX_POOL_SIZE.getName()).asInt());
-            }
-        } catch (InstantiationException e) {
-            throw MESSAGES.jdbcNotLoadedException(e,DatabaseConnectionResourceDefinition.DATABASE_DRIVE.getName());
-        } catch (ClassNotFoundException e) {
-            throw MESSAGES.jdbcDriverClassNotFoundException(e,DatabaseConnectionResourceDefinition.DATABASE_DRIVE.getName());
-        } catch (Exception e) {
-            throw MESSAGES.databaseConnectionManagerServiceStartupException(e);
+
+        if (useDataSource) {
+            connectionManager = new DatasourceConnectionManager(getDatasource().getValue());
+        } else {
+            connectionManager = new DatabaseConnectionPool(poolConfig.getValue(), executorService.getValue());
+        }
+        connectionManager.start();
+    }
+
+    public synchronized void stop(final StopContext context) {
+        if (useDataSource) {
+            connectionManager.stop();
+        } else {
+            context.asynchronous();
+            executorService.getValue().execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        connectionManager.stop();
+                    } finally {
+                        context.complete();
+                    }
+                }
+            });
         }
     }
 
-    public synchronized void stop(StopContext context) {
-        try {
-            databaseConnectionPool.terminateReaper();
-            databaseConnectionPool.closeConnections();
-        } catch (Exception e) {
-            ROOT_LOGGER.databaseConnectionManagerServiceShutdown();
-        }
-    }
-
-    public synchronized DatabaseConnectionManagerService getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
-    }
-
-    /*
-     *  Connection Manager Methods
-     */
-
-    public Object getConnection() throws Exception {
-        final ModelNode config = resolvedConfiguration;
-        return getConnection(config);
-    }
-
-    public Object getConnection(String principal, String credential) throws Exception {
-        return getConnection();
-    }
-
-    // TODO - Workaround to clear ContextClassLoader to allow access to System ClassLoader
-    private Object getConnection(final ModelNode config) throws Exception {
-        ClassLoader original = null;
-        try {
-            original = Thread.currentThread().getContextClassLoader();
-            if (original != null) {
-                Thread.currentThread().setContextClassLoader(null);
-            }
-            return databaseConnectionPool.getConnection();
-        } finally {
-            if (original != null) {
-                Thread.currentThread().setContextClassLoader(original);
-            }
-        }
+    public synchronized ConnectionManager getValue() throws IllegalStateException, IllegalArgumentException {
+        return connectionManager;
     }
 
     public InjectedValue<DataSource> getDatasource() {
         return dataSource;
+    }
+
+    public InjectedValue<PoolConfiguration> getPoolConfig() {
+        return poolConfig;
+    }
+
+    public InjectedValue<ScheduledExecutorService> getExecutorService() {
+        return executorService;
     }
 
 }

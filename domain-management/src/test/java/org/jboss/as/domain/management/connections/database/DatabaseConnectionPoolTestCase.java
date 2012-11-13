@@ -22,71 +22,88 @@
 package org.jboss.as.domain.management.connections.database;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
-import org.jboss.modules.ModuleLoadException;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
 /**
- *  Database Connection Pool Test
+ *  Database Connection Pool Tests
  *
  *  @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
 public class DatabaseConnectionPoolTestCase {
 
-    private DatabaseConnectionPool connectionPool;
+    private static Class<? extends Driver> driverClass;
+    private static ScheduledExecutorService executorService;
 
-    @Before
-    public void init() throws Exception {
-        connectionPool = new DatabaseConnectionPool("", "org.h2.Driver", "jdbc:h2:mem:pooltestcase", "sa", "sa", 1, 2) {
-            @Override
-            protected Driver getDriver(String module, String driverClassName) throws ModuleLoadException,  ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-                    InvocationTargetException {
-                return Class.forName(driverClassName).asSubclass(Driver.class).newInstance();
-
-            }
-        };
-        connectionPool.setTimeout(500);
-        connectionPool.setConnectionIdleTime(500);
-        connectionPool.setReaperDelay(500);
+    @BeforeClass
+    public static void getDriverClass() throws ClassNotFoundException {
+        driverClass = Class.forName("org.h2.Driver").asSubclass(Driver.class);
+        executorService = Executors.newSingleThreadScheduledExecutor();
     }
+
+    @AfterClass
+    public static void clearDriver() {
+        driverClass = null;
+        executorService.shutdown();
+    }
+
+    private PoolConfiguration poolConfiguration;
+    private DatabaseConnectionPool connectionPool;
 
     @After
     public void terminate() throws SQLException {
-        connectionPool.closeConnections();
+        if (connectionPool != null) {
+            connectionPool.stop();
+        }
         connectionPool = null;
     }
 
     @Test
     public void testCloseConnections() throws Exception {
+        initDefaultPool();
         DatabaseConnection connection = (DatabaseConnection) connectionPool.getConnection();
-        connectionPool.closeConnections();
-        assertEquals(false,connection.inUse());
-        assertEquals(true,connection.isClosed());
+        connectionPool.stop();
+        assertFalse(connection.isInUse());
+        assertEquals(FallibleConnection.State.DESTROYED, connection.getState());
+        try {
+            connection.getConnection();
+            fail("Underlying connection still accessible after pool is stopped");
+        } catch (IllegalStateException ignored) {
+            // good
+        }
     }
 
     @Test
     public void testGetConnection() throws Exception {
-        DatabaseConnection connection = (DatabaseConnection) connectionPool.getConnection();
-        assertEquals(true,connection.validate());
+        initDefaultPool();
+        FallibleConnection connection = connectionPool.getConnection();
+        assertEquals(FallibleConnection.State.NORMAL, connection.getState());
     }
 
     @Test
     public void testReturnConnection() throws Exception {
+        initDefaultPool();
         DatabaseConnection connection = (DatabaseConnection) connectionPool.getConnection();
         connectionPool.returnConnection(connection);
-        assertEquals(false,connection.inUse());
+        assertEquals(false,connection.isInUse());
     }
 
     @Test
     public void testMaxPoolSize() throws Exception {
-        connectionPool.setTimeout(1000);
+
+        initDefaultPool();
+
         connectionPool.getConnection();
         connectionPool.getConnection();
         try {
@@ -98,25 +115,21 @@ public class DatabaseConnectionPoolTestCase {
 
     @Test
     public void testReaper() throws Exception {
-        connectionPool.closeConnections();
 
-        connectionPool = new DatabaseConnectionPool("","org.h2.Driver", "jdbc:h2:mem:pooltestcase", "sa", "sa", 2,5) {
-            @Override
-            protected Driver getDriver(String module, String driverClassName) throws ModuleLoadException,  ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-                    InvocationTargetException {
-                return Class.forName(driverClassName).asSubclass(Driver.class).newInstance();
+        poolConfiguration = getPoolConfig(2, 5);
+        poolConfiguration.setBlockingTimeout(100);
+        poolConfiguration.setConnectionIdleTimeout(100);
+        poolConfiguration.setReaperInterval(10);
 
-            }
-        };
-
-        connectionPool.setTimeout(100);
-        connectionPool.setConnectionIdleTime(100);
-        connectionPool.setReaperDelay(10);
+        connectionPool = new DatabaseConnectionPool(poolConfiguration, Executors.newScheduledThreadPool(1));
+        connectionPool.start();
 
         connectionPool.getConnection();
         connectionPool.getConnection();
-        Connection connection = connectionPool.getConnection();
-        ((DatabaseConnection)connection).terminateConnection();
+        FallibleConnection connection = connectionPool.getFallibleConnection();
+        Connection conn = connection.getConnection();
+        connection.recordFailureOnConnection();
+        conn.close();
         Thread.sleep(500);
         assertEquals(2,connectionPool.getCurrentPoolSize());
 
@@ -124,19 +137,14 @@ public class DatabaseConnectionPoolTestCase {
 
     @Test
     public void testReaperConnectionInUse() throws Exception {
-        connectionPool.closeConnections();
-        connectionPool = new DatabaseConnectionPool("","org.h2.Driver", "jdbc:h2:mem:pooltestcase", "sa", "sa", 2,5) {
-            @Override
-            protected Driver getDriver(String module, String driverClassName) throws ModuleLoadException,  ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-                    InvocationTargetException {
-                return Class.forName(driverClassName).asSubclass(Driver.class).newInstance();
 
-            }
-        };
+        poolConfiguration = getPoolConfig(2, 5);
+        poolConfiguration.setBlockingTimeout(100);
+        poolConfiguration.setConnectionIdleTimeout(100);
+        poolConfiguration.setReaperInterval(100);
 
-        connectionPool.setTimeout(100);
-        connectionPool.setConnectionIdleTime(100);
-        connectionPool.setReaperDelay(100);
+        connectionPool = new DatabaseConnectionPool(poolConfiguration, Executors.newScheduledThreadPool(1));
+        connectionPool.start();
 
         connectionPool.getConnection();
         connectionPool.getConnection();
@@ -153,31 +161,37 @@ public class DatabaseConnectionPoolTestCase {
      */
     @Test
     public void testReaperConnectionRacecondition() throws Exception {
-        connectionPool.closeConnections();
-        connectionPool.terminateReaper();
 
-        connectionPool = new DatabaseConnectionPool("","org.h2.Driver", "jdbc:h2:mem:pooltestcase", "sa", "sa", 1,2) {
-
-            @Override
-            protected Driver getDriver(String module, String driverClassName) throws ModuleLoadException,  ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-                    InvocationTargetException {
-                return Class.forName(driverClassName).asSubclass(Driver.class).newInstance();
-            }
-         };
-
-        connectionPool.setTimeout(100);
-        connectionPool.setConnectionIdleTime(10);
-        connectionPool.setReaperDelay(100000);
+        poolConfiguration = getPoolConfig(1, 2);
+        poolConfiguration.setBlockingTimeout(100);
+        poolConfiguration.setConnectionIdleTimeout(10);
+        poolConfiguration.setReaperInterval(Long.MAX_VALUE);
+        connectionPool = new DatabaseConnectionPool(poolConfiguration, Executors.newScheduledThreadPool(1));
+        connectionPool.start();
 
         connectionPool.getConnection();
-        Connection connection = connectionPool.getConnection();
+        DatabaseConnection connection = (DatabaseConnection) connectionPool.getFallibleConnection();
         Thread.sleep(20); //make sure is lease time is older then 10 milliseconds so the reaper might terminate it
-        connectionPool.returnConnection((DatabaseConnection) connection);
+        connectionPool.returnConnection(connection);
         connectionPool.forceReaper();
         Thread.sleep(40); //let the reaper finish
         int poolSize = connectionPool.getCurrentPoolSize();
         assertEquals(2, poolSize);
 
 
+    }
+
+    private void initDefaultPool() throws Exception {
+        poolConfiguration = getPoolConfig(1 ,2);
+        poolConfiguration.setBlockingTimeout(500);
+        poolConfiguration.setConnectionIdleTimeout(500);
+        poolConfiguration.setReaperInterval(500);
+
+        connectionPool = new DatabaseConnectionPool(poolConfiguration, Executors.newScheduledThreadPool(1));
+        connectionPool.start();
+    }
+
+    private static PoolConfiguration getPoolConfig(int minSize, int maxSize) throws IllegalAccessException, InstantiationException {
+        return new PoolConfiguration("test", driverClass.newInstance(), "jdbc:h2:mem:databaseauthtest", "sa", "sa", minSize, maxSize, false);
     }
 }

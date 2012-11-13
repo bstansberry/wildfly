@@ -21,26 +21,24 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATA_SOURCE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
-import org.jboss.as.domain.management.connections.database.DatabaseConnectionManagerService;
+import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.database.DatabaseConnectionPool;
-import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleLoadException;
+import org.jboss.as.domain.management.connections.database.PoolConfiguration;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
 /**
- *  Test helper for setting up the DatabaseConnectionManagerService and the connection pool
+ *  Test helper for setting up the the {@link ConnectionManager}
  *  and create the proper tables and test data
  *
  *  @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
@@ -51,45 +49,42 @@ public abstract class AbstractDatabaseConnectionTestHelper {
     protected static UsernamePasswordHashUtil hashUtil;
     protected static String hashedPassword;
     protected static TestDatabaseConnectionPool connectionPool;
-
-    protected DatabaseConnectionManagerService dcs;
+    private static ScheduledExecutorService executorService;
 
     @BeforeClass
     public static void initDatabase() throws Exception {
         hashUtil = new UsernamePasswordHashUtil();
         hashedPassword = hashUtil.generateHashedHexURP("Henry.Deacon",TEST_REALM,"eureka".toCharArray());
 
-        connectionPool = new TestDatabaseConnectionPool("", "org.h2.Driver", "jdbc:h2:mem:databaseauthtest", "sa", "sa", 1, 2);
-        connectionPool.setTimeout(500);
-        connectionPool.setConnectionIdleTime(500);
-        connectionPool.setReaperDelay(500);
+        Class<? extends Driver> driverClass = Class.forName("org.h2.Driver").asSubclass(Driver.class);
+
+        PoolConfiguration configuration = new PoolConfiguration("test", driverClass.newInstance(), "jdbc:h2:mem:databaseauthtest", "sa", "sa", 1, 2, false);
+        configuration.setBlockingTimeout(500);
+        configuration.setConnectionIdleTimeout(500);
+        configuration.setReaperInterval(500);
+
+        executorService = Executors.newSingleThreadScheduledExecutor();
+
+        connectionPool = new TestDatabaseConnectionPool(configuration);
+
         initTables(connectionPool);
     }
 
     @AfterClass
     public static void terminateDatabase() throws Exception {
-        connectionPool.closeConnections();
+        connectionPool.stop();
         connectionPool = null;
+        executorService.shutdown();
     }
 
     @Before
     public void init() throws Exception {
-        ModelNode cmNode = new ModelNode();
-        cmNode.get(OP).set(ADD);
-        cmNode.get(DATA_SOURCE).set("test"); //just a name. it's not used anyway because the getConnection is override
-
-        dcs = new DatabaseConnectionManagerService(cmNode) {
-            @Override
-            public Object getConnection() throws Exception {
-                return connectionPool.getConnection();
-            }
-        };
         initAuthenticationModel(true);
-        initCallbackHandler(dcs);
+        initCallbackHandler(connectionPool);
     }
 
     private static void initTables(TestDatabaseConnectionPool connectionPool) throws Exception {
-        Connection connection = connectionPool.getConnection();
+        Connection connection = connectionPool.getConnection().getConnection();
         Statement statement = connection.createStatement();
         statement.addBatch("CREATE TABLE USERS(user VARCHAR(32) PRIMARY KEY,   password VARCHAR(255));");
         statement.addBatch("CREATE TABLE ROLES(user VARCHAR(32),   roles VARCHAR(255));");
@@ -105,32 +100,38 @@ public abstract class AbstractDatabaseConnectionTestHelper {
         connection.close();
     }
 
+    @AfterClass
+    public static void cleanDatabase() {
+
+        try {
+            Driver driver = (Driver) Class.forName("org.h2.Driver", true, AbstractDatabaseConnectionTestHelper.class.getClassLoader()).newInstance();
+            Properties props = new Properties();
+            props.setProperty("user", "sa");
+            props.setProperty("password", "sa");
+            Connection conn = driver.connect("jdbc:h2:mem:databaseauthtest;DB_CLOSE_DELAY=-1", props);
+            conn.createStatement().execute("DROP ALL OBJECTS");
+            conn.close();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
     /**
      * Setup the model for the database authentication / authorization
-     * @param plainPassword
+     * @param plainPassword the password
      */
     abstract void initAuthenticationModel(boolean plainPassword);
 
     static class TestDatabaseConnectionPool extends DatabaseConnectionPool {
 
-        public TestDatabaseConnectionPool(String module, String driver, String url, String user, String password, int minPoolSize,
-                int maxPoolSize) throws SQLException, InstantiationException,
-                IllegalAccessException, ClassNotFoundException, InterruptedException, IllegalArgumentException,
-                ModuleLoadException, SecurityException, NoSuchMethodException, InvocationTargetException {
-            super(module, driver, url, user, password, minPoolSize, maxPoolSize);
-        }
-
-        @Override
-        protected Driver getDriver(String module, String driverClassName) throws ModuleLoadException,  ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-                InvocationTargetException {
-            return Class.forName(driverClassName).asSubclass(Driver.class).newInstance();
-
+        TestDatabaseConnectionPool(PoolConfiguration poolConfiguration) {
+            super(poolConfiguration, executorService);
         }
     }
 
     /**
      * Setup up the proper callback handler for your test
-     * @param dcs
+     * @param connectionManager the connection manager
      */
-    abstract void initCallbackHandler(DatabaseConnectionManagerService dcs) throws Exception;
+    abstract void initCallbackHandler(ConnectionManager connectionManager) throws Exception;
 }

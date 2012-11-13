@@ -36,6 +36,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -136,7 +137,9 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         // Executor Services
         final HostControllerExecutorService executorService = new HostControllerExecutorService();
+        ServiceName alias = org.jboss.as.domain.management.Services.getDomainManagementExecutorServiceName();
         serviceTarget.addService(HC_EXECUTOR_SERVICE_NAME, executorService)
+                .addAliases(alias)
                 .install();
 
         // Install required path services. (Only install those identified as required)
@@ -172,16 +175,14 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         return result.toString();
     }
 
-    static final class HostControllerExecutorService implements Service<ExecutorService> {
+    static final class HostControllerExecutorService implements Service<ScheduledExecutorService> {
         final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("Host Controller Service Threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
-        private ExecutorService executorService;
+        private ScheduledThreadPoolExecutor executorService;
 
         @Override
         public synchronized void start(final StartContext context) throws StartException {
-            executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-                    5L, TimeUnit.SECONDS,
-                    new SynchronousQueue<Runnable>(),
-                    threadFactory);
+            executorService = new ScheduledThreadPoolExecutor(0, threadFactory);
+            executorService.setKeepAliveTime(5L, TimeUnit.SECONDS);
         }
 
         @Override
@@ -202,7 +203,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         }
 
         @Override
-        public synchronized ExecutorService getValue() throws IllegalStateException {
+        public synchronized ScheduledExecutorService getValue() throws IllegalStateException {
             return executorService;
         }
     }

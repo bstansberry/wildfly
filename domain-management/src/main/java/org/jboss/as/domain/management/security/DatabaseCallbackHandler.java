@@ -22,12 +22,12 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SIMPLE_SELECT_USERS_PASSWORD_FIELD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SQL_SELECT_USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PLAIN_TEXT;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERS_PASSWORD_FIELD;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SQL_SELECT_USERS;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -36,7 +36,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,7 +51,9 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.DomainManagementLogger;
 import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.database.FallibleConnection;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -206,10 +207,12 @@ public class DatabaseCallbackHandler implements Service<CallbackHandlerService>,
 
     private String getUser(ConnectionManager connectionManager, String userName) throws IOException {
         String password = null;
+        FallibleConnection failableConnection = null;
         Connection dbc = null;
         ResultSet rs = null;
         try {
-            dbc = (Connection) connectionManager.getConnection();
+            failableConnection = (FallibleConnection) connectionManager.getConnection();
+            dbc = failableConnection.getConnection();
 
             PreparedStatement preparedStatement = dbc.prepareStatement(sqlStatement, ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setString(1,userName);
@@ -220,29 +223,36 @@ public class DatabaseCallbackHandler implements Service<CallbackHandlerService>,
             rs.last();
             int updateCount = rs.getRow();
             if (updateCount>1) {
-                throw MESSAGES.noneUniqueUserId(userName,updateCount);
+                throw MESSAGES.nonUniqueUserId(userName, updateCount);
             } else if (updateCount <= 0) {
                 throw new UserNotFoundException(userName);
             }
         } catch (Exception e) {
+            if (failableConnection != null) {
+                failableConnection.recordFailureOnConnection();
+            }
             throw MESSAGES.cannotPerformVerification(e);
         } finally {
-            try {
-                closeSafely(rs, dbc);
-            } catch (SQLException e) {
-                throw MESSAGES.closeSafelyException(e);
-            }
+            closeSafely(rs, dbc);
         }
         return password;
     }
 
-    private void closeSafely(ResultSet rs, Connection dbc) throws SQLException {
+    private void closeSafely(ResultSet rs, Connection dbc) {
         if (rs != null) {
-            rs.close();
+            try {
+                rs.close();
+            } catch (Exception e) {
+                DomainManagementLogger.ROOT_LOGGER.closeSafelyException(ResultSet.class.getSimpleName(), e);
+            }
         }
 
         if (dbc != null) {
-            dbc.close();
+            try {
+                dbc.close();
+            } catch (Exception e) {
+                DomainManagementLogger.ROOT_LOGGER.closeSafelyException(Connection.class.getSimpleName(), e);
+            }
         }
     }
 

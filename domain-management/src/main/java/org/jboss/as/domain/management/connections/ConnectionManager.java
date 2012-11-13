@@ -48,6 +48,8 @@ public interface ConnectionManager {
      * @param principal - The principal to use when connecting.
      * @param credential - The credential to use when connecting.
      * @return the ready connected connection.
+     *
+     * @throws UnsupportedOperationException if connections not base purely on the configuration are not supported
      */
     Object getConnection(String principal, String credential) throws Exception;
 }

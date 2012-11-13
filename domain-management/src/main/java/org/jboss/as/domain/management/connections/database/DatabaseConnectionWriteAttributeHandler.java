@@ -29,27 +29,26 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * Handler for updating attributes of ldap management connections.
+ * Handler for updating attributes of database management connections.
  *
  *  @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
 public class DatabaseConnectionWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
     public DatabaseConnectionWriteAttributeHandler() {
-        super(DatabaseConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS);
+        super(DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS, DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES,
+              DatabaseConnectionResourceDefinition.MIN_POOL_SIZE, DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN,
+              DatabaseConnectionResourceDefinition.USE_FAST_FAIL);
     }
 
-    void registerAttributes(final ManagementResourceRegistration registration) {
-        for (AttributeDefinition attr : DatabaseConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS) {
-            registration.registerReadWriteAttribute(attr, null, this);
-        }
+    boolean isSupported(AttributeDefinition attribute) {
+        return getAttributeDefinition(attribute.getName()) != null;
     }
 
     @Override
@@ -57,7 +56,7 @@ public class DatabaseConnectionWriteAttributeHandler extends AbstractWriteAttrib
                                            final ModelNode resolvedValue, final ModelNode currentValue,
                                            final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateDatabaseConnectionService(context, operation, model);
+        updateDatabaseConnectionService(attributeName, context, operation, model);
 
         return false;
     }
@@ -68,22 +67,36 @@ public class DatabaseConnectionWriteAttributeHandler extends AbstractWriteAttrib
                                          final Void handback) throws OperationFailedException {
         final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        updateDatabaseConnectionService(context, operation, restored);
+        updateDatabaseConnectionService(attributeName, context, operation, restored);
     }
 
-    private void updateDatabaseConnectionService(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    private void updateDatabaseConnectionService(final String attributeName, final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        PoolConfiguration poolConfiguration = getPoolConfig(context, operation);
+
+        AttributeDefinition ad = getAttributeDefinition(attributeName);
+        ModelNode resolved = getAttributeDefinition(attributeName).resolveModelAttribute(context, model);
+        if (ad == DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS) {
+            poolConfiguration.setBlockingTimeout(resolved.asLong());
+        } else if (ad == DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES) {
+            poolConfiguration.setConnectionIdleTimeout(resolved.asLong());
+        } else if (ad == DatabaseConnectionResourceDefinition.MIN_POOL_SIZE) {
+            poolConfiguration.setMinSize(resolved.asInt());
+        } else if (ad == DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN) {
+            poolConfiguration.setStrictMin(resolved.asBoolean());
+        }else if (ad == DatabaseConnectionResourceDefinition.USE_FAST_FAIL) {
+            poolConfiguration.setUseFastFail(resolved.asBoolean());
+        } else {
+            // Coding error
+            throw new IllegalStateException();
+        }
+    }
+
+    private PoolConfiguration getPoolConfig(OperationContext context, ModelNode operation) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String name = address.getLastElement().getValue();
-        ServiceName svcName = DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(name);
+        ServiceName svcName = PoolConfigService.getServiceName(name);
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> controller = registry.getService(svcName);
-        if (controller != null) {
-            // Just set the new values on the existing service
-            final ModelNode resolvedConfig = DatabaseConnectionAddHandler.createResolvedDatabaseConfiguration(context, model);
-            DatabaseConnectionManagerService service = DatabaseConnectionManagerService.class.cast(controller.getValue());
-            service.setResolvedConfiguration(resolvedConfig);
-        } else {
-            // Nothing to do
-        }
+        return (PoolConfiguration) controller.getValue();
     }
 }

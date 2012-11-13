@@ -66,12 +66,12 @@ public class DatabaseDriverWrapper implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String arg0, Properties arg1) throws SQLException {
-        return this.getPropertyInfo(arg0, arg1);
+        return this.driver.getPropertyInfo(arg0, arg1);
     }
 
     @Override
     public boolean jdbcCompliant() {
-        return this.jdbcCompliant();
+        return this.driver.jdbcCompliant();
     }
 
 }
