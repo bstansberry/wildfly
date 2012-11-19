@@ -54,10 +54,9 @@ import org.junit.Test;
 public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionTestHelper {
 
     private DatabaseCallbackHandler databaseCallbackHandler;
-    private ModelNode cNode;
 
-    public void initCallbackHandler(final ConnectionManager connectionManager) throws Exception {
-          databaseCallbackHandler = new DatabaseCallbackHandler(TEST_REALM, cNode) {
+    public void initCallbackHandler(final ConnectionManager connectionManager, boolean plainText)  {
+          databaseCallbackHandler = new DatabaseCallbackHandler(TEST_REALM, plainText, "select user, password from users where user=?") {
           @Override
             public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
                 InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
@@ -66,18 +65,6 @@ public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionT
             }
         };
 
-    }
-
-    @Override
-    void initAuthenticationModel(boolean plainPassword) {
-        cNode = new ModelNode();
-        cNode.get(OP).set(ADD);
-        cNode.get(OP_ADDR).add(DATABASE_CONNECTION, "db");
-        cNode.get(PLAIN_TEXT).set(plainPassword);
-        cNode.get(SIMPLE_SELECT_USERS).set(true);
-        cNode.get(SIMPLE_SELECT_TABLE).set("users");
-        cNode.get(SIMPLE_SELECT_USERNAME_FIELD).set("user");
-        cNode.get(SIMPLE_SELECT_USERS_PASSWORD_FIELD).set("password");
     }
 
     @Test
@@ -99,15 +86,7 @@ public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionT
     @Test
     public void testHandleHashedPassword() throws IOException, UnsupportedCallbackException {
         final Callback[] callbacks = {new NameCallback("test","Henry.Deacon"),new VerifyPasswordCallback("eureka")};
-        initAuthenticationModel(false);
-        databaseCallbackHandler = new DatabaseCallbackHandler(TEST_REALM, cNode) {
-          @Override
-            public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
-                InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
-                cm.setValue(new ImmediateValue<ConnectionManager>(connectionPool));
-                return cm;
-            }
-        };
+        initCallbackHandler(connectionPool, false);
         databaseCallbackHandler.handle(callbacks);
         VerifyPasswordCallback verifyPasswordCallback = (VerifyPasswordCallback) callbacks[1];
         Assert.assertEquals(true, verifyPasswordCallback.isVerified());
@@ -118,15 +97,7 @@ public class DatabaseCallbackHandlerTestCase extends AbstractDatabaseConnectionT
         DigestHashCallback digestHashCallback = new DigestHashCallback("test");
         digestHashCallback.setHash(hashedPassword.getBytes());
         final Callback[] callbacks = {new NameCallback("test","Henry.Deacon"),digestHashCallback};
-        initAuthenticationModel(false);
-        databaseCallbackHandler = new DatabaseCallbackHandler(TEST_REALM, cNode) {
-          @Override
-            public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
-                InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
-                cm.setValue(new ImmediateValue<ConnectionManager>(connectionPool));
-                return cm;
-            }
-        };
+        initCallbackHandler(connectionPool, false);
         databaseCallbackHandler.handle(callbacks);
         DigestHashCallback verifyPasswordCallback = (DigestHashCallback) callbacks[1];
         Assert.assertEquals(hashedPassword, verifyPasswordCallback.getHexHash());

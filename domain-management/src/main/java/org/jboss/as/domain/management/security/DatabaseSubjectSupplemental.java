@@ -22,11 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.ModelDescriptionConstants.ROLES_FIELD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_ROLES;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SQL_SELECT_ROLES;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
@@ -44,7 +39,6 @@ import javax.security.auth.Subject;
 import org.jboss.as.domain.management.DomainManagementLogger;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.database.FallibleConnection;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -66,15 +60,8 @@ public class DatabaseSubjectSupplemental implements Service<SubjectSupplementalS
 
     private String sqlStatement;
 
-    public DatabaseSubjectSupplemental(String realmName, ModelNode database) {
-        if (database.hasDefined(SIMPLE_SELECT_ROLES)) {
-            String table = database.require(SIMPLE_SELECT_TABLE).asString() ;
-            String userNameField = database.require(SIMPLE_SELECT_USERNAME_FIELD).asString() ;
-            String userRolesField = database.require(ROLES_FIELD).asString();
-            sqlStatement = String.format("select %s from %s where %s=?",userRolesField,table,userNameField);
-        } else if (database.hasDefined(SQL_SELECT_ROLES)) {
-            sqlStatement = database.require(SQL_SELECT_ROLES).asString();
-        }
+    public DatabaseSubjectSupplemental(final String sqlStatement) {
+        this.sqlStatement = sqlStatement;
     }
 
     /*

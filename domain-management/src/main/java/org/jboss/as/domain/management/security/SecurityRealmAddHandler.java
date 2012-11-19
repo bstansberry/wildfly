@@ -197,9 +197,24 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
     private ServiceName addDatabaseAuthenticationService(OperationContext context, ModelNode database, ServiceName realmServiceName, ServiceTarget serviceTarget, String realmName, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName databaseServiceName = realmServiceName.append(DatabaseCallbackHandler.SERVICE_SUFFIX);
-        DatabaseCallbackHandler databaseCallbackHandler = new DatabaseCallbackHandler(realmName,database);
+
+        final boolean plainText = DatabaseResourceDefinition.PLAIN_TEXT.resolveModelAttribute(context, database).asBoolean();
+        String sqlStatement;
+        if (DatabaseAuthenticationResourceDefinition.SIMPLE_SELECT_USERS_FIELD.resolveModelAttribute(context, database).asBoolean()) {
+            String table = DatabaseResourceDefinition.TABLE_FIELD.resolveModelAttribute(context, database).asString();
+            String userNameField = DatabaseAuthenticationResourceDefinition.USERNAME_FIELD.resolveModelAttribute(context, database).asString();
+            String passwordField = DatabaseAuthenticationResourceDefinition.PASSWORD_FIELD.resolveModelAttribute(context, database).asString();
+            sqlStatement = String.format("select %s, %s from %s where %s=?",userNameField,passwordField,table,userNameField);
+        } else if (database.hasDefined(DatabaseAuthenticationResourceDefinition.SQL_SELECT_USERS.getName())) {
+            sqlStatement = DatabaseAuthenticationResourceDefinition.SQL_SELECT_USERS.resolveModelAttribute(context, database).asString();
+        } else {
+            throw new IllegalStateException();
+        }
+
+        DatabaseCallbackHandler databaseCallbackHandler = new DatabaseCallbackHandler(realmName, plainText, sqlStatement);
 
         ServiceBuilder<?> databaseBuilder = serviceTarget.addService(databaseServiceName, databaseCallbackHandler);
+
         String connectionManager = DatabaseResourceDefinition.REF.resolveModelAttribute(context, database).asString();
         databaseBuilder.addDependency(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, databaseCallbackHandler.getConnectionManagerInjector());
 
@@ -214,9 +229,21 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     private ServiceName addDatabaseAuthorizationService(OperationContext context, ModelNode database, ServiceName realmServiceName, ServiceTarget serviceTarget, String realmName, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName databaseServiceName = realmServiceName.append(DatabaseSubjectSupplemental.SERVICE_SUFFIX);
 
-        DatabaseSubjectSupplemental databaseSubjectSupplemental = new DatabaseSubjectSupplemental(realmName,database);
+        String sqlStatement;
+        if (DatabaseAuthorizationResourceDefinition.SIMPLE_SELECT_ROLES_FIELD.resolveModelAttribute(context, database).asBoolean()) {
+            String table = DatabaseResourceDefinition.TABLE_FIELD.resolveModelAttribute(context, database).asString();
+            String userNameField = DatabaseAuthorizationResourceDefinition.USERNAME_FIELD.resolveModelAttribute(context, database).asString();
+            String userRolesField = DatabaseAuthorizationResourceDefinition.ROLES_FIELD.resolveModelAttribute(context, database).asString();
+            sqlStatement = String.format("select %s from %s where %s=?", userRolesField, table,userNameField);
+        } else if (database.hasDefined(DatabaseAuthorizationResourceDefinition.SQL_SELECT_ROLES.getName())) {
+            sqlStatement = DatabaseAuthorizationResourceDefinition.SQL_SELECT_ROLES.resolveModelAttribute(context, database).asString();
+        } else {
+            throw new IllegalStateException();
+        }
+        DatabaseSubjectSupplemental databaseSubjectSupplemental = new DatabaseSubjectSupplemental(sqlStatement);
 
         ServiceBuilder<?> databaseBuilder = serviceTarget.addService(databaseServiceName, databaseSubjectSupplemental);
+
         String connectionManager = DatabaseResourceDefinition.REF.resolveModelAttribute(context, database).asString();
         databaseBuilder.addDependency(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, databaseSubjectSupplemental.getConnectionManagerInjector());
 

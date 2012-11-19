@@ -80,7 +80,7 @@ public class DatabaseConnectionAddHandler extends AbstractAddStepHandler {
 
         if (useDataSource) {
             ServiceName datasourceService = ServiceName.JBOSS.append("data-source").append(dsName.asString());
-            serviceBuilder.addDependency(datasourceService,DataSource.class,connectionManagerService.getDatasource());
+            serviceBuilder.addDependency(datasourceService, DataSource.class, connectionManagerService.getDatasource());
         } else {
             ServiceController<PoolConfiguration> poolConfigSC = PoolConfigService.addService(name, context, fullModel,
                     serviceTarget, verificationHandler);

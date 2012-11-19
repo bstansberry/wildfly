@@ -22,12 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PLAIN_TEXT;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERS;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERS_PASSWORD_FIELD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SQL_SELECT_USERS;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -54,7 +48,6 @@ import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.DomainManagementLogger;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.database.FallibleConnection;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -79,18 +72,10 @@ public class DatabaseCallbackHandler implements Service<CallbackHandlerService>,
     private String sqlStatement;
     private static UsernamePasswordHashUtil hashUtil;
 
-
-    public DatabaseCallbackHandler(final String realmName,ModelNode userDatabase) {
+    public DatabaseCallbackHandler(final String realmName, final boolean plainText, final String sqlStatement) {
         this.realm = realmName;
-        plainText = userDatabase.require(PLAIN_TEXT).asBoolean();
-        if (userDatabase.hasDefined(SIMPLE_SELECT_USERS)) {
-            String table = userDatabase.require(SIMPLE_SELECT_TABLE).asString() ;
-            String userNameField = userDatabase.require(SIMPLE_SELECT_USERNAME_FIELD).asString() ;
-            String passwordField = userDatabase.require(SIMPLE_SELECT_USERS_PASSWORD_FIELD).asString();
-            sqlStatement = String.format("select %s, %s from %s where %s=?",userNameField,passwordField,table,userNameField);
-        } else if (userDatabase.hasDefined(SQL_SELECT_USERS)) {
-            sqlStatement = userDatabase.require(SQL_SELECT_USERS).asString();
-        }
+        this.plainText = plainText;
+        this.sqlStatement = sqlStatement;
     }
 
     /*
@@ -161,13 +146,13 @@ public class DatabaseCallbackHandler implements Service<CallbackHandlerService>,
                 userName = nameCallback.getDefaultName();
             } else if (current instanceof PasswordCallback && plainText) {
                 toRespondTo.add(current);
-            } else if (current instanceof DigestHashCallback && plainText == false) {
+            } else if (current instanceof DigestHashCallback && !plainText) {
                 toRespondTo.add(current);
             } else if (current instanceof VerifyPasswordCallback) {
                 toRespondTo.add(current);
             } else if (current instanceof RealmCallback) {
                 String realm = ((RealmCallback) current).getDefaultText();
-                if (this.realm.equals(realm) == false) {
+                if (!this.realm.equals(realm)) {
                     throw MESSAGES.invalidRealm(realm, this.realm);
                 }
             } else {

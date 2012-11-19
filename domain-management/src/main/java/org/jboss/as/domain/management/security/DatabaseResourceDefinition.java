@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -49,20 +50,23 @@ public abstract class DatabaseResourceDefinition extends SimpleResourceDefinitio
     public static final SimpleAttributeDefinition REF = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REF, ModelType.STRING, false)
     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition PLAIN_TEXT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PLAIN_TEXT, ModelType.BOOLEAN, false)
+    public static final SimpleAttributeDefinition PLAIN_TEXT =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PLAIN_TEXT, ModelType.BOOLEAN, false)
             .setDefaultValue(new ModelNode(false)).
             setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition USERNAME_FIELD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_FIELD, ModelType.STRING, false)
-            .setXmlName("username-field")
+    public static final SimpleAttributeDefinition USERNAME_FIELD =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_FIELD, ModelType.STRING, false)
+            .setXmlName(Attribute.USERNAME_FIELD.getLocalName())
             .setAlternatives(ModelDescriptionConstants.USERNAME_FIELD)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setValidateNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
 
-    public static final SimpleAttributeDefinition TABLE_FIELD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SIMPLE_SELECT_TABLE, ModelType.STRING, false)
-            .setXmlName("name")
+    public static final SimpleAttributeDefinition TABLE_FIELD =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SIMPLE_SELECT_TABLE, ModelType.STRING, false)
+            .setXmlName(Attribute.NAME.getLocalName())
             .setAlternatives(ModelDescriptionConstants.SIMPLE_SELECT_TABLE)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setValidateNull(false)

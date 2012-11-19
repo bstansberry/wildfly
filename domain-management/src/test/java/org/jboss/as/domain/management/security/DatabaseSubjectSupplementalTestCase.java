@@ -22,16 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE_CONNECTION;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PLAIN_TEXT;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.ROLES_FIELD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_ROLES;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_TABLE;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.SIMPLE_SELECT_USERNAME_FIELD;
-
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashSet;
@@ -55,12 +45,11 @@ import org.junit.Test;
  */
 public class DatabaseSubjectSupplementalTestCase extends AbstractDatabaseConnectionTestHelper{
 
-    private ModelNode cNode;
     private DatabaseSubjectSupplemental databaseSubjectSupplemental;
 
     @Override
-    void initCallbackHandler(final ConnectionManager connectionManager) throws Exception {
-        databaseSubjectSupplemental = new DatabaseSubjectSupplemental(TEST_REALM, cNode) {
+    void initCallbackHandler(final ConnectionManager connectionManager, boolean plainText) throws Exception {
+        databaseSubjectSupplemental = new DatabaseSubjectSupplemental("select roles from roles where user=?") {
             @Override
               public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
                   InjectedValue<ConnectionManager> cm = new InjectedValue<ConnectionManager>();
@@ -68,19 +57,6 @@ public class DatabaseSubjectSupplementalTestCase extends AbstractDatabaseConnect
                   return cm;
               }
         };
-
-    }
-
-    @Override
-    void initAuthenticationModel(boolean plainPassword) {
-        cNode = new ModelNode();
-        cNode.get(OP).set(ADD);
-        cNode.get(OP_ADDR).add(DATABASE_CONNECTION, "db");
-        cNode.get(PLAIN_TEXT).set(plainPassword);
-        cNode.get(SIMPLE_SELECT_TABLE).set("roles");
-        cNode.get(SIMPLE_SELECT_ROLES).set(true);
-        cNode.get(SIMPLE_SELECT_USERNAME_FIELD).set("user");
-        cNode.get(ROLES_FIELD).set("roles");
     }
 
     @Test

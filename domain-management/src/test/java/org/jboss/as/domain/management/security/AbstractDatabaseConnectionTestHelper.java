@@ -32,7 +32,6 @@ import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.database.DatabaseConnectionPool;
 import org.jboss.as.domain.management.connections.database.PoolConfiguration;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -79,8 +78,7 @@ public abstract class AbstractDatabaseConnectionTestHelper {
 
     @Before
     public void init() throws Exception {
-        initAuthenticationModel(true);
-        initCallbackHandler(connectionPool);
+        initCallbackHandler(connectionPool, true);
     }
 
     private static void initTables(TestDatabaseConnectionPool connectionPool) throws Exception {
@@ -116,12 +114,6 @@ public abstract class AbstractDatabaseConnectionTestHelper {
         }
     }
 
-    /**
-     * Setup the model for the database authentication / authorization
-     * @param plainPassword the password
-     */
-    abstract void initAuthenticationModel(boolean plainPassword);
-
     static class TestDatabaseConnectionPool extends DatabaseConnectionPool {
 
         TestDatabaseConnectionPool(PoolConfiguration poolConfiguration) {
@@ -132,6 +124,7 @@ public abstract class AbstractDatabaseConnectionTestHelper {
     /**
      * Setup up the proper callback handler for your test
      * @param connectionManager the connection manager
+     * @param plainText whether passwords are stored in plain text
      */
-    abstract void initCallbackHandler(ConnectionManager connectionManager) throws Exception;
+    abstract void initCallbackHandler(ConnectionManager connectionManager, boolean plainText) throws Exception;
 }
