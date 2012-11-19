@@ -21,7 +21,13 @@
  */
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -33,6 +39,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -47,8 +54,35 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class DatabaseResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition REF = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REF, ModelType.STRING, false)
-    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+    public static final SimpleAttributeDefinition DATABASE_CONNECTION =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DATABASE_CONNECTION, ModelType.STRING, false)
+            .setAlternatives(ModelDescriptionConstants.DATABASE_CONNECTION)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel)) {
+                        writer.writeEmptyElement(Element.DATABASE_OUTBOUND_CONNECTION.getLocalName());
+                        writer.writeAttribute(Attribute.REF.getLocalName(), resourceModel.get(ModelDescriptionConstants.DATABASE_CONNECTION).asString());
+                    }
+                }
+            })
+            .build();
+
+    public static final SimpleAttributeDefinition DATASOURCE_JNDI_NAME =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DATA_SOURCE_JNDI_NAME, ModelType.STRING, false)
+                    .setAlternatives(ModelDescriptionConstants.DATA_SOURCE_JNDI_NAME)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .setAttributeMarshaller(new AttributeMarshaller() {
+                        @Override
+                        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                            if (isMarshallable(attribute, resourceModel)) {
+                                writer.writeEmptyElement(Element.JNDI_DATASOURCE.getLocalName());
+                                writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), resourceModel.get(ModelDescriptionConstants.DATA_SOURCE_JNDI_NAME).asString());
+                            }
+                        }
+                    })
+                    .build();
 
     public static final SimpleAttributeDefinition PLAIN_TEXT =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PLAIN_TEXT, ModelType.BOOLEAN, false)
@@ -106,4 +140,16 @@ public abstract class DatabaseResourceDefinition extends SimpleResourceDefinitio
     abstract AttributeDefinition[] getAttributeDefinitions();
 
     abstract void validateAttributeCombination(ModelNode operation) throws OperationFailedException;
+
+    static void validateConnectionReference(ModelNode operation) throws OperationFailedException {
+        boolean outboundDefined = operation.hasDefined(ModelDescriptionConstants.DATABASE_CONNECTION);
+        boolean jndiDefined = operation.hasDefined(ModelDescriptionConstants.DATA_SOURCE_JNDI_NAME);
+        if (outboundDefined && jndiDefined) {
+            throw MESSAGES.operationFailedOnlyOneOfRequired(ModelDescriptionConstants.DATABASE_CONNECTION,
+                    ModelDescriptionConstants.DATA_SOURCE_JNDI_NAME);
+        } else if (!outboundDefined && !jndiDefined) {
+            throw MESSAGES.operationFailedOneOfRequired(ModelDescriptionConstants.DATABASE_CONNECTION,
+                    ModelDescriptionConstants.DATA_SOURCE_JNDI_NAME);
+        }
+    }
 }

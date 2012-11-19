@@ -79,6 +79,7 @@ public enum Attribute {
     INITIAL_CONTEXT_FACTORY("initial-context-factory"),
     INTERFACE("interface"),
     JAVA_HOME("java-home"),
+    JNDI_NAME("jndi-name"),
     KEY_PASSWORD("key-password"),
     KEYSTORE_PASSWORD("keystore-password"),
     MANAGEMENT_SUBSYSTEM_ENDPOINT("management-subsystem-endpoint"),

@@ -68,7 +68,7 @@ public class DatabaseAuthorizationResourceDefinition extends DatabaseResourceDef
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        REF,SIMPLE_SELECT_ROLES_FIELD, SQL_SELECT_ROLES, USERNAME_FIELD, ROLES_FIELD,TABLE_FIELD
+            DATABASE_CONNECTION,SIMPLE_SELECT_ROLES_FIELD, SQL_SELECT_ROLES, USERNAME_FIELD, ROLES_FIELD,TABLE_FIELD
     };
 
     public DatabaseAuthorizationResourceDefinition() {
@@ -118,5 +118,7 @@ public class DatabaseAuthorizationResourceDefinition extends DatabaseResourceDef
             throw MESSAGES.operationFailedOneOfRequired(ModelDescriptionConstants.SIMPLE_SELECT_ROLES,
                     ModelDescriptionConstants.SQL_SELECT_USERS_ROLES_STATEMENT);
         }
+
+        validateConnectionReference(operation);
     }
 }

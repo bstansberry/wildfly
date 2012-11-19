@@ -87,6 +87,8 @@ public class SecurityRealmRemoveHandler implements OperationStepHandler {
         context.removeService(realmServiceName.append(PropertiesCallbackHandler.SERVICE_SUFFIX));
         context.removeService(realmServiceName.append(UserLdapCallbackHandler.SERVICE_SUFFIX));
         context.removeService(realmServiceName.append(DatabaseCallbackHandler.SERVICE_SUFFIX));
+        context.removeService(realmServiceName.append("connection-manager", "authentication"));
+        context.removeService(realmServiceName.append("connection-manager", "authorization"));
     }
 
     protected void recoverServices(OperationContext context, final String realmName, ModelNode model) {

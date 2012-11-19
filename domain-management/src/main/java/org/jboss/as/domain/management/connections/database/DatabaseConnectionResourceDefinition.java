@@ -59,27 +59,26 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
 
     public static final PathElement RESOURCE_PATH = PathElement.pathElement(ModelDescriptionConstants.DATABASE_CONNECTION);
 
-    public static final SimpleAttributeDefinition DATA_SOURCE =
-            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DATA_SOURCE, ModelType.STRING, false)
-            .setXmlName(Attribute.REF.getLocalName())
-            .setAlternatives(ModelDescriptionConstants.CONNECTION_URL, ModelDescriptionConstants.URL_DELIMITER,
-                    ModelDescriptionConstants.DRIVER_MODULE_NAME, ModelDescriptionConstants.DRIVER_CLASS_NAME,
-                    ModelDescriptionConstants.USERNAME, ModelDescriptionConstants.PASSWORD,
-                    ModelDescriptionConstants.MAX_POOL_SIZE, ModelDescriptionConstants.MIN_POOL_SIZE,
-                    ModelDescriptionConstants.BACKGROUND_VALIDATION, ModelDescriptionConstants.BACKGROUND_VALIDATION_MILLIS,
-                    ModelDescriptionConstants.BLOCKING_TIMEOUT_WAIT_MILLIS, ModelDescriptionConstants.CHECK_VALID_CONNECTION_SQL,
-                    ModelDescriptionConstants.IDLE_TIMEOUT_MINUTES, ModelDescriptionConstants.NEW_CONNECTION_SQL,
-                    ModelDescriptionConstants.POOL_PREFILL, ModelDescriptionConstants.POOL_USE_STRICT_MIN,
-                    ModelDescriptionConstants.VALIDATE_ON_MATCH, ModelDescriptionConstants.VALID_CONNECTION_CHECKER_CLASS_NAME,
-                    ModelDescriptionConstants.VALID_CONNECTION_CHECKER_MODULE_NAME, ModelDescriptionConstants.VALID_CONNECTION_CHECKER_PROPERTIES,
-                    ModelDescriptionConstants.USE_FAST_FAIL)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+//    public static final SimpleAttributeDefinition DATA_SOURCE =
+//            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DATA_SOURCE, ModelType.STRING, false)
+//            .setXmlName(Attribute.REF.getLocalName())
+//            .setAlternatives(ModelDescriptionConstants.CONNECTION_URL, ModelDescriptionConstants.URL_DELIMITER,
+//                    ModelDescriptionConstants.DRIVER_MODULE_NAME, ModelDescriptionConstants.DRIVER_CLASS_NAME,
+//                    ModelDescriptionConstants.USERNAME, ModelDescriptionConstants.PASSWORD,
+//                    ModelDescriptionConstants.MAX_POOL_SIZE, ModelDescriptionConstants.MIN_POOL_SIZE,
+//                    ModelDescriptionConstants.BACKGROUND_VALIDATION, ModelDescriptionConstants.BACKGROUND_VALIDATION_MILLIS,
+//                    ModelDescriptionConstants.BLOCKING_TIMEOUT_WAIT_MILLIS, ModelDescriptionConstants.CHECK_VALID_CONNECTION_SQL,
+//                    ModelDescriptionConstants.IDLE_TIMEOUT_MINUTES, ModelDescriptionConstants.NEW_CONNECTION_SQL,
+//                    ModelDescriptionConstants.POOL_PREFILL, ModelDescriptionConstants.POOL_USE_STRICT_MIN,
+//                    ModelDescriptionConstants.VALIDATE_ON_MATCH, ModelDescriptionConstants.VALID_CONNECTION_CHECKER_CLASS_NAME,
+//                    ModelDescriptionConstants.VALID_CONNECTION_CHECKER_MODULE_NAME, ModelDescriptionConstants.VALID_CONNECTION_CHECKER_PROPERTIES,
+//                    ModelDescriptionConstants.USE_FAST_FAIL)
+//            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+//            .build();
 
     public static final SimpleAttributeDefinition CONNECTION_URL =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONNECTION_URL, ModelType.STRING, false)
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -99,7 +98,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
     public static final SimpleAttributeDefinition USERNAME =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Element.USER_NAME.getLocalName())
             .build();
@@ -108,7 +106,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PASSWORD, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(0, Integer.MAX_VALUE, true, true))
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -116,7 +113,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MAX_POOL_SIZE, ModelType.INT, true)
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE, true, true))
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setDefaultValue(new ModelNode(20))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
@@ -126,7 +122,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             .setAllowExpression(true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true))
             .setDefaultValue(new ModelNode(0))
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -134,7 +129,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BACKGROUND_VALIDATION, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -143,7 +137,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(0))
                     .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
                     .build();
 
     public static final SimpleAttributeDefinition BLOCKING_TIMEOUT_WAIT_MILLIS =
@@ -153,14 +146,12 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             .setDefaultValue(new ModelNode(30000))
             .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
             .setXmlName(Attribute.BLOCKING_TIMEOUT_MILLIS.getLocalName())
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .build();
 
     public static SimpleAttributeDefinition CHECK_VALID_CONNECTION_SQL =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CHECK_VALID_CONNECTION_SQL, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -170,14 +161,12 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
             .setDefaultValue(new ModelNode(30))
             .setMeasurementUnit(MeasurementUnit.MINUTES)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
             .build();
 
     public static SimpleAttributeDefinition NEW_CONNECTION_SQL =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NEW_CONNECTION_SQL, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -185,7 +174,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.POOL_PREFILL, ModelType.BOOLEAN, true)
             .setXmlName(Attribute.PREFILL.getLocalName())
             .setDefaultValue(new ModelNode(false))
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true).build();
 
@@ -194,14 +182,12 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             .setXmlName(Attribute.USE_STRICT_MIN.getLocalName())
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static SimpleAttributeDefinition URL_DELIMITER =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.URL_DELIMITER, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -209,7 +195,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALIDATE_ON_MATCH, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(false))
-                    .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
@@ -217,7 +202,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALID_CONNECTION_CHECKER_CLASS_NAME, ModelType.STRING, true)
             .setXmlName(Attribute.CLASS_NAME.getLocalName())
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -225,7 +209,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALID_CONNECTION_CHECKER_MODULE_NAME, ModelType.STRING, true)
             .setXmlName(Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -234,7 +217,6 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             .setXmlName(Element.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(false)
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
@@ -242,11 +224,10 @@ public class DatabaseConnectionResourceDefinition extends SimpleResourceDefiniti
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USE_FAST_FAIL, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setAlternatives(ModelDescriptionConstants.DATA_SOURCE)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {DATA_SOURCE, URL_DELIMITER, DRIVER_MODULE_NAME, DRIVER_CLASS_NAME,
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { URL_DELIMITER, DRIVER_MODULE_NAME, DRIVER_CLASS_NAME,
             CONNECTION_URL, NEW_CONNECTION_SQL, MIN_POOL_SIZE, MAX_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN,
             USERNAME, PASSWORD, VALIDATE_ON_MATCH, BACKGROUND_VALIDATION, BACKGROUND_VALIDATION_MILLIS, USE_FAST_FAIL,
             CHECK_VALID_CONNECTION_SQL, VALID_CONNECTION_CHECKER_MODULE, VALID_CONNECTION_CHECKER_CLASS_NAME,

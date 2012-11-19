@@ -63,7 +63,6 @@ import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.CONNECTION_PROPERTIES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DATABASE_CONNECTION;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.DATA_SOURCE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
@@ -80,6 +79,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
@@ -150,7 +150,7 @@ public class ManagementXml {
                     if (++securityRealmsCount > 1) {
                         throw unexpectedElement(reader);
                     }
-                    parseSecurityRealms(reader, managementAddress, expectedNs, list);
+                    parseSecurityRealms(reader, managementAddress, expectedNs, list, allowDataSourceConnection);
                     break;
                 }
                 case OUTBOUND_CONNECTIONS: {
@@ -164,7 +164,7 @@ public class ManagementXml {
                             parseConnections_1_0(reader, managementAddress, expectedNs, list);
                             break;
                         default:
-                            parseConnections_1_4(reader, managementAddress, expectedNs, list, allowDataSourceConnection);
+                            parseConnections_1_4(reader, managementAddress, expectedNs, list);
                             break;
                     }
                     break;
@@ -211,7 +211,7 @@ public class ManagementXml {
     }
 
     private void parseConnections_1_4(final XMLExtendedStreamReader reader, final ModelNode address,
-            final Namespace expectedNs, final List<ModelNode> list, boolean allowDataSourceConnection) throws XMLStreamException {
+                                      final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -224,12 +224,6 @@ public class ManagementXml {
                 case DATASOURCE: {
                     parseDataSource(reader, list, address, expectedNs);
                     break;
-                }
-                case DATASOURCE_REF: {
-                    if (!allowDataSourceConnection) {
-                        throw unexpectedElement(reader);
-                    }
-                    parseDatasourceRef(reader, address, list);
                 }
                 default: {
                     throw unexpectedElement(reader);
@@ -598,46 +592,9 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseDatasourceRef(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
 
-        final ModelNode add = new ModelNode();
-        add.get(OP).set(ADD);
-
-        list.add(add);
-
-        Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.REF);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (!isNoNamespaceAttribute(reader, i)) {
-                throw unexpectedAttribute(reader, i);
-            }
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case NAME: {
-                    add.get(OP_ADDR).set(address).add(DATABASE_CONNECTION, value);
-                    break;
-                }
-                case REF: {
-                    DatabaseConnectionResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, add, reader);
-                    break;
-                }
-                default: {
-                    throw unexpectedAttribute(reader, i);
-                }
-            }
-        }
-
-        if (required.size() > 0) {
-            throw missingRequired(reader, required);
-        }
-
-        requireNoContent(reader);
-    }
-
-
-    private void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address,
+                                     final Namespace expectedNs, final List<ModelNode> list, boolean allowDataSourceConnection)
             throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -653,8 +610,11 @@ public class ManagementXml {
                         case DOMAIN_1_2:
                             parseSecurityRealm_1_1(reader, address, expectedNs, list);
                             break;
-                        default:
+                        case DOMAIN_1_3:
                             parseSecurityRealm_1_3(reader, address, expectedNs, list);
+                            break;
+                        default:
+                            parseSecurityRealm_1_4(reader, address, expectedNs, list, allowDataSourceConnection);
                             break;
                     }
                     break;
@@ -737,27 +697,11 @@ public class ManagementXml {
                     parseServerIdentities(reader, expectedNs, realmAddress, list);
                     break;
                 case AUTHENTICATION: {
-                    // Note: We do not list schemas before 1.3 as this method is only called for 1.3 and later.
-                    switch (expectedNs) {
-                        case DOMAIN_1_3:
-                            parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
-                            break;
-                        default:
-                            parseAuthentication_1_4(reader, expectedNs, realmAddress, list);
-                            break;
-                    }
+                    parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
                     break;
                 }
                 case AUTHORIZATION:
-                    // Note: We do not list schemas before 1.3 as this method is only called for 1.3 and later.
-                    switch (expectedNs) {
-                        case DOMAIN_1_3:
-                            parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
-                            break;
-                        default:
-                            parseAuthorization_1_4(reader, expectedNs, realmAddress, list);
-                            break;
-                    }
+                    parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -766,7 +710,40 @@ public class ManagementXml {
         }
     }
 
-    private void parseDatabaseAuthentication(XMLExtendedStreamReader reader, Namespace expectedNs, ModelNode realmAddress, List<ModelNode> list) throws XMLStreamException {
+    private void parseSecurityRealm_1_4(final XMLExtendedStreamReader reader, final ModelNode address,
+                                        final Namespace expectedNs, final List<ModelNode> list, final boolean allowDataSourceConnection)
+            throws XMLStreamException {
+        requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+        // After double checking the name of the only attribute we can retrieve it.
+        final ModelNode realmAddress = cloneRealmAddress(reader, address, list);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PLUG_INS:
+                    parsePlugIns(reader, expectedNs, realmAddress, list);
+                    break;
+                case SERVER_IDENTITIES:
+                    parseServerIdentities(reader, expectedNs, realmAddress, list);
+                    break;
+                case AUTHENTICATION: {
+                    parseAuthentication_1_4(reader, expectedNs, realmAddress, list, allowDataSourceConnection);
+                    break;
+                }
+                case AUTHORIZATION:
+                    parseAuthorization_1_4(reader, expectedNs, realmAddress, list, allowDataSourceConnection);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseDatabaseAuthentication(XMLExtendedStreamReader reader, Namespace expectedNs, ModelNode realmAddress,
+                                             List<ModelNode> list, boolean allowDataSourceConnection) throws XMLStreamException {
         ModelNode databaseAuthentication = parseDatabase(reader, realmAddress, list, AUTHENTICATION);
 
         boolean choiceFound = false;
@@ -782,6 +759,15 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
 
             switch (element) {
+                case DATABASE_OUTBOUND_CONNECTION:
+                    parseDatabaseConnectionRef(reader, databaseAuthentication, Attribute.REF, DatabaseResourceDefinition.DATABASE_CONNECTION);
+                    break;
+                case JNDI_DATASOURCE:
+                    if (!allowDataSourceConnection) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseDatabaseConnectionRef(reader, databaseAuthentication, Attribute.JNDI_NAME, DatabaseResourceDefinition.DATASOURCE_JNDI_NAME);
+                    break;
                 case SIMPLE_SELECT:
                     DatabaseAuthenticationResourceDefinition.SIMPLE_SELECT_USERS_FIELD.parseAndSetParameter(Boolean.toString(true), databaseAuthentication, reader);
                     Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.USERNAME_FIELD,Attribute.PASSWORD_FIELD);
@@ -809,35 +795,49 @@ public class ManagementXml {
 
         list.add(databaseNode);
 
-        Set<Attribute> required = EnumSet.of(Attribute.REF);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             if (!isNoNamespaceAttribute(reader, i)) {
                 throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                required.remove(attribute);
-                switch (attribute) {
-                    case REF: {
-                        DatabaseResourceDefinition.REF.parseAndSetParameter(value, databaseNode, reader);
-                        break;
-                    }
-                    case PLAIN_TEXT: {
-                        DatabaseResourceDefinition.PLAIN_TEXT.parseAndSetParameter(value, databaseNode, reader);
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case PLAIN_TEXT: {
+                    DatabaseResourceDefinition.PLAIN_TEXT.parseAndSetParameter(value, databaseNode, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
                 }
             }
+        }
+
+        return databaseNode;
+    }
+
+    private void parseDatabaseConnectionRef(XMLExtendedStreamReader reader, ModelNode addOperation, final Attribute requiredAttribute,
+                                            SimpleAttributeDefinition attributeDefinition) throws XMLStreamException {
+
+        Set<Attribute> required = EnumSet.of(requiredAttribute);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if (!required.remove(attribute)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            attributeDefinition.parseAndSetParameter(value, addOperation, reader);
         }
 
         if (required.size() > 0) {
             throw missingRequired(reader, required);
         }
-        return databaseNode;
+
+        requireNoContent(reader);
     }
 
     private void parseSimpleSelect(XMLExtendedStreamReader reader, ModelNode realmAddress, List<ModelNode> list, Set<Attribute> required) throws XMLStreamException {
@@ -1282,7 +1282,8 @@ public class ManagementXml {
     }
 
     private void parseAuthentication_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+                                         final ModelNode realmAddress, final List<ModelNode> list,
+                                         final boolean allowDataSourceConnection) throws XMLStreamException {
 
         // Only one truststore can be defined.
         boolean trustStoreFound = false;
@@ -1316,7 +1317,7 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseDatabaseAuthentication(reader, expectedNs, realmAddress, list);
+                    parseDatabaseAuthentication(reader, expectedNs, realmAddress, list, allowDataSourceConnection);
                     usernamePasswordFound = true;
                     break;
                 }
@@ -1789,7 +1790,8 @@ public class ManagementXml {
     }
 
     private void parseAuthorization_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+                                        final ModelNode realmAddress, final List<ModelNode> list,
+                                        final boolean allowDataSourceConnection) throws XMLStreamException {
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -1811,7 +1813,7 @@ public class ManagementXml {
                     break;
                 }
                 case DATABASE: {
-                    parseDatabaseAuthorization(reader, expectedNs, realmAddress, list);
+                    parseDatabaseAuthorization(reader, expectedNs, realmAddress, list, allowDataSourceConnection);
                     authzFound = true;
                     break;
                 }
@@ -1823,7 +1825,8 @@ public class ManagementXml {
         }
     }
 
-    private void parseDatabaseAuthorization(XMLExtendedStreamReader reader, Namespace expectedNs, ModelNode realmAddress, List<ModelNode> list) throws XMLStreamException {
+    private void parseDatabaseAuthorization(XMLExtendedStreamReader reader, Namespace expectedNs, ModelNode realmAddress,
+                                            List<ModelNode> list, boolean allowDataSourceConnection) throws XMLStreamException {
         ModelNode databaseAuthorization = parseDatabase(reader, realmAddress, list,AUTHORIZATION);
 
         boolean choiceFound = false;
@@ -1836,6 +1839,15 @@ public class ManagementXml {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
+                case DATABASE_OUTBOUND_CONNECTION:
+                    parseDatabaseConnectionRef(reader, databaseAuthorization, Attribute.REF, DatabaseResourceDefinition.DATABASE_CONNECTION);
+                    break;
+                case JNDI_DATASOURCE:
+                    if (!allowDataSourceConnection) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseDatabaseConnectionRef(reader, databaseAuthorization, Attribute.JNDI_NAME, DatabaseResourceDefinition.DATASOURCE_JNDI_NAME);
+                    break;
                 case SIMPLE_SELECT:
                     DatabaseAuthorizationResourceDefinition.SIMPLE_SELECT_ROLES_FIELD.parseAndSetParameter(Boolean.toString(true), databaseAuthorization, reader);
                     Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.USERNAME_FIELD,Attribute.ROLES_FILED);
@@ -2159,7 +2171,11 @@ public class ManagementXml {
         } else if (authentication.hasDefined(DATABASE)) {
             ModelNode database = authentication.get(DATABASE);
             writer.writeStartElement(Element.DATABASE.getLocalName());
-            DatabaseAuthenticationResourceDefinition.REF.marshallAsAttribute(database, writer);
+
+            // Only one of the next 2 will actually write
+            DatabaseAuthenticationResourceDefinition.DATABASE_CONNECTION.marshallAsElement(database, writer);
+            DatabaseAuthenticationResourceDefinition.DATASOURCE_JNDI_NAME.marshallAsElement(database, writer);
+
             DatabaseAuthenticationResourceDefinition.PLAIN_TEXT.marshallAsAttribute(database, writer);
 
             if (DatabaseAuthenticationResourceDefinition.TABLE_FIELD.isMarshallable(database)) {
@@ -2226,8 +2242,10 @@ public class ManagementXml {
         } else if (authorization.hasDefined(DATABASE)) {
             ModelNode database = authorization.get(DATABASE);
             writer.writeStartElement(Element.DATABASE.getLocalName());
-            DatabaseAuthorizationResourceDefinition.REF.marshallAsAttribute(database, writer);
-            DatabaseAuthorizationResourceDefinition.PLAIN_TEXT.marshallAsAttribute(database, writer);
+
+            // Only one of the next 2 will actually write
+            DatabaseAuthenticationResourceDefinition.DATABASE_CONNECTION.marshallAsElement(database, writer);
+            DatabaseAuthenticationResourceDefinition.DATASOURCE_JNDI_NAME.marshallAsElement(database, writer);
 
             if (DatabaseAuthorizationResourceDefinition.TABLE_FIELD.isMarshallable(database)) {
                 writer.writeEmptyElement(Element.SIMPLE_SELECT.getLocalName());
@@ -2273,97 +2291,94 @@ public class ManagementXml {
                 LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.marshallAsAttribute(connection, writer);
             }
         } else if (management.hasDefined(DATABASE_CONNECTION)) {
-            for (Property variable : management.get(DATABASE_CONNECTION).asPropertyList()) {
-                ModelNode connection = variable.getValue();
-                if (!connection.hasDefined(DATA_SOURCE)) {
-                    writer.writeStartElement(Element.DATASOURCE.getLocalName());
-
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
-
-                    writer.writeEmptyElement(Element.DRIVER.getLocalName());
-                    DatabaseConnectionResourceDefinition.DRIVER_MODULE_NAME.marshallAsAttribute(connection, writer);
-                    DatabaseConnectionResourceDefinition.DRIVER_CLASS_NAME.marshallAsAttribute(connection, writer);
-
-                    DatabaseConnectionResourceDefinition.CONNECTION_URL.marshallAsElement(connection, writer);
-
-                    if (connection.hasDefined(CONNECTION_PROPERTIES)) {
-                        for (Property property : connection.get(CONNECTION_PROPERTIES).asPropertyList()) {
-                            writer.writeEmptyElement(Element.CONNECTION_PROPERTY.getLocalName());
-                            writer.writeAttribute(NAME, property.getName());
-                            ConnectionPropertyResourceDefinition.CONNECTION_PROPERTY_VALUE.marshallAsAttribute(property.getValue(), writer);
-                        }
-                    }
-
-                    DatabaseConnectionResourceDefinition.NEW_CONNECTION_SQL.marshallAsElement(connection, writer);
-
-                    boolean poolRequired = DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.isMarshallable(connection) ||
-                            DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.isMarshallable(connection) ||
-                            DatabaseConnectionResourceDefinition.POOL_PREFILL.isMarshallable(connection) ||
-                            DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.isMarshallable(connection);
-
-                    if (poolRequired) {
-                        writer.writeStartElement(Element.POOL.getLocalName());
-                        DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.POOL_PREFILL.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.marshallAsAttribute(connection, writer);
-                        writer.writeEndElement();
-                    }
-
-                    if (DatabaseConnectionResourceDefinition.USERNAME.isMarshallable(connection)
-                            || DatabaseConnectionResourceDefinition.PASSWORD.isMarshallable(connection)) {
-                        writer.writeStartElement(Element.SECURITY.getLocalName());
-                        DatabaseConnectionResourceDefinition.USERNAME.marshallAsElement(connection, writer);
-                        DatabaseConnectionResourceDefinition.PASSWORD.marshallAsElement(connection, writer);
-                        writer.writeEndElement();
-                    }
-
-                    boolean validationCheckerRequired = DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.isMarshallable(connection);
-                    boolean validationRequired = validationCheckerRequired
-                            || DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.isMarshallable(connection)
-                            || DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.isMarshallable(connection)
-                            || DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.isMarshallable(connection)
-                            || DatabaseConnectionResourceDefinition.USE_FAST_FAIL.isMarshallable(connection)
-                            || DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.isMarshallable(connection);
-
-                    if (validationRequired) {
-                        writer.writeStartElement(Element.VALIDATION.getLocalName());
-
-                        DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.USE_FAST_FAIL.marshallAsAttribute(connection, writer);
-
-                        DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.marshallAsElement(connection, writer);
-
-                        if (validationCheckerRequired) {
-                            writer.writeStartElement(Element.VALID_CONNECTION_CHECKER.getLocalName());
-                            DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_MODULE.marshallAsAttribute(connection, writer);
-                            DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.marshallAsAttribute(connection, writer);
-
-                            DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_PROPERTIES.marshallAsElement(connection, writer);
-
-                            writer.writeEndElement();
-                        }
-                        writer.writeEndElement();
-                    }
-
-                    if (DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.isMarshallable(connection)
-                            || DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.isMarshallable(connection)) {
-                        writer.writeEmptyElement(Element.TIMEOUT.getLocalName());
-                        DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.marshallAsAttribute(connection, writer);
-                        DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.marshallAsAttribute(connection, writer);
-                    }
-
-                    writer.writeEndElement();
-
-                } else {
-                    writer.writeEmptyElement(Element.DATASOURCE_REF.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
-                    DatabaseConnectionResourceDefinition.DATA_SOURCE.marshallAsAttribute(connection, writer);
-                }
+            for (Property prop : management.get(DATABASE_CONNECTION).asPropertyList()) {
+                writeDatabaseOutboundConnection(writer, prop.getName(), prop.getValue());
             }
         }
+        writer.writeEndElement();
+    }
+
+    private void writeDatabaseOutboundConnection(XMLExtendedStreamWriter writer, String name, ModelNode connection) throws XMLStreamException {
+
+        writer.writeStartElement(Element.DATASOURCE.getLocalName());
+
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+
+        writer.writeEmptyElement(Element.DRIVER.getLocalName());
+        DatabaseConnectionResourceDefinition.DRIVER_MODULE_NAME.marshallAsAttribute(connection, writer);
+        DatabaseConnectionResourceDefinition.DRIVER_CLASS_NAME.marshallAsAttribute(connection, writer);
+
+        DatabaseConnectionResourceDefinition.CONNECTION_URL.marshallAsElement(connection, writer);
+
+        if (connection.hasDefined(CONNECTION_PROPERTIES)) {
+            for (Property property : connection.get(CONNECTION_PROPERTIES).asPropertyList()) {
+                writer.writeEmptyElement(Element.CONNECTION_PROPERTY.getLocalName());
+                writer.writeAttribute(NAME, property.getName());
+                ConnectionPropertyResourceDefinition.CONNECTION_PROPERTY_VALUE.marshallAsAttribute(property.getValue(), writer);
+            }
+        }
+
+        DatabaseConnectionResourceDefinition.NEW_CONNECTION_SQL.marshallAsElement(connection, writer);
+
+        boolean poolRequired = DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.isMarshallable(connection) ||
+                DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.isMarshallable(connection) ||
+                DatabaseConnectionResourceDefinition.POOL_PREFILL.isMarshallable(connection) ||
+                DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.isMarshallable(connection);
+
+        if (poolRequired) {
+            writer.writeStartElement(Element.POOL.getLocalName());
+            DatabaseConnectionResourceDefinition.MIN_POOL_SIZE.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.MAX_POOL_SIZE.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.POOL_PREFILL.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.POOL_USE_STRICT_MIN.marshallAsAttribute(connection, writer);
+            writer.writeEndElement();
+        }
+
+        if (DatabaseConnectionResourceDefinition.USERNAME.isMarshallable(connection)
+                || DatabaseConnectionResourceDefinition.PASSWORD.isMarshallable(connection)) {
+            writer.writeStartElement(Element.SECURITY.getLocalName());
+            DatabaseConnectionResourceDefinition.USERNAME.marshallAsElement(connection, writer);
+            DatabaseConnectionResourceDefinition.PASSWORD.marshallAsElement(connection, writer);
+            writer.writeEndElement();
+        }
+
+        boolean validationCheckerRequired = DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.isMarshallable(connection);
+        boolean validationRequired = validationCheckerRequired
+                || DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.isMarshallable(connection)
+                || DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.isMarshallable(connection)
+                || DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.isMarshallable(connection)
+                || DatabaseConnectionResourceDefinition.USE_FAST_FAIL.isMarshallable(connection)
+                || DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.isMarshallable(connection);
+
+        if (validationRequired) {
+            writer.writeStartElement(Element.VALIDATION.getLocalName());
+
+            DatabaseConnectionResourceDefinition.VALIDATE_ON_MATCH.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.BACKGROUND_VALIDATION_MILLIS.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.USE_FAST_FAIL.marshallAsAttribute(connection, writer);
+
+            DatabaseConnectionResourceDefinition.CHECK_VALID_CONNECTION_SQL.marshallAsElement(connection, writer);
+
+            if (validationCheckerRequired) {
+                writer.writeStartElement(Element.VALID_CONNECTION_CHECKER.getLocalName());
+                DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_MODULE.marshallAsAttribute(connection, writer);
+                DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_CLASS_NAME.marshallAsAttribute(connection, writer);
+
+                DatabaseConnectionResourceDefinition.VALID_CONNECTION_CHECKER_PROPERTIES.marshallAsElement(connection, writer);
+
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+
+        if (DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.isMarshallable(connection)
+                || DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.isMarshallable(connection)) {
+            writer.writeEmptyElement(Element.TIMEOUT.getLocalName());
+            DatabaseConnectionResourceDefinition.BLOCKING_TIMEOUT_WAIT_MILLIS.marshallAsAttribute(connection, writer);
+            DatabaseConnectionResourceDefinition.IDLE_TIMEOUT_MINUTES.marshallAsAttribute(connection, writer);
+        }
+
         writer.writeEndElement();
     }
 

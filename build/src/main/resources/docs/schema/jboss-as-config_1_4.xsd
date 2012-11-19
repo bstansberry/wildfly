@@ -140,45 +140,31 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:complexType name="domain-managementType">
-        <xs:annotation>
-            <xs:documentation>
-                Domain-wide default configuration settings for the management of standalone servers and a Host Controller.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element name="security-realms" minOccurs="0">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="security-realm" type="security-realmType" minOccurs="1"
-                                    maxOccurs="unbounded"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="host-managementType">
         <xs:annotation>
             <xs:documentation>
                 The centralized configuration for the management of a Host Controller.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="domain-managementType">
-                <xs:sequence>
-                    <xs:element name="outbound-connections" minOccurs="0">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="ldap" type="ldapType" minOccurs="0" />
-                                <xs:element name="datasource" type="datasourceType" minOccurs="0" />
-                            </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:sequence>
+            <xs:element name="security-realms" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="security-realm" type="host-security-realmType" minOccurs="1"
+                                    maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="outbound-connections" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="ldap" type="ldapType" minOccurs="0" />
+                        <xs:element name="database" type="databaseType" minOccurs="0" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="server-managementType">
@@ -187,25 +173,28 @@
                 The centralized configuration for the management of standalone server.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="domain-managementType">
-                <xs:sequence>
-                    <xs:element name="outbound-connections" minOccurs="0">
-                        <xs:complexType>
-                            <xs:sequence minOccurs="0">
-                                <xs:element name="ldap" type="ldapType" minOccurs="0" />
-                                <xs:element name="datasource" type="datasourceType" minOccurs="0" />
-                                <xs:element name="datasource-ref" type="datasource-refType" minOccurs="0" />
-                            </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:sequence>
+            <xs:element name="security-realms" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="security-realm" type="server-security-realmType" minOccurs="1"
+                                    maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="outbound-connections" minOccurs="0">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0">
+                        <xs:element name="ldap" type="ldapType" minOccurs="0" />
+                        <xs:element name="database" type="databaseType" minOccurs="0" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="datasourceType">
+    <xs:complexType name="databaseType">
     	<xs:sequence>
             <xs:element name="driver" type="jdbc-driverType" minOccurs="1" maxOccurs="1"/>
             <xs:element name="connection-url" type="xs:token" minOccurs="0" maxOccurs="1">
@@ -595,8 +584,6 @@
         <xs:sequence>
             <xs:element name="plug-ins" type="plug-insType" minOccurs="0" />
             <xs:element name="server-identities" type="server-identitiesType" minOccurs="0" />
-            <xs:element name="authentication" type="authenticationType" minOccurs="0" />
-            <xs:element name="authorization" type="authorizationType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
@@ -605,6 +592,38 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="host-security-realmType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a security realm for securing access to the management interfaces.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="security-realmType">
+                <xs:sequence>
+                    <xs:element name="authentication" type="host-authenticationType" minOccurs="0" />
+                    <xs:element name="authorization" type="host-authorizationType" minOccurs="0" />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="server-security-realmType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a security realm for securing access to the management interfaces.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="security-realmType">
+                <xs:sequence>
+                    <xs:element name="authentication" type="server-authenticationType" minOccurs="0" />
+                    <xs:element name="authorization" type="server-authorizationType" minOccurs="0" />
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="plug-insType">
@@ -666,7 +685,14 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="authorizationType">
+    <xs:group name="base-authorization-choices">
+        <xs:choice>
+            <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
+            <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="host-authorizationType">
         <xs:annotation>
             <xs:documentation>
                 Configuration defining how to load the authorization information for the authenticated user.
@@ -677,9 +703,24 @@
             </xs:documentation>
         </xs:annotation>
         <xs:choice>
-            <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
-            <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
-            <xs:element name="database" type="database-authorizationType" minOccurs="0" />
+            <xs:group ref="base-authorization-choices"/>
+            <xs:element name="database" type="host-database-authorizationType" minOccurs="0" />
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="server-authorizationType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration defining how to load the authorization information for the authenticated user.
+
+                After a user has been authenticated additional information such as roles can be loaded and
+                associated with the user for subsequent authorization checks, this type is used to define
+                how the roles are loaded.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:group ref="base-authorization-choices"/>
+            <xs:element name="database" type="server-database-authorizationType" minOccurs="0" />
         </xs:choice>
     </xs:complexType>
 
@@ -848,15 +889,43 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:choice minOccurs="0">
-                <xs:element name="jaas" type="jaasAuthenticationType" minOccurs="0" />
-                <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
-                <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
-                <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
-                <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
-                <xs:element name="database" type="database-authenticationType" minOccurs="0" />
-            </xs:choice>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:group name="base-authentication-choices">
+        <xs:choice>
+            <xs:element name="jaas" type="jaasAuthenticationType" minOccurs="0" />
+            <xs:element name="ldap" type="ldapAuthenticationType" minOccurs="0" />
+            <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
+            <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
+            <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+        </xs:choice>
+    </xs:group>
+
+    <xs:complexType name="host-authenticationType">
+        <xs:complexContent>
+            <xs:extension base="authenticationType">
+                <xs:sequence>
+                    <xs:choice minOccurs="0">
+                        <xs:group ref="base-authentication-choices"/>
+                        <xs:element name="database" type="host-database-authenticationType" minOccurs="0" />
+                    </xs:choice>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="server-authenticationType">
+        <xs:complexContent>
+            <xs:extension base="authenticationType">
+                <xs:sequence>
+                    <xs:choice minOccurs="0">
+                        <xs:group ref="base-authentication-choices"/>
+                        <xs:element name="database" type="server-database-authenticationType" minOccurs="0" />
+                    </xs:choice>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="jaasAuthenticationType">
@@ -1018,46 +1087,19 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <xs:group name="select-users-group">
+        <xs:sequence>
+            <xs:element name="sql" type="sql-select-users-type" minOccurs="0" />
+            <xs:element name="table" type="simple-select-users-type" minOccurs="0"/>
+        </xs:sequence>
+    </xs:group>
+
     <xs:complexType name="database-authenticationType">
         <xs:annotation>
             <xs:documentation>
                 Declaration of users stored within a database.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="database-datasourceType">
-                <xs:sequence>
-                    <xs:element name="sql" type="sql-select-users-type" minOccurs="0" />
-                    <xs:element name="table" type="simple-select-users-type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="database-authorizationType">
-        <xs:annotation>
-            <xs:documentation>
-                Declaration of users roles stored within a database.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="database-datasourceType">
-                <xs:sequence>
-                    <xs:element name="sql" type="sql-select-roles-type" minOccurs="0" />
-                    <xs:element name="table" type="simple-select-roles-type" minOccurs="0"/>
-                </xs:sequence>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <xs:complexType name="database-datasourceType">
-       <xs:attribute name="ref" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of the outbound database connection to use
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="plain-text" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
@@ -1067,6 +1109,114 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="host-database-authenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="database-authenticationType">
+                <xs:sequence>
+                    <xs:element name="database-outbound-connection" type="database-outbound-connection-refType" minOccurs="1" maxOccurs="1"/>
+                    <xs:group ref="select-users-group"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="server-database-authenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="database-authenticationType">
+                <xs:sequence>
+                    <xs:choice minOccurs="1" maxOccurs="1">
+                        <xs:element name="database-outbound-connection" type="database-outbound-connection-refType" minOccurs="1" maxOccurs="1"/>
+                        <xs:element name="jndi-datasource" type="jndi-datasource-refType" minOccurs="1" maxOccurs="1"/>
+                    </xs:choice>
+                    <xs:group ref="select-users-group"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="database-outbound-connection-refType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[[
+                      Specify the name of the database outbound connection pool configured in the outbound-connections
+                      element
+                     ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="ref" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the outbound database connection to use
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="jndi-datasource-refType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[[
+                      Specify the JNDI name of the separately configured data-source that should be used as connection
+                      provider Ex: java:jboss/datasources/auth
+                     ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="jndi-name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[[
+                      The JNDI name under which the datasource is bound
+                     ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+
+    <xs:group name="select-roles-group">
+        <xs:sequence>
+            <xs:element name="sql" type="sql-select-roles-type" minOccurs="0" />
+            <xs:element name="table" type="simple-select-roles-type" minOccurs="0"/>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:complexType name="host-database-authorizationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users roles stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="database-outbound-connection" type="database-outbound-connection-refType" minOccurs="1" maxOccurs="1"/>
+            <xs:group ref="select-roles-group"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="server-database-authorizationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users roles stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice minOccurs="1" maxOccurs="1">
+                <xs:element name="database-outbound-connection" type="database-outbound-connection-refType" minOccurs="1" maxOccurs="1"/>
+                <xs:element name="jndi-datasource" type="jndi-datasource-refType" minOccurs="1" maxOccurs="1"/>
+            </xs:choice>
+            <xs:group ref="select-roles-group"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="simple-select-users-type">

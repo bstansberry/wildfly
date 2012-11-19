@@ -42,6 +42,7 @@ public class ModelDescriptionConstants {
     public static final String DATABASE = "database";
     public static final String DATABASE_CONNECTION = org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE_CONNECTION;
     public static final String DATA_SOURCE = "data-source";
+    public static final String DATA_SOURCE_JNDI_NAME = "data-source-jndi-name";
     public static final String DEFAULT_USER = "default-user";
     public static final String DEFAULT_DEFAULT_USER = "$local";
     public static final String DRIVER_MODULE_NAME = "driver-module-name";

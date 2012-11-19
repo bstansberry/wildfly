@@ -53,8 +53,8 @@ public enum Element {
     CONNECTION_URL("connection-url"),
 
     DATABASE("database"),
+    DATABASE_OUTBOUND_CONNECTION("database-outbound-connection"),
     DATASOURCE("datasource"),
-    DATASOURCE_REF("datasource-ref"),
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
@@ -85,6 +85,7 @@ public enum Element {
 
     JAAS("jaas"),
     JAVA_AGENT("java-agent"),
+    JNDI_DATASOURCE("jndi-datasource"),
     JVM("jvm"),
     JVMS("jvms"),
     JVM_OPTIONS("jvm-options"),

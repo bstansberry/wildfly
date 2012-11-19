@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -40,7 +38,6 @@ import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 /**
  * Handler for adding database management connections.
@@ -69,38 +66,32 @@ public class DatabaseConnectionAddHandler extends AbstractAddStepHandler {
 
         ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-        ModelNode dsName = DatabaseConnectionResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, fullModel);
-        boolean useDataSource = dsName.isDefined();
-
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final DatabaseConnectionManagerService connectionManagerService = new DatabaseConnectionManagerService(useDataSource);
+        final DatabaseConnectionManagerService connectionManagerService = new DatabaseConnectionManagerService(false);
 
         ServiceBuilder<ConnectionManager> serviceBuilder = serviceTarget.addService(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(name), connectionManagerService)
         .setInitialMode(ServiceController.Mode.ON_DEMAND);
 
-        if (useDataSource) {
-            ServiceName datasourceService = ServiceName.JBOSS.append("data-source").append(dsName.asString());
-            serviceBuilder.addDependency(datasourceService, DataSource.class, connectionManagerService.getDatasource());
-        } else {
-            ServiceController<PoolConfiguration> poolConfigSC = PoolConfigService.addService(name, context, fullModel,
-                    serviceTarget, verificationHandler);
-            if (newControllers != null) {
-                newControllers.add(poolConfigSC);
-            }
 
-            // Add an attachment to the context so ConnectionPropertyAdd/Remove know we've handled the properties
-            if (!context.isBooting()) { // Don't bother if we're booting
-                PoolConfigService.PoolConfigServiceSet set = context.getAttachment(PoolConfigService.PoolConfigServiceSet.ATTACHMENT_KEY);
-                if (set == null) {
-                    set = new PoolConfigService.PoolConfigServiceSet();
-                    context.attach(PoolConfigService.PoolConfigServiceSet.ATTACHMENT_KEY, set);
-                }
-                set.add(name);
-            }
-            serviceBuilder.addDependency(poolConfigSC.getName(), PoolConfiguration.class, connectionManagerService.getPoolConfig());
-
-            Services.addDomainManagementExecutorServiceDependency(serviceBuilder, connectionManagerService.getExecutorService());
+        ServiceController<PoolConfiguration> poolConfigSC = PoolConfigService.addService(name, context, fullModel,
+                serviceTarget, verificationHandler);
+        if (newControllers != null) {
+            newControllers.add(poolConfigSC);
         }
+
+        // Add an attachment to the context so ConnectionPropertyAdd/Remove know we've handled the properties
+        if (!context.isBooting()) { // Don't bother if we're booting
+            PoolConfigService.PoolConfigServiceSet set = context.getAttachment(PoolConfigService.PoolConfigServiceSet.ATTACHMENT_KEY);
+            if (set == null) {
+                set = new PoolConfigService.PoolConfigServiceSet();
+                context.attach(PoolConfigService.PoolConfigServiceSet.ATTACHMENT_KEY, set);
+            }
+            set.add(name);
+        }
+        serviceBuilder.addDependency(poolConfigSC.getName(), PoolConfiguration.class, connectionManagerService.getPoolConfig());
+
+        Services.addDomainManagementExecutorServiceDependency(serviceBuilder, connectionManagerService.getExecutorService());
+
 
         ServiceController<ConnectionManager> sc = serviceBuilder.install();
         if (newControllers != null) {
