@@ -22,9 +22,12 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -70,17 +73,20 @@ public final class OperationEntry {
     private final EntryType type;
     private final EnumSet<Flag> flags;
     private final boolean inherited;
+    private final List<ConstraintDefinition> accessConstraints;
 
-    OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type, final EnumSet<Flag> flags) {
+    OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider,
+                   final boolean inherited, final EntryType type, final EnumSet<Flag> flags, final List<ConstraintDefinition> accessConstraints) {
         this.operationHandler = operationHandler;
         this.descriptionProvider = descriptionProvider;
         this.inherited = inherited;
         this.type = type;
-        this.flags = flags;
+        this.flags = flags == null ? EnumSet.noneOf(Flag.class) : flags;
+        this.accessConstraints = accessConstraints == null ? Collections.<ConstraintDefinition>emptyList() : accessConstraints;
     }
 
     OperationEntry(final OperationStepHandler operationHandler, final DescriptionProvider descriptionProvider, final boolean inherited, final EntryType type) {
-       this(operationHandler, descriptionProvider, inherited, type, EnumSet.noneOf(Flag.class));
+       this(operationHandler, descriptionProvider, inherited, type, EnumSet.noneOf(Flag.class), null);
     }
 
     public OperationStepHandler getOperationHandler() {
@@ -101,6 +107,10 @@ public final class OperationEntry {
 
     public EnumSet<Flag> getFlags() {
         return flags == null ? EnumSet.noneOf(Flag.class) : flags.clone();
+    }
+
+    public List<ConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
 }
