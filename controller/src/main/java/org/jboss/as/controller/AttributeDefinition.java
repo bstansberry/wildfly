@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -71,7 +71,7 @@ public abstract class AttributeDefinition {
     protected final AttributeMarshaller attributeMarshaller;
     private final boolean resourceOnly;
     private final DeprecationData deprecationData;
-    private final List<ConstraintDefinition> accessConstraints = Collections.emptyList(); // TODO provide these!
+    private final List<AccessConstraintDefinition> accessConstraints = Collections.emptyList(); // TODO provide these!
 
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
@@ -670,7 +670,7 @@ public abstract class AttributeDefinition {
         return deprecationData;
     }
 
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
     }
 }
