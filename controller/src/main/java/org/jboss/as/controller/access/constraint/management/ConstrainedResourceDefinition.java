@@ -37,5 +37,5 @@ public interface ConstrainedResourceDefinition extends ResourceDefinition {
 
     void registerContraints(final ManagementResourceRegistration resourceRegistration);
 
-    List<ConstraintDefinition> getAccessConstraints();
+    List<AccessConstraintDefinition> getAccessConstraints();
 }
