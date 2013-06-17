@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.access.constraint.management;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
@@ -45,8 +48,14 @@ public class ApplicationTypeAccessConstraintDefinition implements AccessConstrai
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        //TODO implement getModelDescription
-        throw new UnsupportedOperationException();
+        ModelNode modelNode = new ModelNode();
+        //TODO i18n the keys
+//        modelNode.get("default-application").set(applicationTypeConfig.isDefaultApplication());
+//        modelNode.get("application").set(applicationTypeConfig.isApplicationType());
+//        return modelNode;
+        ModelNode result = new ModelNode();
+        result.get(TYPE).set(applicationTypeConfig.isCore() ? CORE : applicationTypeConfig.getSubsystem());
+        return result;
     }
 
     @Override
@@ -56,5 +65,15 @@ public class ApplicationTypeAccessConstraintDefinition implements AccessConstrai
 
     public ApplicationTypeConfig getApplicationTypeConfig() {
         return applicationTypeConfig;
+    }
+
+    @Override
+    public String getName() {
+        return applicationTypeConfig.getName();
+    }
+
+    @Override
+    public Type getType() {
+        return Type.APPLICATION;
     }
 }
