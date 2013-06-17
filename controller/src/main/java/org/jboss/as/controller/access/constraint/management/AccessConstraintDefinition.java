@@ -34,9 +34,21 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public interface ConstraintDefinition {
+public interface AccessConstraintDefinition {
 
+    /**
+     * Get descriptive information about the constraint for inclusion in the reaa-xxx-description metadata
+     * TODO flesh this out.
+     *
+     * @param locale locale to use for internationalized text
+     * @return
+     */
     ModelNode getModelDescription(Locale locale);
 
+    /**
+     * Get the factory to use for creating a {@link org.jboss.as.controller.access.constraint.Constraint} that
+     * implements
+     * @return the factory. Cannot return {@code null}
+     */
     ConstraintFactory getConstraintFactory();
 }

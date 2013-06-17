@@ -25,7 +25,7 @@ package org.jboss.as.controller.access;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 
@@ -53,7 +53,7 @@ public final class TargetResource {
         throw new UnsupportedOperationException("implement me");
     }
 
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         return resourceRegistration.getAccessConstraints();
     }
 
