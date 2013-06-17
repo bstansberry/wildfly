@@ -29,8 +29,8 @@ import java.util.Map;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.constraint.management.ApplicationTypeConstraintDefinition;
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
@@ -83,9 +83,9 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
         }
 
         private boolean isApplicationType(Action action) {
-            for (ConstraintDefinition constraintDefinition : action.getAccessConstraints()) {
-                if (constraintDefinition instanceof ApplicationTypeConstraintDefinition) {
-                    ApplicationTypeConstraintDefinition atcd = (ApplicationTypeConstraintDefinition) constraintDefinition;
+            for (AccessConstraintDefinition constraintDefinition : action.getAccessConstraints()) {
+                if (constraintDefinition instanceof ApplicationTypeAccessConstraintDefinition) {
+                    ApplicationTypeAccessConstraintDefinition atcd = (ApplicationTypeAccessConstraintDefinition) constraintDefinition;
                     ApplicationTypeConfig atc = atcd.getApplicationTypeConfig();
                     if (atc.isApplicationType()) {
                         return true;
@@ -96,9 +96,9 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
         }
 
         private boolean isApplicationType(TargetResource target) {
-            for (ConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
-                if (constraintDefinition instanceof ApplicationTypeConstraintDefinition) {
-                    ApplicationTypeConstraintDefinition atcd = (ApplicationTypeConstraintDefinition) constraintDefinition;
+            for (AccessConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
+                if (constraintDefinition instanceof ApplicationTypeAccessConstraintDefinition) {
+                    ApplicationTypeAccessConstraintDefinition atcd = (ApplicationTypeAccessConstraintDefinition) constraintDefinition;
                     ApplicationTypeConfig atc = atcd.getApplicationTypeConfig();
                     if (atc.isApplicationType()) {
                         return true;
