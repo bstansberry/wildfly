@@ -29,6 +29,10 @@ import org.jboss.as.controller.access.TargetResource;
 
 /**
  * A factory for constraints.
+ * <p>
+ * <strong>Implementations of this interface should implement {@link #equals(Object)} and {@link #hashCode()}
+ * such that two factories that produce the same constraints can be treated as equal in hash-based collections.</strong>
+ * </p>
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
