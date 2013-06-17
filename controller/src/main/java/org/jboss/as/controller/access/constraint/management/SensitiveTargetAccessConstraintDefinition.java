@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.access.constraint.management;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
@@ -49,12 +52,34 @@ public class SensitiveTargetAccessConstraintDefinition implements AccessConstrai
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
-        //TODO implement getModelDescription
-        throw new UnsupportedOperationException();
+//        ModelNode modelNode = new ModelNode();
+//        //TODO i18n the keys
+//        modelNode.get("default-access").set(sensitivity.isDefaultRequiresAccessPermission());
+//        modelNode.get("default-read").set(sensitivity.isDefaultRequiresReadPermission());
+//        modelNode.get("default-write").set(sensitivity.isDefaultRequiresWritePermission());
+//        //TODO are these needed?
+//        modelNode.get("requires-access").set(sensitivity.getRequiresAccessPermission());
+//        modelNode.get("requires-read").set(sensitivity.getRequiresReadPermission());
+//        modelNode.get("requires-write").set(sensitivity.getRequiresWritePermission());
+//        result.get(TYPE, sensitivity.isCore() ? "core" : sensitivity.getSubsystem()).set(modelNode);
+//        return modelNode;
+        ModelNode result = new ModelNode();
+        result.get(TYPE).set(sensitivity.isCore() ? CORE : sensitivity.getSubsystem());
+        return result;
     }
 
     @Override
     public ConstraintFactory getConstraintFactory() {
         return SensitiveTargetConstraint.FACTORY;
+    }
+
+    @Override
+    public String getName() {
+        return sensitivity.getName();
+    }
+
+    @Override
+    public Type getType() {
+        return Type.SENSITIVE;
     }
 }
