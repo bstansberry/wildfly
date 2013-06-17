@@ -30,15 +30,15 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ConstraintDefinition} for {@link SensitiveTargetConstraint}.
+ * {@link AccessConstraintDefinition} for {@link SensitiveTargetConstraint}.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class SensitiveTargetConstraintDefinition implements ConstraintDefinition {
+public class SensitiveTargetAccessConstraintDefinition implements AccessConstraintDefinition {
 
     private final SensitivityClassification sensitivity;
 
-    public SensitiveTargetConstraintDefinition(SensitivityClassification sensitivity) {
+    public SensitiveTargetAccessConstraintDefinition(SensitivityClassification sensitivity) {
         this.sensitivity = sensitivity;
         SensitiveTargetConstraint.FACTORY.addSensitivity(sensitivity);
     }

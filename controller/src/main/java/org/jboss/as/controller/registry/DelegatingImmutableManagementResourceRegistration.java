@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -135,7 +135,7 @@ public class DelegatingImmutableManagementResourceRegistration implements Immuta
     }
 
     @Override
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         return delegate.getAccessConstraints();
     }
 

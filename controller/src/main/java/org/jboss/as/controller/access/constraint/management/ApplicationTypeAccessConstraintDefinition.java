@@ -30,15 +30,15 @@ import org.jboss.as.controller.access.constraint.ConstraintFactory;
 import org.jboss.dmr.ModelNode;
 
 /**
- * {@link ConstraintDefinition} for {@link ApplicationTypeConstraint}.
+ * {@link AccessConstraintDefinition} for {@link ApplicationTypeConstraint}.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class ApplicationTypeConstraintDefinition implements ConstraintDefinition {
+public class ApplicationTypeAccessConstraintDefinition implements AccessConstraintDefinition {
 
     private final ApplicationTypeConfig applicationTypeConfig;
 
-    public ApplicationTypeConstraintDefinition(ApplicationTypeConfig applicationTypeConfig) {
+    public ApplicationTypeAccessConstraintDefinition(ApplicationTypeConfig applicationTypeConfig) {
         this.applicationTypeConfig = applicationTypeConfig;
         ApplicationTypeConstraint.FACTORY.addApplicationTypeConfig(applicationTypeConfig);
     }

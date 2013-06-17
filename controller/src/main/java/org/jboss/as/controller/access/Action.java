@@ -27,7 +27,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
@@ -94,7 +94,7 @@ public final class Action {
         return operationEntry.getFlags();
     }
 
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         return operationEntry.getAccessConstraints();
     }
 }
