@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
@@ -49,7 +49,7 @@ public abstract class OperationDefinition {
     protected final boolean replyAllowNull;
     protected final DeprecationData deprecationData;
     protected final AttributeDefinition[] replyParameters;
-    protected final List<ConstraintDefinition> accessConstraints;
+    protected final List<AccessConstraintDefinition> accessConstraints;
 
 
     protected OperationDefinition(String name,
@@ -61,7 +61,7 @@ public abstract class OperationDefinition {
                                final DeprecationData deprecationData,
                                AttributeDefinition[] replyParameters,
                                AttributeDefinition[] parameters,
-                               ConstraintDefinition... accessConstraints
+                               AccessConstraintDefinition... accessConstraints
     ) {
         this.name = name;
         this.entryType = entryType;
@@ -99,7 +99,7 @@ public abstract class OperationDefinition {
         return replyValueType;
     }
 
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
     }
 

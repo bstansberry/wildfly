@@ -55,7 +55,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -798,7 +798,7 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public List<ConstraintDefinition> getAccessConstraints() {
+        public List<AccessConstraintDefinition> getAccessConstraints() {
             return deployments.getAccessConstraints();
         }
 
