@@ -29,8 +29,8 @@ import java.util.Map;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
-import org.jboss.as.controller.access.constraint.management.SensitiveTargetConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
@@ -111,9 +111,9 @@ public class SensitiveTargetConstraint extends AbstractConstraint {
         }
 
         private boolean isSensitiveAction(Action action, Action.ActionEffect effect) {
-            for (ConstraintDefinition constraintDefinition : action.getAccessConstraints()) {
-                if (constraintDefinition instanceof SensitiveTargetConstraintDefinition) {
-                    SensitiveTargetConstraintDefinition stcd = (SensitiveTargetConstraintDefinition) constraintDefinition;
+            for (AccessConstraintDefinition constraintDefinition : action.getAccessConstraints()) {
+                if (constraintDefinition instanceof SensitiveTargetAccessConstraintDefinition) {
+                    SensitiveTargetAccessConstraintDefinition stcd = (SensitiveTargetAccessConstraintDefinition) constraintDefinition;
                     SensitivityClassification sensitivity = stcd.getSensitivity();
                     if (sensitivity.isSensitive(effect)) {
                         return true;
@@ -124,9 +124,9 @@ public class SensitiveTargetConstraint extends AbstractConstraint {
         }
 
         private boolean isSensitiveAttribute(TargetAttribute target, Action.ActionEffect effect) {
-            for (ConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
-                if (constraintDefinition instanceof SensitiveTargetConstraintDefinition) {
-                    SensitiveTargetConstraintDefinition stcd = (SensitiveTargetConstraintDefinition) constraintDefinition;
+            for (AccessConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
+                if (constraintDefinition instanceof SensitiveTargetAccessConstraintDefinition) {
+                    SensitiveTargetAccessConstraintDefinition stcd = (SensitiveTargetAccessConstraintDefinition) constraintDefinition;
                     SensitivityClassification sensitivity = stcd.getSensitivity();
                     if (sensitivity.isSensitive(effect)) {
                         return true;
@@ -138,9 +138,9 @@ public class SensitiveTargetConstraint extends AbstractConstraint {
         }
 
         private boolean isSensitiveResource(TargetResource target, Action.ActionEffect effect) {
-            for (ConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
-                if (constraintDefinition instanceof SensitiveTargetConstraintDefinition) {
-                    SensitiveTargetConstraintDefinition stcd = (SensitiveTargetConstraintDefinition) constraintDefinition;
+            for (AccessConstraintDefinition constraintDefinition : target.getAccessConstraints()) {
+                if (constraintDefinition instanceof SensitiveTargetAccessConstraintDefinition) {
+                    SensitiveTargetAccessConstraintDefinition stcd = (SensitiveTargetAccessConstraintDefinition) constraintDefinition;
                     SensitivityClassification sensitivity = stcd.getSensitivity();
                     if (sensitivity.isSensitive(effect)) {
                         return true;

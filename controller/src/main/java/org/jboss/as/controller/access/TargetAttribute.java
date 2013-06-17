@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 
@@ -94,7 +94,7 @@ public final class TargetAttribute {
         return targetResource.getHosts();
     }
 
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         return getAttributeDefinition().getAccessConstraints();
     }
 }

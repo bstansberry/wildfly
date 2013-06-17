@@ -43,7 +43,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.access.constraint.management.ConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -100,7 +100,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
-    public List<ConstraintDefinition> getAccessConstraints() {
+    public List<AccessConstraintDefinition> getAccessConstraints() {
         checkPermission();
         if (resourceDefinition instanceof ConstrainedResourceDefinition) {
             return ((ConstrainedResourceDefinition) resourceDefinition).getAccessConstraints();
