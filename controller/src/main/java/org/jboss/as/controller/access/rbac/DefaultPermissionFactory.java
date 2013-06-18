@@ -84,6 +84,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
     }
 
     private PermissionCollection getUserPermissions(Set<String> user) {
+        configureRolePermissions();
         ManagementPermissionCollection simple = null;
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
         for (String roleName : user) {
