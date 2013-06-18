@@ -28,13 +28,19 @@ import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 
 /**
- * TODO class javadoc.
+ * {@link Constraint} related to whether a resource, attribute or operation is
+ * related to administrative audit logging.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public class AuditConstraint extends AllowAllowNotConstraint {
 
     public static final ConstraintFactory FACTORY = new Factory();
+
+    private static final AuditConstraint AUDIT = new AuditConstraint(false, true);
+    private static final AuditConstraint NOT_AUDIT = new AuditConstraint(false, false);
+    private static final AuditConstraint ALLOWS = new AuditConstraint(false, true, true);
+    private static final AuditConstraint DISALLOWS = new AuditConstraint(true, false, true);
 
     private AuditConstraint(boolean required, boolean isAudit) {
         super(required ? ControlFlag.SUFFICIENT : ControlFlag.REQUIRED, isAudit);
@@ -63,20 +69,18 @@ public class AuditConstraint extends AllowAllowNotConstraint {
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
-            //TODO implement getStandardUserConstraint
-            throw new UnsupportedOperationException();
+            return role == StandardRole.AUDITOR || role == StandardRole.SUPERUSER ? ALLOWS : DISALLOWS;
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
-            //TODO implement getRequiredConstraint
-            throw new UnsupportedOperationException();
+            return getRequiredConstraint(actionEffect, action, target.getTargetResource());
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
             //TODO implement getRequiredConstraint
-            throw new UnsupportedOperationException();
+            return NOT_AUDIT;
         }
     }
 }
