@@ -208,11 +208,13 @@ public class DefaultPermissionFactory implements PermissionFactory {
         for (StandardRole standardRole : StandardRole.values()) {
             ManagementPermissionCollection rolePerms = new ManagementPermissionCollection(SimpleManagementPermission.class);
             for (Action.ActionEffect actionEffect : Action.ActionEffect.values()) {
-                Set<Constraint> constraints = new TreeSet<Constraint>();
-                for (ConstraintFactory factory : factories) {
-                    constraints.add(factory.getStandardUserConstraint(standardRole, actionEffect));
+                if (standardRole.isActionEffectAllowed(actionEffect)) {
+                    Set<Constraint> constraints = new TreeSet<Constraint>();
+                    for (ConstraintFactory factory : factories) {
+                        constraints.add(factory.getStandardUserConstraint(standardRole, actionEffect));
+                    }
+                    rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
                 }
-                rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
             }
             result.put(standardRole.toString(), rolePerms);
         }
