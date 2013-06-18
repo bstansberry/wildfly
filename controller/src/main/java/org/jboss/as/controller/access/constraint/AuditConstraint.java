@@ -39,8 +39,8 @@ public class AuditConstraint extends AllowAllowNotConstraint {
 
     private static final AuditConstraint AUDIT = new AuditConstraint(false, true);
     private static final AuditConstraint NOT_AUDIT = new AuditConstraint(false, false);
-    private static final AuditConstraint ALLOWS = new AuditConstraint(false, true, true);
-    private static final AuditConstraint DISALLOWS = new AuditConstraint(true, false, true);
+    private static final AuditConstraint ALLOWS = new AuditConstraint(true, true, true);
+    private static final AuditConstraint DISALLOWS = new AuditConstraint(false, false, true);
 
     private AuditConstraint(boolean required, boolean isAudit) {
         super(required ? ControlFlag.SUFFICIENT : ControlFlag.REQUIRED, isAudit);
@@ -80,7 +80,17 @@ public class AuditConstraint extends AllowAllowNotConstraint {
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
             //TODO implement getRequiredConstraint
-            return NOT_AUDIT;
+            return (isAuditOperation(action) || isAuditResource(target)) ? AUDIT : NOT_AUDIT;
+        }
+
+        private boolean isAuditOperation(Action action) {
+            // TODO implement isAuditOperation
+            return false;
+        }
+
+        private boolean isAuditResource(TargetResource target) {
+            // TODO implement isAuditResource
+            return false;
         }
     }
 }
