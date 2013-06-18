@@ -45,9 +45,15 @@ import org.jboss.dmr.ModelNode;
  * @deprecated Only for early prototyping use
  */
 @Deprecated
-public class MockRoleMapper implements RoleMapper{
+public class MockRoleMapper implements RoleMapper {
+
+    public static final MockRoleMapper INSTANCE = new MockRoleMapper();
 
     private final Set<String> SUPERUSER = Collections.singleton(StandardRole.SUPERUSER.toString());
+
+    private MockRoleMapper() {
+        // singleton
+    }
 
     @Override
     public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetAttribute attribute) {
