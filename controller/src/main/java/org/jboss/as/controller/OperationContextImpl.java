@@ -254,7 +254,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
             throw MESSAGES.serviceRegistryRuntimeOperationsOnly();
         }
-        authorize(false, modify ? READ_RUNTIME : READ_WRITE_RUNTIME);
+        authorize(false, modify ? READ_WRITE_RUNTIME : READ_RUNTIME);
         if (modify && !affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
@@ -814,7 +814,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
         AuthorizationResult authResult = authorize(activeStep, allAttributes, actionEffects);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
     }
 
