@@ -41,6 +41,7 @@ import org.jboss.as.controller.access.constraint.AuditConstraint;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
 import org.jboss.as.controller.access.constraint.HostEffectConstraint;
+import org.jboss.as.controller.access.constraint.NonAuditConstraint;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionContstraint;
@@ -247,6 +248,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
         final Set<ConstraintFactory> result = new HashSet<ConstraintFactory>();
         result.add(ApplicationTypeConstraint.FACTORY);
         result.add(AuditConstraint.FACTORY);
+        result.add(NonAuditConstraint.FACTORY);
         result.add(HostEffectConstraint.FACTORY);
         result.add(SensitiveTargetConstraint.FACTORY);
         result.add(SensitiveVaultExpressionContstraint.FACTORY);
