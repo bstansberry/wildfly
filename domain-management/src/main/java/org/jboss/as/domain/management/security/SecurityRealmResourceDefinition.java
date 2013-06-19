@@ -22,8 +22,14 @@
 
 package org.jboss.as.domain.management.security;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -39,6 +45,8 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
     public static final SecurityRealmResourceDefinition INSTANCE = new SecurityRealmResourceDefinition();
 
+    private final List<AccessConstraintDefinition> sensitivity;
+
     private SecurityRealmResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SECURITY_REALM),
                 ControllerResolver.getResolver("core.management.security-realm"),
@@ -46,6 +54,8 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
                 SecurityRealmRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        AccessConstraintDefinition acd = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM);
+        sensitivity = Collections.singletonList(acd);
     }
 
     @Override
@@ -62,5 +72,10 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new PlugInAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new PropertiesAuthorizationResourceDefinition());
         resourceRegistration.registerSubModel(new PlugInAuthorizationResourceDefinition());
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return sensitivity;
     }
 }
