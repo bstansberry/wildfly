@@ -70,9 +70,7 @@ public class SensitiveVaultExpressionContstraint extends AllowAllowNotConstraint
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
             if (role == StandardRole.ADMINISTRATOR
                     || role == StandardRole.SUPERUSER
-                    || (role == StandardRole.AUDITOR
-                    && actionEffect != Action.ActionEffect.WRITE_CONFIG
-                    && actionEffect != Action.ActionEffect.WRITE_RUNTIME)) {
+                    || role == StandardRole.AUDITOR) {
                 return ALLOWS;
             }
             return DISALLOWS;
