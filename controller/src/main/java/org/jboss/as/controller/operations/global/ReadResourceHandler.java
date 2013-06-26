@@ -191,7 +191,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         // Child resources recursively read
         final Map<PathElement, ModelNode> childResources = recursive ? new LinkedHashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
-        final FilteredData localFilteredData = new FilteredData(address);
+        final FilteredData localFilteredData = filteredData == null ? new FilteredData(address) : filteredData;
 
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
