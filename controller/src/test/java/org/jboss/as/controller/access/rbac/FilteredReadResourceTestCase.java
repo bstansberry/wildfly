@@ -103,9 +103,7 @@ public class FilteredReadResourceTestCase extends AbstractControllerTestBase {
     private void test(boolean sensitiveResourceVisible, StandardRole... roles) {
         ModelNode operation = Util.createOperation(READ_RESOURCE_OPERATION, EMPTY_ADDRESS);
         operation.get(RECURSIVE).set(true);
-        System.out.println("> " + operation);
         ModelNode result = executeWithRoles(operation, roles);
-        System.out.println("< " + result);
 
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertTrue(result.get(RESULT, UNCONSTRAINED_RESOURCE).has(FOO));
