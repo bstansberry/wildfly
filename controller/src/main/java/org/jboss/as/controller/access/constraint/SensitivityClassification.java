@@ -31,16 +31,22 @@ package org.jboss.as.controller.access.constraint;
  */
 public class SensitivityClassification extends AbstractSensitivity {
 
-    public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("SECURITY_REALM", true, true);
-    public static final SensitivityClassification SOCKET_BINDING = new SensitivityClassification("SOCKET_BINDING", false, false);
-    public static final SensitivityClassification SOCKET_CONFIG = new SensitivityClassification("SOCKET_CONFIG", false, false);
+    public static final SensitivityClassification CREDENTIAL = new SensitivityClassification("CREDENTIAL", false, true, true);
+    public static final SensitivityClassification JVM = new SensitivityClassification("JVM", false, false, true);
+    public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("SECURITY_REALM", true, true, true);
+    public static final SensitivityClassification SECURITY_REALM_REF = new SensitivityClassification("SECURITY_REALM_REF", true, true, true);
+    public static final SensitivityClassification SECURITY_DOMAIN = new SensitivityClassification("SECURITY_DOMAIN", true, true, true);
+    public static final SensitivityClassification SECURITY_DOMAIN_REF = new SensitivityClassification("SECURITY_DOMAIN_REF", true, true, true);
+    public static final SensitivityClassification SOCKET_BINDING_REF = new SensitivityClassification("SOCKET_BINDING_REF", false, false, false);
+    public static final SensitivityClassification SOCKET_CONFIG = new SensitivityClassification("SOCKET_CONFIG", false, false, true);
+    public static final SensitivityClassification SYSTEM_PROPERTY = new SensitivityClassification("SYSTEM_PROPERTY", false, false, true);
 
     private final boolean core;
     private final String subsystem;
     private final String name;
 
-    private SensitivityClassification(String name, boolean accessDefault, boolean readDefault) {
-        super(accessDefault, readDefault, true);
+    private SensitivityClassification(String name, boolean accessDefault, boolean readDefault, boolean writeDefault) {
+        super(accessDefault, readDefault, writeDefault);
         this.core = true;
         this.subsystem = null;
         this.name = name;
