@@ -25,6 +25,7 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -102,10 +103,20 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         checkPermission();
+        AbstractResourceRegistration reg = this;
+        List<AccessConstraintDefinition> list = new ArrayList<AccessConstraintDefinition>();
+        while (reg != null) {
+            reg.addAccessConstraints(list);
+            NodeSubregistry parent = reg.getParent();
+            reg = parent == null ? null : parent.getParent();
+        }
+        return Collections.unmodifiableList(list);
+    }
+
+    @Override
+    void addAccessConstraints(List<AccessConstraintDefinition> list) {
         if (resourceDefinition instanceof ConstrainedResourceDefinition) {
-            return ((ConstrainedResourceDefinition) resourceDefinition).getAccessConstraints();
-        } else {
-            return Collections.emptyList();
+            list.addAll(((ConstrainedResourceDefinition) resourceDefinition).getAccessConstraints());
         }
     }
 
