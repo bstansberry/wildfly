@@ -22,12 +22,10 @@
 
 package org.jboss.as.domain.management.security;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -54,8 +52,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
                 SecurityRealmRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        AccessConstraintDefinition acd = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM);
-        sensitivity = Collections.singletonList(acd);
+        sensitivity = SensitiveTargetAccessConstraintDefinition.SECURITY_REALM.wrapAsList();
     }
 
     @Override
