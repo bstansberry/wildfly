@@ -69,8 +69,15 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
 
         /** Singleton */
         private Factory() {
+            addSensitivity(SensitivityClassification.CREDENTIAL);
+            addSensitivity(SensitivityClassification.JVM);
+            addSensitivity(SensitivityClassification.SECURITY_DOMAIN);
+            addSensitivity(SensitivityClassification.SECURITY_DOMAIN_REF);
             addSensitivity(SensitivityClassification.SECURITY_REALM);
-            addSensitivity(SensitivityClassification.SOCKET_BINDING);
+            addSensitivity(SensitivityClassification.SECURITY_REALM_REF);
+            addSensitivity(SensitivityClassification.SOCKET_BINDING_REF);
+            addSensitivity(SensitivityClassification.SOCKET_CONFIG);
+            addSensitivity(SensitivityClassification.SYSTEM_PROPERTY);
         }
 
         @Override
