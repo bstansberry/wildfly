@@ -25,6 +25,8 @@ package org.jboss.as.controller.access.constraint.management;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
@@ -38,6 +40,16 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public class SensitiveTargetAccessConstraintDefinition implements AccessConstraintDefinition {
+
+    public static final SensitiveTargetAccessConstraintDefinition CREDENTIAL = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.CREDENTIAL);
+    public static final SensitiveTargetAccessConstraintDefinition JVM = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.JVM);
+    public static final SensitiveTargetAccessConstraintDefinition SECURITY_DOMAIN = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_DOMAIN);
+    public static final SensitiveTargetAccessConstraintDefinition SECURITY_DOMAIN_REF = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_DOMAIN_REF);
+    public static final SensitiveTargetAccessConstraintDefinition SECURITY_REALM = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM);
+    public static final SensitiveTargetAccessConstraintDefinition SECURITY_REALM_REF = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM_REF);
+    public static final SensitiveTargetAccessConstraintDefinition SOCKET_BINDING_REF = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SOCKET_BINDING_REF);
+    public static final SensitiveTargetAccessConstraintDefinition SOCKET_CONFIG = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SOCKET_CONFIG);
+    public static final SensitiveTargetAccessConstraintDefinition SYSTEM_PROPERTY = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SYSTEM_PROPERTY);
 
     private final SensitivityClassification sensitivity;
 
@@ -81,5 +93,9 @@ public class SensitiveTargetAccessConstraintDefinition implements AccessConstrai
     @Override
     public Type getType() {
         return Type.SENSITIVE;
+    }
+
+    public List<AccessConstraintDefinition> wrapAsList() {
+        return Collections.singletonList((AccessConstraintDefinition) this);
     }
 }
