@@ -276,6 +276,7 @@ class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .addAlternatives(SECURITY_DOMAIN_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     static SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(PASSWORD_NAME, ModelType.STRING)
@@ -283,6 +284,7 @@ class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setRequires(USERNAME_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
@@ -411,6 +413,7 @@ class Constants {
                 .setAllowExpression(true)
                 .setAllowNull(true)
                 .addAlternatives(RECOVERY_SECURITY_DOMAIN_NAME)
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .build();
 
         static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING)
@@ -418,6 +421,7 @@ class Constants {
                 .setAllowExpression(true)
                 .setAllowNull(true)
                 .setRequires(RECOVERY_USERNAME_NAME)
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                 .build();
 
         static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING)
