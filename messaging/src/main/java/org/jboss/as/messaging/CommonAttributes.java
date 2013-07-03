@@ -635,6 +635,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(false) // references the security domain service name
             .setRestartAllServices()
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
             .build();
 
     SimpleAttributeDefinition SECURITY_ENABLED = create("security-enabled", BOOLEAN)
