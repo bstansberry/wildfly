@@ -274,9 +274,21 @@ public class Constants {
 
     static SimpleAttributeDefinition XA_RESOURCE_TIMEOUT = new SimpleAttributeDefinition(XA_RESOURCE_TIMEOUT_NAME, TimeOut.Tag.XA_RESOURCE_TIMEOUT.getLocalName(),  new ModelNode(), ModelType.INT, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING, true)
+            .setXmlName(Credential.Tag.USER_NAME.getLocalName())
+            .setDefaultValue(new ModelNode())
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .build();
 
-    static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinition(RECOVERY_PASSWORD_NAME, Credential.Tag.PASSWORD.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING, true)
+            .setXmlName(Credential.Tag.PASSWORD.getLocalName())
+            .setDefaultValue(new ModelNode())
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .build();
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
             .setXmlName(Credential.Tag.SECURITY_DOMAIN.getLocalName())
