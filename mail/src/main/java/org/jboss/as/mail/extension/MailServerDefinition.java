@@ -71,13 +71,16 @@ class MailServerDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setXmlName(MailSubsystemModel.LOGIN_USERNAME)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .build();
 
     protected static final SimpleAttributeDefinition PASSWORD =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.PASSWORD, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .build();
+
     protected static final PropertiesAttributeDefinition PROPERTIES = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.PROPERTIES, true)
             .setXmlName("property")
             .setWrapXmlElement(false)
