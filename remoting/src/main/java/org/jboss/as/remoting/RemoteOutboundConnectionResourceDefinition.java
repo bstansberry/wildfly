@@ -51,6 +51,7 @@ class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnect
     public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.USERNAME, ModelType.STRING, true)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(CommonAttributes.SECURITY_REALM, ModelType.STRING, true)

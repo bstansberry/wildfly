@@ -130,6 +130,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
@@ -137,6 +138,7 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
