@@ -24,9 +24,11 @@ package org.jboss.as.controller.access.rbac;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -148,9 +150,9 @@ public class DefaultPermissionFactory implements PermissionFactory {
 
     @Override
     public PermissionCollection getRequiredPermissions(Action action, TargetAttribute target) {
-        Set<ConstraintFactory> factories;
+        List<ConstraintFactory> factories;
         synchronized (this) {
-            factories = new HashSet<ConstraintFactory>(this.constraintFactories);
+            factories = new ArrayList<ConstraintFactory>(this.constraintFactories);
         }
         ManagementPermissionCollection result = new ManagementPermissionCollection(SimpleManagementPermission.class);
         for (Action.ActionEffect actionEffect : action.getActionEffects()) {
@@ -165,9 +167,9 @@ public class DefaultPermissionFactory implements PermissionFactory {
 
     @Override
     public PermissionCollection getRequiredPermissions(Action action, TargetResource target) {
-        Set<ConstraintFactory> factories;
+        List<ConstraintFactory> factories;
         synchronized (this) {
-            factories = new HashSet<ConstraintFactory>(this.constraintFactories);
+            factories = new ArrayList<ConstraintFactory>(this.constraintFactories);
         }
         ManagementPermissionCollection result = new ManagementPermissionCollection(SimpleManagementPermission.class);
         for (Action.ActionEffect actionEffect : action.getActionEffects()) {
@@ -249,7 +251,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
     }
 
     private static Set<ConstraintFactory> getStandardConstraintFactories() {
-        final Set<ConstraintFactory> result = new HashSet<ConstraintFactory>();
+        final Set<ConstraintFactory> result = new LinkedHashSet<ConstraintFactory>();
         result.add(ApplicationTypeConstraint.FACTORY);
         result.add(AuditConstraint.FACTORY);
         result.add(NonAuditConstraint.FACTORY);
