@@ -66,7 +66,7 @@ public class SimpleManagementPermission extends ManagementPermission {
             for (int i = 0; i < constraints.length; i++) {
                 Constraint ours = constraints[i];
                 Constraint theirs = other.constraints[i];
-                assert ours.getClass() == theirs.getClass() : "incompatible constraints";
+                assert ours.getClass() == theirs.getClass() : "incompatible constraints: ours = " + ours.getClass() + " -- theirs = " + theirs.getClass();
                 if (ours.violates(theirs)) {
                     return false;
                 }
