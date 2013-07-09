@@ -53,6 +53,8 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -97,6 +99,16 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ModClusterExtension.class.getClassLoader(), true, false);
     }
+
+    static final SensitivityClassification MOD_CLUSTER_SECURITY =
+            new SensitivityClassification(SUBSYSTEM_NAME, "MOD_CLUSTER_SECURITY", false, true, true);
+
+    static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_SECURITY);
+
+    static final SensitivityClassification MOD_CLUSTER_PROXIES =
+            new SensitivityClassification(SUBSYSTEM_NAME, "MOD_CLUSTER_PROXIES", false, false, false);
+
+    static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_PROXIES);
 
 
     /**
