@@ -32,13 +32,21 @@ package org.jboss.as.controller.access.constraint;
 public class SensitivityClassification extends AbstractSensitivity {
 
     public static final SensitivityClassification CREDENTIAL = new SensitivityClassification("CREDENTIAL", false, true, true);
+    public static final SensitivityClassification DOMAIN_CONTROLLER = new SensitivityClassification("DOMAIN_CONTROLLER", false, false, true);
+    public static final SensitivityClassification DOMAIN_NAMES = new SensitivityClassification("DOMAIN_NAMES", false, false, true);
+    public static final SensitivityClassification EXTENSIONS = new SensitivityClassification("EXTENSIONS", false, false, true);
     public static final SensitivityClassification JVM = new SensitivityClassification("JVM", false, false, true);
+    public static final SensitivityClassification MANAGEMENT_INTERFACES = new SensitivityClassification("MANAGEMENT_INTERFACES", false, false, true);
+    public static final SensitivityClassification MODULE_LOADING = new SensitivityClassification("MODULE_LOADING", false, false, true);
     public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("SECURITY_REALM", true, true, true);
     public static final SensitivityClassification SECURITY_REALM_REF = new SensitivityClassification("SECURITY_REALM_REF", true, true, true);
     public static final SensitivityClassification SECURITY_DOMAIN = new SensitivityClassification("SECURITY_DOMAIN", true, true, true);
     public static final SensitivityClassification SECURITY_DOMAIN_REF = new SensitivityClassification("SECURITY_DOMAIN_REF", true, true, true);
+    public static final SensitivityClassification SECURITY_VAULT = new SensitivityClassification("SECURITY_VAULT", false, true, true);
+    public static final SensitivityClassification SERVICE_CONTAINER = new SensitivityClassification("SERVICE_CONTAINER", false, false, true);
     public static final SensitivityClassification SOCKET_BINDING_REF = new SensitivityClassification("SOCKET_BINDING_REF", false, false, false);
     public static final SensitivityClassification SOCKET_CONFIG = new SensitivityClassification("SOCKET_CONFIG", false, false, true);
+    public static final SensitivityClassification SNAPSHOTS = new SensitivityClassification("SNAPSHOTS", false, false, false);
     public static final SensitivityClassification SYSTEM_PROPERTY = new SensitivityClassification("SYSTEM_PROPERTY", false, false, true);
 
     private final boolean core;
