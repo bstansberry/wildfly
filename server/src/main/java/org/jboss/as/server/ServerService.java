@@ -357,6 +357,7 @@ public final class ServerService extends AbstractControllerService {
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MODULE_LOADING), Resource.Factory.create());
+        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.ACCESS_CONTROL), Resource.Factory.create());
         rootResource.registerChild(RootAccessConstraintResourceDefinition.PATH_ELEMENT, RootAccessConstraintResourceDefinition.getResource());
         rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
         ((PathManagerService)injectedPathManagerService.getValue()).addPathManagerResources(rootResource);
