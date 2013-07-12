@@ -22,49 +22,32 @@
 
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for the Access Control model.
+ *
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class AccessControlResourceDefinition extends SimpleResourceDefinition {
+public class ApplicationTypeParentResourceDefinition extends SimpleResourceDefinition {
 
-    public static final AccessControlResourceDefinition INSTANCE = new AccessControlResourceDefinition();
-    public static final Resource RESOURCE = createResource();
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
+    public static final ApplicationTypeParentResourceDefinition INSTANCE = new ApplicationTypeParentResourceDefinition();
 
-    private AccessControlResourceDefinition() {
-        super(PathElement.pathElement(CORE_SERVICE, ACCESS_CONTROL), DomainManagementResolver
-                .getResolver("core.access-control"));
+    private ApplicationTypeParentResourceDefinition() {
+        super(PATH_ELEMENT, DomainManagementResolver
+                .getResolver("core.access-control.constraint.application-type"));
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        // Role Mapping
-
-        // Constraints
-        //  -- Sensitivity Classification
-
-        //  -- Application Type
-        resourceRegistration.registerSubModel(ApplicationTypeParentResourceDefinition.INSTANCE);
-
-        //  -- Vault Expression
-
-
-    }
-
-    private static Resource createResource() {
-        Resource accessControlRoot =  Resource.Factory.create();
-        accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.APPLICATION_PATH_ELEMENT, RootAccessConstraintResourceDefinition.APPLICATION_RESOURCE);
-        return accessControlRoot;
+        resourceRegistration.registerSubModel(ApplicationTypeResourceDefinition.INSTANCE);
     }
 
 }

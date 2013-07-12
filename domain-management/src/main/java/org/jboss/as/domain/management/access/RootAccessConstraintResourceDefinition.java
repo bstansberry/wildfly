@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,6 +22,8 @@
 package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONSTRAINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 
@@ -46,10 +48,18 @@ import org.jboss.as.domain.management._private.DomainManagementResolver;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class RootAccessConstraintResourceDefinition extends SimpleResourceDefinition {
 
+    // TODO - Will rename this something else as shortly it may not need to be a ResourceDefinition as
+    // it has been superseded by AccessControlResourceDefinition.
+
     public static PathElement PATH_ELEMENT = PathElement.pathElement(CORE_SERVICE, ACCESS_CONSTRAINT);
+
+    // Application Classification Resource
+    public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
+    public static final Resource APPLICATION_RESOURCE = new ApplicationClassificationResource();
 
     private static final AccessConstraintResource RESOURCE = new AccessConstraintResource();
     private static volatile Map<String, Map<String, SensitivityClassification>> classifications;
@@ -103,7 +113,56 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
         resourceRegistration.registerSubModel(new SensitivityClassificationResourceDefinition());
-        resourceRegistration.registerSubModel(new ApplicationTypeResourceDefinition());
+        //resourceRegistration.registerSubModel(new ApplicationTypeResourceDefinition());
+    }
+
+    private static class ApplicationClassificationResource extends AbstractClassificationResource {
+
+        private static final Set<String> CHILD_TYPES = Collections.singleton(APPLICATION_TYPE);
+
+        private ApplicationClassificationResource() {
+          super(APPLICATION_PATH_ELEMENT);
+        }
+
+        @Override
+        public Set<String> getChildTypes() {
+            return CHILD_TYPES;
+        }
+
+        @Override
+        ResourceEntry getChildEntry(String type, String name) {
+            if (APPLICATION_TYPE.equals(type)) {
+                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
+                Map<String, ApplicationTypeConfig> applicationTypesByType = applicationTypes.get(name);
+                if (applicationTypesByType != null) {
+                    return ApplicationTypeResourceDefinition.createResource(applicationTypesByType, type, name);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Set<String> getChildrenNames(String type) {
+            if (APPLICATION_TYPE.equals(type)) {
+                Map<String, Map<String, ApplicationTypeConfig>> configs = getApplicationTypes();
+                return configs.keySet();
+            }
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<ResourceEntry> getChildren(String childType) {
+            if (APPLICATION_TYPE.equals(childType)) {
+                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
+                Set<ResourceEntry> children = new HashSet<ResourceEntry>();
+                for (Map.Entry<String, Map<String, ApplicationTypeConfig>> entry : applicationTypes.entrySet()) {
+                    children.add(ApplicationTypeResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                }
+                return children;
+            }
+            return Collections.emptySet();
+        }
+
     }
 
     private static class AccessConstraintResource extends AbstractClassificationResource {

@@ -69,6 +69,7 @@ public class ModelDescriptionConstants {
     public static final String CLIENT_MAPPINGS = "client-mappings";
     public static final String CODE = "code";
     public static final String COMPOSITE = "composite";
+    public static final String CONSTRAINT = "constraint";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONFIGURED_APPLICATION = "configured-application";
     public static final String CONFIGURED_REQUIRES_ACCESS = "configured-requires-access";

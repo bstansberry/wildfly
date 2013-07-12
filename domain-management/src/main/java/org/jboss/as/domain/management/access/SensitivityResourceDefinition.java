@@ -20,6 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.domain.management.access;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
