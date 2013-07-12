@@ -95,11 +95,11 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
     }
 
     static SensitivityResourceDefinition createSensitivityClassification() {
-        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint.sensitivity-classification-config"));
+        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-config"));
     }
 
     static SensitivityResourceDefinition createVaultExpressionConfiguration() {
-        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint.vault-expression-sensitivity"));
+        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.vault-expression-sensitivity"));
     }
 
     static ResourceEntry createResource(AbstractSensitivity classification, String type, String name) {

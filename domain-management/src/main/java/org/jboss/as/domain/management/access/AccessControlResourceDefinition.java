@@ -51,10 +51,10 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
         // Role Mapping
 
         // Constraints
-        //  -- Sensitivity Classification
-
         //  -- Application Type
         resourceRegistration.registerSubModel(ApplicationTypeParentResourceDefinition.INSTANCE);
+        //  -- Sensitivity Classification
+        resourceRegistration.registerSubModel(SensitivityClassificationParentResourceDefinition.INSTANCE);
         //  -- Vault Expression
         resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
     }
@@ -62,6 +62,7 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
     private static Resource createResource() {
         Resource accessControlRoot =  Resource.Factory.create();
         accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.APPLICATION_PATH_ELEMENT, RootAccessConstraintResourceDefinition.APPLICATION_RESOURCE);
+        accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.SENSITIVITY_PATH_ELEMENT, RootAccessConstraintResourceDefinition.SENSITIVITY_RESOURCE);
         accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.VAULT_PATH_ELEMENT, RootAccessConstraintResourceDefinition.VAULT_RESOURCE);
         return accessControlRoot;
     }

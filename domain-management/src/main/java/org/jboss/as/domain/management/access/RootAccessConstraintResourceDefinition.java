@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 
 import java.util.Collection;
@@ -61,6 +62,9 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
     // Application Classification Resource
     public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
     public static final Resource APPLICATION_RESOURCE = new ApplicationClassificationResource();
+    // Sensitivity Classification Resource
+    public static final PathElement SENSITIVITY_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, SENSITIVITY_CLASSIFICATION);
+    public static final Resource SENSITIVITY_RESOURCE = new SensitivityClassificationResource();
     // Vault Expression Resource
     public static final PathElement VAULT_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
     public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT);
@@ -116,7 +120,7 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         //resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
-        resourceRegistration.registerSubModel(new SensitivityClassificationResourceDefinition());
+        //resourceRegistration.registerSubModel(new SensitivityClassificationResourceDefinition());
         //resourceRegistration.registerSubModel(new ApplicationTypeResourceDefinition());
     }
 
@@ -161,6 +165,56 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
                 Set<ResourceEntry> children = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, Map<String, ApplicationTypeConfig>> entry : applicationTypes.entrySet()) {
                     children.add(ApplicationTypeResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                }
+                return children;
+            }
+            return Collections.emptySet();
+        }
+
+    }
+
+    private static class SensitivityClassificationResource extends AbstractClassificationResource {
+
+        private static final Set<String> CHILD_TYPES = Collections.singleton(SENSITIVITY_CLASSIFICATION);
+
+        private SensitivityClassificationResource() {
+            super(SENSITIVITY_PATH_ELEMENT);
+        }
+
+        @Override
+        public Set<String> getChildTypes() {
+            return CHILD_TYPES;
+        }
+
+        @Override
+        ResourceEntry getChildEntry(String type, String name) {
+            if (SENSITIVITY_CLASSIFICATION.equals(type)) {
+                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
+                Map<String, SensitivityClassification> classificationsByType = classifications.get(name);
+                if (classificationsByType != null) {
+                    return SensitivityClassificationResourceDefinition.createResource(classificationsByType, type, name);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Set<String> getChildrenNames(String type) {
+            if (SENSITIVITY_CLASSIFICATION.equals(type)) {
+                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
+                return classifications.keySet();
+            }
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<ResourceEntry> getChildren(String childType) {
+            if (SENSITIVITY_CLASSIFICATION.equals(childType)) {
+                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
+                Set<ResourceEntry> children = new HashSet<ResourceEntry>();
+                for (Map.Entry<String, Map<String, SensitivityClassification>> entry : classifications.entrySet()) {
+                    children.add(SensitivityClassificationResourceDefinition.createResource(entry.getValue(), childType,
+                            entry.getKey()));
                 }
                 return children;
             }
