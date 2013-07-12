@@ -72,7 +72,6 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
-import org.jboss.as.domain.management.access.RootAccessConstraintResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
@@ -356,9 +355,6 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         //Access Control
         resourceRegistration.registerSubModel(AccessControlResourceDefinition.INSTANCE);
-        //Access Constraints
-        resourceRegistration.registerSubModel(new RootAccessConstraintResourceDefinition());
-
 
         // Paths
         resourceRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));

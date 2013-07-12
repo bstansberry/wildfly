@@ -21,11 +21,9 @@
  */
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 
@@ -37,27 +35,19 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.VaultExpressionSensitivityConfig;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management._private.DomainManagementResolver;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RootAccessConstraintResourceDefinition extends SimpleResourceDefinition {
-
-    // TODO - Will rename this something else as shortly it may not need to be a ResourceDefinition as
-    // it has been superseded by AccessControlResourceDefinition.
-
-    public static PathElement PATH_ELEMENT = PathElement.pathElement(CORE_SERVICE, ACCESS_CONSTRAINT);
+public class AccessConstraintResources {
 
     // Application Classification Resource
     public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
@@ -69,7 +59,6 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
     public static final PathElement VAULT_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
     public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT);
 
-    private static final AccessConstraintResource RESOURCE = new AccessConstraintResource();
     private static volatile Map<String, Map<String, SensitivityClassification>> classifications;
     private static volatile Map<String, Map<String, ApplicationTypeConfig>> applicationTypes;
 
@@ -109,20 +98,6 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
         return applicationTypes;
     }
 
-    public RootAccessConstraintResourceDefinition() {
-        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint"));
-    }
-
-    public static Resource getResource() {
-        return RESOURCE;
-    }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        //resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
-        //resourceRegistration.registerSubModel(new SensitivityClassificationResourceDefinition());
-        //resourceRegistration.registerSubModel(new ApplicationTypeResourceDefinition());
-    }
 
     private static class ApplicationClassificationResource extends AbstractClassificationResource {
 
@@ -221,85 +196,6 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
             return Collections.emptySet();
         }
 
-    }
-
-    private static class AccessConstraintResource extends AbstractClassificationResource {
-
-        private static final Set<String> CHILD_TYPES;
-        static {
-            Set<String> set = new HashSet<>();
-            set.add(SensitivityResourceDefinition.VAULT_ELEMENT.getKey());
-            set.add(SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey());
-            set.add(ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey());
-            CHILD_TYPES = Collections.unmodifiableSet(set);
-        }
-
-        public AccessConstraintResource() {
-            super(PATH_ELEMENT);
-        }
-
-        @Override
-        public Set<String> getChildTypes() {
-            return CHILD_TYPES;
-        }
-
-        @Override
-        ResourceEntry getChildEntry(String type, String name) {
-            if (SensitivityResourceDefinition.VAULT_ELEMENT.getKey().equals(type) &&
-                    SensitivityResourceDefinition.VAULT_ELEMENT.getValue().equals(name)) {
-                return SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, SensitivityResourceDefinition.VAULT_ELEMENT);
-
-            } else if (SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey().equals(type)){
-                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
-                Map<String, SensitivityClassification> classificationsByType = classifications.get(name);
-                if (classificationsByType != null) {
-                    return SensitivityClassificationResourceDefinition.createResource(classificationsByType, type, name);
-                }
-            } else if (ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey().equals(type)) {
-                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
-                Map<String, ApplicationTypeConfig> applicationTypesByType = applicationTypes.get(name);
-                if (applicationTypesByType != null) {
-                    return ApplicationTypeResourceDefinition.createResource(applicationTypesByType, type, name);
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public Set<String> getChildrenNames(String type) {
-            if (SensitivityResourceDefinition.VAULT_ELEMENT.getKey().equals(type)) {
-                return Collections.singleton(SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
-            } else if (SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey().equals(type)){
-                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
-                return classifications.keySet();
-            } else if (ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey().equals(type)) {
-                Map<String, Map<String, ApplicationTypeConfig>> configs = getApplicationTypes();
-                return configs.keySet();
-            }
-            return Collections.emptySet();
-        }
-
-        @Override
-        public Set<ResourceEntry> getChildren(String childType) {
-            if (SensitivityResourceDefinition.VAULT_ELEMENT.getKey().equals(childType)) {
-                return Collections.singleton(SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, SensitivityResourceDefinition.VAULT_ELEMENT));
-            } else if (SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey().equals(childType)){
-                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
-                Set<ResourceEntry> children = new HashSet<ResourceEntry>();
-                for (Map.Entry<String, Map<String, SensitivityClassification>> entry : classifications.entrySet()) {
-                    children.add(SensitivityClassificationResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
-                }
-                return children;
-            } else if (ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey().equals(childType)) {
-                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
-                Set<ResourceEntry> children = new HashSet<ResourceEntry>();
-                for (Map.Entry<String, Map<String, ApplicationTypeConfig>> entry : applicationTypes.entrySet()) {
-                    children.add(ApplicationTypeResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
-                }
-                return children;
-            }
-            return Collections.emptySet();
-        }
     }
 
 }

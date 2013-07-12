@@ -61,9 +61,9 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
 
     private static Resource createResource() {
         Resource accessControlRoot =  Resource.Factory.create();
-        accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.APPLICATION_PATH_ELEMENT, RootAccessConstraintResourceDefinition.APPLICATION_RESOURCE);
-        accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.SENSITIVITY_PATH_ELEMENT, RootAccessConstraintResourceDefinition.SENSITIVITY_RESOURCE);
-        accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.VAULT_PATH_ELEMENT, RootAccessConstraintResourceDefinition.VAULT_RESOURCE);
+        accessControlRoot.registerChild(AccessConstraintResources.APPLICATION_PATH_ELEMENT, AccessConstraintResources.APPLICATION_RESOURCE);
+        accessControlRoot.registerChild(AccessConstraintResources.SENSITIVITY_PATH_ELEMENT, AccessConstraintResources.SENSITIVITY_RESOURCE);
+        accessControlRoot.registerChild(AccessConstraintResources.VAULT_PATH_ELEMENT, AccessConstraintResources.VAULT_RESOURCE);
         return accessControlRoot;
     }
 
