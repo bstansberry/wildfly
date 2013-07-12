@@ -64,7 +64,7 @@ public class RemotingExtension implements Extension {
     }
 
     static final SensitivityClassification REMOTING_SECURITY =
-            new SensitivityClassification(SUBSYSTEM_NAME, "REMOTING_SECURITY", false, true, true);
+            new SensitivityClassification(SUBSYSTEM_NAME, "remoting-security", false, true, true);
 
     static final SensitiveTargetAccessConstraintDefinition REMOTING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(REMOTING_SECURITY);
 

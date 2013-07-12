@@ -61,7 +61,7 @@ public class JdrReportExtension implements Extension {
     }
 
     static final SensitivityClassification JDR_SENSITIVITY =
-            new SensitivityClassification(SUBSYSTEM_NAME, "JDR", false, false, true);
+            new SensitivityClassification(SUBSYSTEM_NAME, "jdr", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition JDR_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JDR_SENSITIVITY);
 

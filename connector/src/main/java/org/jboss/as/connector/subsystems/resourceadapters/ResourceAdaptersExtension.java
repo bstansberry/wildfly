@@ -52,7 +52,7 @@ public class ResourceAdaptersExtension implements Extension {
     private static final String RESOURCE_NAME = ResourceAdaptersExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     static final SensitivityClassification RA_SECURITY =
-            new SensitivityClassification(SUBSYSTEM_NAME, "RA_SECURITY", false, true, true);
+            new SensitivityClassification(SUBSYSTEM_NAME, "resource-adapter-security", false, true, true);
 
     static final SensitiveTargetAccessConstraintDefinition RA_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(RA_SECURITY);
 

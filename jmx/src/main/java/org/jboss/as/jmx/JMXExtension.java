@@ -94,7 +94,7 @@ public class JMXExtension implements Extension {
     }
 
     static final SensitivityClassification JMX_SENSITIVITY =
-            new SensitivityClassification(SUBSYSTEM_NAME, "JMX", false, false, true);
+            new SensitivityClassification(SUBSYSTEM_NAME, "jmx", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition JMX_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JMX_SENSITIVITY);
 

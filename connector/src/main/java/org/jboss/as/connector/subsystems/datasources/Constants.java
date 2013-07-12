@@ -192,7 +192,7 @@ class Constants {
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
     static final SensitivityClassification DS_SECURITY =
-            new SensitivityClassification(DataSourcesExtension.SUBSYSTEM_NAME, "DS_SECURITY", false, true, true);
+            new SensitivityClassification(DataSourcesExtension.SUBSYSTEM_NAME, "data-source-security", false, true, true);
 
     static final SensitiveTargetAccessConstraintDefinition DS_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(DS_SECURITY);
 

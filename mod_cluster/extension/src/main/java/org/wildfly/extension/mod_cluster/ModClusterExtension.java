@@ -101,12 +101,12 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     }
 
     static final SensitivityClassification MOD_CLUSTER_SECURITY =
-            new SensitivityClassification(SUBSYSTEM_NAME, "MOD_CLUSTER_SECURITY", false, true, true);
+            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-security", false, true, true);
 
     static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_SECURITY);
 
     static final SensitivityClassification MOD_CLUSTER_PROXIES =
-            new SensitivityClassification(SUBSYSTEM_NAME, "MOD_CLUSTER_PROXIES", false, false, false);
+            new SensitivityClassification(SUBSYSTEM_NAME, "mod_cluster-proxies", false, false, false);
 
     static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_PROXIES);
 
