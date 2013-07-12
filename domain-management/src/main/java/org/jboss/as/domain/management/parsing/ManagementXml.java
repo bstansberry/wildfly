@@ -226,8 +226,8 @@ public class ManagementXml {
                     }
                     break;
                 }
-                case ACCESS_CONSTRAINTS: {
-                    parseAccessConstraints(reader, address, expectedNs, list);
+                case ACCESS_CONTROL: {
+                    parseAccessControl(reader, address, expectedNs, list);
                     break;
                 }
                 default: {
@@ -1633,7 +1633,26 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseAccessConstraints(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    private void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case CONSTRAINTS: {
+                    parseConstraints(reader, address, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseConstraints(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
 
         ParseUtils.requireNoAttributes(reader);
@@ -1899,7 +1918,9 @@ public class ManagementXml {
         }
 
         if (configuredAccessConstraints.size() > 0) {
+            writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
             writeAccessConstraints(writer, accessConstraint, configuredAccessConstraints);
+            writer.writeEndElement();
         }
 
         writer.writeEndElement();
@@ -2182,7 +2203,7 @@ public class ManagementXml {
     }
 
     private void writeAccessConstraints(XMLExtendedStreamWriter writer, ModelNode accessConstraint, Map<String, Map<String, Set<String>>> configuredConstraints) throws XMLStreamException {
-        writer.writeStartElement(Element.ACCESS_CONSTRAINTS.getLocalName());
+        writer.writeStartElement(Element.CONSTRAINTS.getLocalName());
 
         if (configuredConstraints.containsKey(SensitivityResourceDefinition.VAULT_ELEMENT.getKey())){
             writer.writeStartElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
