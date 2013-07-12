@@ -61,7 +61,7 @@ class JacORBSubsystemDefinitions {
             TransactionsAllowedValues.class, true, false, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
 
     static final SensitivityClassification JACORB_SECURITY =
-            new SensitivityClassification(JacORBExtension.SUBSYSTEM_NAME, "JACORB_SECURITY", false, false, true);
+            new SensitivityClassification(JacORBExtension.SUBSYSTEM_NAME, "jacorb-security", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition JACORB_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(JACORB_SECURITY);
 

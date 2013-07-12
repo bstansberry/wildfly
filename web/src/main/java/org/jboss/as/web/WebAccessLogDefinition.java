@@ -97,7 +97,7 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log"),
                 WebAccessLogAdd.INSTANCE,
                 WebAccessLogRemove.INSTANCE);
-        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "WEB_ACCESS_LOG", false, false, false);
+        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-access-log", false, false, false);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
 

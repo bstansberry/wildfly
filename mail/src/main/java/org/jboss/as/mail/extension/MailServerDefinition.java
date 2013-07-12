@@ -44,7 +44,7 @@ import org.jboss.dmr.ModelType;
 class MailServerDefinition extends SimpleResourceDefinition {
 
     static final SensitivityClassification MAIL_SERVER_SECURITY =
-            new SensitivityClassification(MailExtension.SUBSYSTEM_NAME, "MAIL_SERVER_SECURITY", false, false, true);
+            new SensitivityClassification(MailExtension.SUBSYSTEM_NAME, "mail-server-security", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition MAIL_SERVER_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MAIL_SERVER_SECURITY);
 

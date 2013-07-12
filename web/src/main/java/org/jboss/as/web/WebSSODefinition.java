@@ -81,7 +81,7 @@ public class WebSSODefinition extends SimpleResourceDefinition {
                 WebExtension.getResourceDescriptionResolver("virtual-server.sso"),
                 WebSSOAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
-        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "WEB_SSO", false, true, true);
+        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-sso", false, true, true);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
 

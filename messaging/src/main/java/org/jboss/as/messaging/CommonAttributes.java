@@ -65,12 +65,12 @@ public interface CommonAttributes {
     String ENTRIES = "entries";
 
     SensitivityClassification MESSAGING_MANAGEMENT =
-            new SensitivityClassification(MessagingExtension.SUBSYSTEM_NAME, "MAIL_MANAGEMENT", false, false, true);
+            new SensitivityClassification(MessagingExtension.SUBSYSTEM_NAME, "messaging-management", false, false, true);
 
     SensitiveTargetAccessConstraintDefinition MESSAGING_MANAGEMENT_DEF = new SensitiveTargetAccessConstraintDefinition(MESSAGING_MANAGEMENT);
 
     SensitivityClassification MESSAGING_SECURITY =
-            new SensitivityClassification(MessagingExtension.SUBSYSTEM_NAME, "MAIL_SECURITY", false, false, true);
+            new SensitivityClassification(MessagingExtension.SUBSYSTEM_NAME, "messaging-security", false, false, true);
 
     SensitiveTargetAccessConstraintDefinition MESSAGING_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(MESSAGING_SECURITY);
 
