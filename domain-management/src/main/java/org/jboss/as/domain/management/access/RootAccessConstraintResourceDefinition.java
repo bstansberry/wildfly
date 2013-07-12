@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,9 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
     // Application Classification Resource
     public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
     public static final Resource APPLICATION_RESOURCE = new ApplicationClassificationResource();
+    // Vault Expression Resource
+    public static final PathElement VAULT_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
+    public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT);
 
     private static final AccessConstraintResource RESOURCE = new AccessConstraintResource();
     private static volatile Map<String, Map<String, SensitivityClassification>> classifications;
@@ -111,7 +115,7 @@ public class RootAccessConstraintResourceDefinition extends SimpleResourceDefini
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
+        //resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
         resourceRegistration.registerSubModel(new SensitivityClassificationResourceDefinition());
         //resourceRegistration.registerSubModel(new ApplicationTypeResourceDefinition());
     }

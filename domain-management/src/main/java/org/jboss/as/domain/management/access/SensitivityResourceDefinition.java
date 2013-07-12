@@ -21,8 +21,8 @@
  */
 package org.jboss.as.domain.management.access;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
@@ -59,7 +59,7 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     public static PathElement PATH_ELEMENT = PathElement.pathElement(TYPE);
 
-    public static PathElement VAULT_ELEMENT = PathElement.pathElement(VAULT_EXPRESSION, SENSITIVITY_CLASSIFICATION);
+    public static PathElement VAULT_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
 
     public static SimpleAttributeDefinition DEFAULT_REQUIRES_ACCESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DEFAULT_REQUIRES_ACCESS, ModelType.BOOLEAN, false)
             .setStorageRuntime()

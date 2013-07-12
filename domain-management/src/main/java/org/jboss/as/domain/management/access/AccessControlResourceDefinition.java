@@ -55,15 +55,14 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
 
         //  -- Application Type
         resourceRegistration.registerSubModel(ApplicationTypeParentResourceDefinition.INSTANCE);
-
         //  -- Vault Expression
-
-
+        resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
     }
 
     private static Resource createResource() {
         Resource accessControlRoot =  Resource.Factory.create();
         accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.APPLICATION_PATH_ELEMENT, RootAccessConstraintResourceDefinition.APPLICATION_RESOURCE);
+        accessControlRoot.registerChild(RootAccessConstraintResourceDefinition.VAULT_PATH_ELEMENT, RootAccessConstraintResourceDefinition.VAULT_RESOURCE);
         return accessControlRoot;
     }
 
