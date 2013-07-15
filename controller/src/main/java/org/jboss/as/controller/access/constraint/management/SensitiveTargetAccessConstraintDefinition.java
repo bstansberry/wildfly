@@ -41,6 +41,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class SensitiveTargetAccessConstraintDefinition implements AccessConstraintDefinition {
 
+    public static final SensitiveTargetAccessConstraintDefinition ACCESS_CONTROL = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.ACCESS_CONTROL);
     public static final SensitiveTargetAccessConstraintDefinition CREDENTIAL = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.CREDENTIAL);
     public static final SensitiveTargetAccessConstraintDefinition DOMAIN_CONTROLLER = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.DOMAIN_CONTROLLER);
     public static final SensitiveTargetAccessConstraintDefinition DOMAIN_NAMES = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.DOMAIN_NAMES);
