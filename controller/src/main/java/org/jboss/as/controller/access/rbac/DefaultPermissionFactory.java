@@ -57,7 +57,6 @@ import org.jboss.as.controller.access.permission.ManagementPermission;
 import org.jboss.as.controller.access.permission.ManagementPermissionCollection;
 import org.jboss.as.controller.access.permission.PermissionFactory;
 import org.jboss.as.controller.access.permission.SimpleManagementPermission;
-import org.xnio.channels.UnsupportedOptionException;
 
 /**
  * Default {@link org.jboss.as.controller.access.permission.PermissionFactory} implementation that supports
@@ -300,7 +299,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
 
         @Override
         public void add(Permission permission) {
-            throw new UnsupportedOptionException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
