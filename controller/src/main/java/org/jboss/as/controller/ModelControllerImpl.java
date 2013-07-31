@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -90,6 +91,7 @@ class ModelControllerImpl implements ModelController {
     private final ControlledProcessState processState;
     private final ExecutorService executorService;
     private final ExpressionResolver expressionResolver;
+    private final Authorizer authorizer;
 
     private final ConcurrentMap<Integer, OperationContext> activeOperations = new ConcurrentHashMap<>();
 
@@ -97,7 +99,7 @@ class ModelControllerImpl implements ModelController {
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister,
                         final ProcessType processType, final RunningModeControl runningModeControl,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
-                        final ExpressionResolver expressionResolver) {
+                        final ExpressionResolver expressionResolver, final Authorizer authorizer) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -110,6 +112,7 @@ class ModelControllerImpl implements ModelController {
         this.serviceTarget.addListener(stateMonitor);
         this.executorService = executorService;
         this.expressionResolver = expressionResolver;
+        this.authorizer = authorizer;
     }
 
     /**
@@ -580,6 +583,10 @@ class ModelControllerImpl implements ModelController {
 
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return expressionResolver.resolveExpressions(node);
+    }
+
+    Authorizer getAuthorizer() {
+        return authorizer;
     }
 
     private void logNoHandler(ParsedBootOp parsedOp) {

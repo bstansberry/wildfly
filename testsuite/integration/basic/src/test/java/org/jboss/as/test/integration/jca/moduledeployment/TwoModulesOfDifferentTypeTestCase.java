@@ -77,9 +77,15 @@ public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
                              String containerId) throws Exception {
             super.tearDown(managementClient, containerId);
             remove(address1);
-            removeModule("org/jboss/ironjacamar/ra16out1");
+            removeModule("org/jboss/ironjacamar/ra16out1", true);
         }
 
+        @Override
+        protected String getSlot() {
+            // change the "main" slot to something different, preferably to XXXYourNewTestCase.class.getSimpleName().toLowerCase(),
+            // if you are going to clone this test case
+            return "main";
+        }
     }
 
     /**

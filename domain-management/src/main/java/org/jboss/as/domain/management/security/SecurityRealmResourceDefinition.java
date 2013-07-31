@@ -22,12 +22,16 @@
 
 package org.jboss.as.domain.management.security;
 
+import java.util.List;
+
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -52,6 +56,8 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    private final List<AccessConstraintDefinition> sensitivity;
+
     private SecurityRealmResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SECURITY_REALM),
                 ControllerResolver.getResolver("core.management.security-realm"),
@@ -59,6 +65,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
                 SecurityRealmRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        sensitivity = SensitiveTargetAccessConstraintDefinition.SECURITY_REALM.wrapAsList();
     }
 
     @Override
@@ -81,5 +88,10 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new PlugInAuthenticationResourceDefinition());
         resourceRegistration.registerSubModel(new PropertiesAuthorizationResourceDefinition());
         resourceRegistration.registerSubModel(new PlugInAuthorizationResourceDefinition());
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return sensitivity;
     }
 }

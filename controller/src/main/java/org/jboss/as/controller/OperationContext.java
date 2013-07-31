@@ -23,7 +23,12 @@
 package org.jboss.as.controller;
 
 import java.io.InputStream;
+import java.util.Set;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResponse;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -653,6 +658,32 @@ public interface OperationContext extends ExpressionResolver {
      * @return the attachment if found otherwise {@code null}.
      */
     <T> T detach(AttachmentKey<T> key);
+
+    /**
+     * Check for authorization of the given operation.
+     * @param operation the operation. Cannot be {@code null}
+     * @return the authorization result
+     */
+    AuthorizationResult authorize(ModelNode operation);
+
+    AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
+
+    AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource);
+
+    //TODO javadoc attributes
+    AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue);
+
+    AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects);
+
+    //TODO javadoc operations
+    AuthorizationResult authorizeOperation(ModelNode operation, boolean access);
+
+    /**
+     * Obtain the {@link Caller} for the current request.
+     *
+     * @return The current caller.
+     */
+    Caller getCaller();
 
     /**
      * The stage at which a step should apply.
