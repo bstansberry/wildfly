@@ -40,6 +40,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PING;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_LIST;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_URL;
+import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SMAX;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SOCKET_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
@@ -232,6 +233,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         config.setSmax(SMAX.resolveModelAttribute(context, model).asInt());
         config.setTtl(TTL.resolveModelAttribute(context, model).asInt());
         config.setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        config.setSessionDrainingStrategy(SESSION_DRAINING_STRATEGY.resolveModelAttribute(context, model).asString());
 
         if (model.hasDefined(CommonAttributes.BALANCER)) {
             config.setBalancer(BALANCER.resolveModelAttribute(context, model).asString());

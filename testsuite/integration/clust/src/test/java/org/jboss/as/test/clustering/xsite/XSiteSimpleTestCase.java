@@ -60,6 +60,11 @@ import org.junit.runner.RunWith;
  *   NYC -> LON
  *   SFO -> LON
  *
+ * backups: (<site>:<container>:<cache>)
+ *   LON:web:repl backed up by NYC:web:repl, SFO:web:repl
+ *   NYC not backed up
+ *   SFO not backed up
+ *
  * @author Richard Achmatowicz
  */
 @RunWith(Arquillian.class)

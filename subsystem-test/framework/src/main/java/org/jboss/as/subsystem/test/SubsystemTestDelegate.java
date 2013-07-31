@@ -63,6 +63,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -444,6 +445,7 @@ final class SubsystemTestDelegate {
         //The transformed model is done via the resource transformers
         //The model in the legacy controller is built up via transformed operations
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
+
         ModelTestUtils.compare(legacySubsystem, transformed, true);
 
         //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
@@ -886,6 +888,11 @@ final class SubsystemTestDelegate {
         @Override
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return null;
+        }
+
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return Collections.emptyList();
         }
 
         @Override

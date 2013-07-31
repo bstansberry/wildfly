@@ -36,6 +36,7 @@
         <module name="org.jboss.netty"/>
         <module name="org.jgroups"/>
         <module name="javax.resource.api"/>
+        <module name="org.apache.qpid.proton"/>
         <module name="org.jboss.jboss-transaction-spi"/>
         <!--this reverse dependency is here so integration classes in the AS code base can be instantiated by HornetQ-->
         <module name="org.jboss.as.messaging"/>

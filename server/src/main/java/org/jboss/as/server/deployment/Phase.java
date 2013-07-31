@@ -285,6 +285,7 @@ public enum Phase {
     public static final int PARSE_CDI_ANNOTATIONS                       = 0x2A10;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
     public static final int PARSE_DATA_SOURCE_DEFINITION_ANNOTATION     = 0x2D00;
+    public static final int PARSE_MAIL_SESSION_DEFINITION_ANNOTATION    = 0x2D01;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
     public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;
     public static final int PARSE_EJB_DEFAULT_SECURITY_DOMAIN           = 0x2E02;
@@ -333,6 +334,7 @@ public enum Phase {
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;
+    public static final int DEPENDENCIES_TRANSACTIONS                   = 0x1100;
     public static final int DEPENDENCIES_JDK                            = 0x1200;
     public static final int DEPENDENCIES_JACORB                         = 0x1300;
     public static final int DEPENDENCIES_CMP                            = 0x1500;
@@ -415,6 +417,7 @@ public enum Phase {
     public static final int POST_MODULE_EJB_REF                         = 0x1500;
     public static final int POST_MODULE_PERSISTENCE_REF                 = 0x1600;
     public static final int POST_MODULE_DATASOURCE_REF                  = 0x1700;
+    public static final int POST_MODULE_MAIL_SESSION_REF                = 0x1701;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;

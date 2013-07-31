@@ -22,12 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.mdb.activationconfig;
 
+import static org.jboss.as.test.integration.ejb.mdb.activationconfig.JMSHelper.reply;
+
 import org.jboss.as.test.integration.ejb.mdb.JMSMessagingUtil;
 import org.jboss.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.MessageDriven;
+import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -42,24 +46,13 @@ import javax.jms.MessageListener;
 })
 public class MDBWithUnknownActivationConfigProperties implements MessageListener {
 
-
-    private static final Logger logger = Logger.getLogger(MDBWithUnknownActivationConfigProperties.class);
-
     public static final String QUEUE_JNDI_NAME = "java:jboss/jms/mdbtest/unknown-activationconfig-props";
 
-    @EJB
-    private JMSMessagingUtil jmsMessagingUtil;
+    @Resource(mappedName = "java:/ConnectionFactory")
+    private ConnectionFactory connectionFactory;
 
     @Override
     public void onMessage(Message message) {
-        logger.info("Received message: " + message);
-        try {
-            if (message.getJMSReplyTo() != null) {
-                logger.info("Replying to " + message.getJMSReplyTo());
-                this.jmsMessagingUtil.reply(message);
-            }
-        } catch (JMSException jmse) {
-            throw new RuntimeException(jmse);
-        }
+        reply(connectionFactory, message);
     }
 }

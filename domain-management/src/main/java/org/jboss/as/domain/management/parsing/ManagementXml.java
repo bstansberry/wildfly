@@ -23,31 +23,43 @@
 package org.jboss.as.domain.management.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAP_GROUPS_TO_ROLES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -62,24 +74,35 @@ import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.NAME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
+import org.jboss.as.domain.management.access.ApplicationTypeConfigResourceDefinition;
+import org.jboss.as.domain.management.access.ApplicationTypeResourceDefinition;
+import org.jboss.as.domain.management.access.HostScopedRolesResourceDefinition;
+import org.jboss.as.domain.management.access.PrincipalResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityClassificationResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
+import org.jboss.as.domain.management.access.ServerGroupScopedRoleResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.AbstractPlugInAuthResourceDefinition;
 import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
@@ -109,13 +132,102 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 public class ManagementXml {
 
     /** Handles config-file specific aspects of parsing and marshalling {@code <management>} elements */
-    public interface Delegate {
+    public abstract static class Delegate {
 
-        void parseManagementInterfaces(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException;
+        /**
+         * Parse {@link Element#SECURITY_REALMS} content.
+         * <p>This default implementation does standard parsing; override to disable.</p>
+         * @param reader the xml reader
+         * @param address the address of the parent resource for any added resources
+         * @param expectedNs the expected namespace for any children
+         * @param operationsList list to which any operations should be added
+         * @throws XMLStreamException
+         */
+        protected void parseSecurityRealms(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> operationsList) throws XMLStreamException {
+            ManagementXml.parseSecurityRealms(reader, address, expectedNs, operationsList);
+        }
 
-        void writeNativeManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException;
+        /**
+         * Parse {@link Element#OUTBOUND_CONNECTIONS} content.
+         * <p>This default implementation does standard parsing; override to disable.</p>
+         *
+         * @param reader the xml reader
+         * @param address the address of the parent resource for any added resources
+         * @param expectedNs the expected namespace for any children
+         * @param operationsList list to which any operations should be added
+         * @throws XMLStreamException
+         */
+        protected void parseOutboundConnections(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> operationsList) throws XMLStreamException {
+            ManagementXml.parseOutboundConnections(reader, address, expectedNs, operationsList);
+        }
 
-        void writeHttpManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException;
+        /**
+         * Parse {@link Element#MANAGEMENT_INTERFACES} content.
+         * <p>This default implementation throws {@code UnsupportedOperationException}; override to support.</p>
+         *
+         * @param reader the xml reader
+         * @param address the address of the parent resource for any added resources
+         * @param expectedNs the expected namespace for any children
+         * @param operationsList list to which any operations should be added
+         * @throws XMLStreamException
+         */
+        protected void parseManagementInterfaces(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> operationsList) throws XMLStreamException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Parse {@link Element#ACCESS_CONTROL} content.
+         * <p>This default implementation throws {@code UnsupportedOperationException}; override to support.</p>
+         *
+         * @param reader the xml reader
+         * @param address the address of the parent resource for any added resources
+         * @param expectedNs the expected namespace for any children
+         * @param operationsList list to which any operations should be added
+         * @throws XMLStreamException
+         */
+        protected void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+                                final List<ModelNode> operationsList) throws XMLStreamException {
+            // Must override if supported
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Write the {@link Element#NATIVE_INTERFACE} element.
+         * <p>This default implementation does standard writing</p>
+         *
+         * @param writer  the xml writer
+         * @param accessAuthorization the access=authorization configuration
+         * @throws XMLStreamException
+         */
+        protected void writeAccessControl(XMLExtendedStreamWriter writer, ModelNode accessAuthorization) throws XMLStreamException {
+            ManagementXml.writeAccessControl(writer, accessAuthorization);
+        }
+
+        /**
+         * Write the {@link Element#NATIVE_INTERFACE} element.
+         * <p>This default implementation throws {@code UnsupportedOperationException}; override to support.</p>
+         *
+         * @param writer  the xml writer
+         * @param protocol the interface configuration
+         * @throws XMLStreamException
+         */
+        protected void writeNativeManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+            // Must override if supported
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Write the {@link Element#HTTP_INTERFACE} element.
+         * <p>This default implementation throws {@code UnsupportedOperationException}; override to support.</p>
+         *
+         * @param writer  the xml writer
+         * @param protocol the interface configuration
+         * @throws XMLStreamException
+         */
+        protected void writeHttpManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+            // Must override if supported
+            throw new UnsupportedOperationException();
+        }
     }
 
     private final Delegate delegate;
@@ -125,8 +237,23 @@ public class ManagementXml {
         this.delegate = delegate;
     }
 
-    public void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-                                   boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
+    public void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
+        switch (expectedNs) {
+            case DOMAIN_1_0:
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+                parseManagement_1_0(reader, address, expectedNs, list, requireNativeInterface);
+                break;
+            default:
+                parseManagement_2_0(reader, address, expectedNs, list, requireNativeInterface);
+        }
+    }
+
+    private void parseManagement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
@@ -140,7 +267,7 @@ public class ManagementXml {
                     if (++securityRealmsCount > 1) {
                         throw unexpectedElement(reader);
                     }
-                    parseSecurityRealms(reader, managementAddress, expectedNs, list);
+                    delegate.parseSecurityRealms(reader, managementAddress, expectedNs, list);
 
                     break;
                 }
@@ -148,20 +275,15 @@ public class ManagementXml {
                     if (++connectionsCount > 1) {
                         throw unexpectedElement(reader);
                     }
-                    parseConnections(reader, managementAddress, expectedNs, list);
+                    delegate.parseOutboundConnections(reader, managementAddress, expectedNs, list);
                     break;
                 }
                 case MANAGEMENT_INTERFACES: {
-                    if (allowInterfaces) {
-                        if (++managementInterfacesCount > 1) {
-                            throw unexpectedElement(reader);
-                        }
-
-                        delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
-
-                    } else {
-                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
+                    if (++managementInterfacesCount > 1) {
+                        throw unexpectedElement(reader);
                     }
+
+                    delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
                     break;
                 }
                 default: {
@@ -175,8 +297,57 @@ public class ManagementXml {
         }
     }
 
-    private void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-            final List<ModelNode> list) throws XMLStreamException {
+    private void parseManagement_2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
+        int securityRealmsCount = 0;
+        int connectionsCount = 0;
+        int managementInterfacesCount = 0;
+
+        final ModelNode managementAddress = address.clone().add(CORE_SERVICE, MANAGEMENT);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECURITY_REALMS: {
+                    if (++securityRealmsCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    delegate.parseSecurityRealms(reader, managementAddress, expectedNs, list);
+
+                    break;
+                }
+                case OUTBOUND_CONNECTIONS: {
+                    if (++connectionsCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    delegate.parseOutboundConnections(reader, managementAddress, expectedNs, list);
+                    break;
+                }
+                case MANAGEMENT_INTERFACES: {
+                    if (++managementInterfacesCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+
+                    delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
+                    break;
+                }
+                case ACCESS_CONTROL: {
+                    delegate.parseAccessControl(reader, managementAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        if (requireNativeInterface && managementInterfacesCount < 1) {
+            throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT_INTERFACES));
+        }
+    }
+
+    private static void parseOutboundConnections(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+                                          final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -202,7 +373,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseLdapConnection_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+    private static void parseLdapConnection_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
 
         final ModelNode add = new ModelNode();
@@ -254,7 +425,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseLdapConnection_1_4(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+    private static void parseLdapConnection_1_4(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
 
         final ModelNode add = new ModelNode();
@@ -310,7 +481,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private static void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -339,7 +510,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseSecurityRealm_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private static void parseSecurityRealm_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
         requireSingleAttribute(reader, Attribute.NAME.getLocalName());
         // After double checking the name of the only attribute we can retrieve it.
@@ -371,7 +542,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseSecurityRealm_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private static void parseSecurityRealm_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
         requireSingleAttribute(reader, Attribute.NAME.getLocalName());
         // After double checking the name of the only attribute we can retrieve it.
@@ -406,7 +577,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseSecurityRealm_1_3(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+    private static void parseSecurityRealm_1_3(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
             throws XMLStreamException {
         requireSingleAttribute(reader, Attribute.NAME.getLocalName());
         // After double checking the name of the only attribute we can retrieve it.
@@ -451,7 +622,7 @@ public class ManagementXml {
         }
     }
 
-    private void parsePlugIns(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
+    private static void parsePlugIns(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -476,7 +647,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseServerIdentities(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
+    private static void parseServerIdentities(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -499,7 +670,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseSecret(final XMLExtendedStreamReader reader, final ModelNode realmAddress, final List<ModelNode> list)
+    private static void parseSecret(final XMLExtendedStreamReader reader, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
 
         ModelNode secret = new ModelNode();
@@ -511,7 +682,7 @@ public class ManagementXml {
         list.add(secret);
     }
 
-    private void parseSSL(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+    private static void parseSSL(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         ModelNode ssl = new ModelNode();
         ssl.get(OP).set(ADD);
@@ -562,7 +733,7 @@ public class ManagementXml {
 
     }
 
-    private void parseKeystore_1_0(final XMLExtendedStreamReader reader, final ModelNode addOperation)
+    private static void parseKeystore_1_0(final XMLExtendedStreamReader reader, final ModelNode addOperation)
             throws XMLStreamException {
 
         Set<Attribute> required = EnumSet.of(Attribute.PATH, Attribute.PASSWORD);
@@ -600,7 +771,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseKeystore_1_3(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
+    private static void parseKeystore_1_3(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
             throws XMLStreamException {
         Set<Attribute> required = EnumSet.of(Attribute.PATH, Attribute.KEYSTORE_PASSWORD);
         final int count = reader.getAttributeCount();
@@ -665,7 +836,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseAuthentication_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
+    private static void parseAuthentication_1_0(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         int userCount = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -696,7 +867,7 @@ public class ManagementXml {
         addLegacyLocalAuthentication(realmAddress, list);
     }
 
-    private void parseAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         // Only one truststore can be defined.
@@ -713,7 +884,7 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseJaasAuthentication(reader, expectedNs, realmAddress, list);
+                    parseJaasAuthentication(reader, realmAddress, list);
                     usernamePasswordFound = true;
                     break;
                 }
@@ -757,7 +928,7 @@ public class ManagementXml {
         addLegacyLocalAuthentication(realmAddress, list);
     }
 
-    private void parseAuthentication_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseAuthentication_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         // Only one truststore can be defined.
@@ -776,7 +947,7 @@ public class ManagementXml {
                     if (usernamePasswordFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseJaasAuthentication(reader, expectedNs, realmAddress, list);
+                    parseJaasAuthentication(reader, realmAddress, list);
                     usernamePasswordFound = true;
                     break;
                 }
@@ -845,7 +1016,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseJaasAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseJaasAuthentication(final XMLExtendedStreamReader reader,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
         ModelNode jaas = Util.getEmptyOperation(ADD, addr);
@@ -880,7 +1051,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseLdapAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode realmAddress, final List<ModelNode> list)
+    private static void parseLdapAuthentication_1_0(final XMLExtendedStreamReader reader, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
 
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LDAP);
@@ -931,7 +1102,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parseLdapAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseLdapAuthentication_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
                                              final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LDAP);
@@ -1006,7 +1177,7 @@ public class ManagementXml {
     }
 
 
-    private void parseLdapAuthentication_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseLdapAuthentication_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LDAP);
         ModelNode ldapAuthentication = Util.getEmptyOperation(ADD, addr);
@@ -1085,7 +1256,7 @@ public class ManagementXml {
         }
     }
 
-    private void addLegacyLocalAuthentication(final ModelNode realmAddress, final List<ModelNode> list) {
+    private static void addLegacyLocalAuthentication(final ModelNode realmAddress, final List<ModelNode> list) {
         /*
          * Before version 1.3 of the domain schema there was no configuration for the local mechanism, however it was always
          * enabled - this adds an arbitrary add local op to recreate this behaviour in the older schema versions.
@@ -1096,7 +1267,7 @@ public class ManagementXml {
         list.add(local);
     }
 
-    private void parseLocalAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseLocalAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LOCAL);
         ModelNode local = Util.getEmptyOperation(ADD, addr);
@@ -1134,7 +1305,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parsePropertiesAuthentication_1_0(final XMLExtendedStreamReader reader,
+    private static void parsePropertiesAuthentication_1_0(final XMLExtendedStreamReader reader,
                                                    final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, PROPERTIES);
@@ -1176,7 +1347,7 @@ public class ManagementXml {
         properties.get(PLAIN_TEXT).set(true);
     }
 
-    private void parsePropertiesAuthentication_1_1(final XMLExtendedStreamReader reader,
+    private static void parsePropertiesAuthentication_1_1(final XMLExtendedStreamReader reader,
                                                    final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, PROPERTIES);
@@ -1219,7 +1390,7 @@ public class ManagementXml {
     }
 
     // The users element defines users within the domain model, it is a simple authentication for some out of the box users.
-    private void parseUsersAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseUsersAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
                                           final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
         final ModelNode usersAddress = realmAddress.clone().add(AUTHENTICATION, USERS);
@@ -1240,7 +1411,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseUser(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseUser(final XMLExtendedStreamReader reader, final Namespace expectedNs,
                            final ModelNode usersAddress, final List<ModelNode> list) throws XMLStreamException {
         requireSingleAttribute(reader, Attribute.USERNAME.getLocalName());
         // After double checking the name of the only attribute we can retrieve it.
@@ -1271,7 +1442,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseTruststore(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress,
+    private static void parseTruststore(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress,
                                  final List<ModelNode> list) throws XMLStreamException {
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
@@ -1290,7 +1461,7 @@ public class ManagementXml {
         list.add(op);
     }
 
-    private void parseAuthorization_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseAuthorization_1_1(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
         ModelNode realmAddress = realmAdd.get(OP_ADDR);
 
@@ -1316,7 +1487,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
         ModelNode realmAddress = realmAdd.get(OP_ADDR);
 
@@ -1348,7 +1519,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseAuthorization_2_0(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseAuthorization_2_0(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
         ModelNode realmAddress = realmAdd.get(OP_ADDR);
 
@@ -1398,7 +1569,7 @@ public class ManagementXml {
         }
     }
 
-    private void parsePropertiesAuthorization(final XMLExtendedStreamReader reader, final ModelNode realmAddress,
+    private static void parsePropertiesAuthorization(final XMLExtendedStreamReader reader, final ModelNode realmAddress,
             final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHORIZATION, PROPERTIES);
         ModelNode properties = Util.getEmptyOperation(ADD, addr);
@@ -1435,7 +1606,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private void parsePlugIn_Authentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parsePlugIn_Authentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = parentAddress.clone().add(PLUG_IN);
         ModelNode plugIn = Util.getEmptyOperation(ADD, addr);
@@ -1494,7 +1665,7 @@ public class ManagementXml {
         }
     }
 
-    private void parsePlugIn_Authorization(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parsePlugIn_Authorization(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode parentAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = parentAddress.clone().add(PLUG_IN);
         ModelNode plugIn = Util.getEmptyOperation(ADD, addr);
@@ -1530,7 +1701,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseProperty(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list)
+    private static void parseProperty(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> list)
             throws XMLStreamException {
 
         final ModelNode add = new ModelNode();
@@ -1567,13 +1738,518 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
+    public static void parseAccessControlRoleMapping(final XMLExtendedStreamReader reader, final ModelNode accContAddr,
+            final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case USE_REALM_ROLES: {
+                        list.add(Util.getWriteAttributeOperation(accContAddr,
+                                AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName(), value));
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            if (element == Element.ROLE) {
+                parseRole(reader, accContAddr, expectedNs, list);
+            } else {
+                throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private static void parseRole(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        ParseUtils.requireSingleAttribute(reader, NAME);
+        String name = reader.getAttributeValue(0);
+
+        ModelNode addr = address.clone().add(ROLE_MAPPING, name);
+        final ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(addr);
+        add.get(OP).set(ADD);
+        list.add(add);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case INCLUDE: {
+                    ModelNode includeAddr = addr.clone().add(INCLUDE);
+                    parseIncludeExclude(reader, includeAddr, expectedNs, list);
+                    break;
+                }
+                case EXCLUDE: {
+                    ModelNode excludeAddr = addr.clone().add(EXCLUDE);
+                    parseIncludeExclude(reader, excludeAddr, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseIncludeExclude(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case GROUP: {
+                    parsePrincipal(reader, address, GROUP, expectedNs, list);
+                    break;
+                }
+                case USER: {
+                    parsePrincipal(reader, address, USER, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parsePrincipal(final XMLExtendedStreamReader reader, final ModelNode address, final String type,
+            final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        String realm = null;
+        String name = null;
+
+        ModelNode addOp = new ModelNode();
+        addOp.get(OP).set(ADD);
+        addOp.get(TYPE).set(type);
+
+        int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        PrincipalResourceDefinition.NAME.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case REALM: {
+                        realm = value;
+                        PrincipalResourceDefinition.REALM.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        String addrValue = type + "-" + name + (realm != null ? "@" + realm : "");
+        ModelNode addAddr = address.clone().add(addrValue);
+        addOp.get(OP_ADDR).set(addAddr);
+        list.add(addOp);
+
+        ParseUtils.requireNoContent(reader);
+    }
+
+    public static void parseAccessControlConstraints(final XMLExtendedStreamReader reader, final ModelNode accAuthzAddr, final Namespace expectedNs,
+                                                     final List<ModelNode> list) throws XMLStreamException {
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case VAULT_EXPRESSION_SENSITIVITY: {
+                    ModelNode vaultAddr = accAuthzAddr.clone().add(CONSTRAINT, VAULT_EXPRESSION);
+                    parseClassificationType(reader, vaultAddr, expectedNs, list, true);
+                    break;
+                }
+                case SENSITIVE_CLASSIFICATIONS: {
+                    ModelNode sensAddr = accAuthzAddr.clone().add(CONSTRAINT, SENSITIVITY_CLASSIFICATION);
+                    parseSensitiveClassifications(reader, sensAddr, expectedNs, list);
+                    break;
+                }
+                case APPLICATION_TYPES: {
+                    ModelNode applAddr = accAuthzAddr.clone().add(CONSTRAINT, APPLICATION_TYPE);
+                    parseApplicationTypes(reader, applAddr, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseSensitiveClassifications(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SENSITIVE_CLASSIFICATION: {
+                    parseClassification(reader, address, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseClassification(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+        }
+
+        ModelNode newAddress = address.clone().add(SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey(), name);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case TYPE: {
+                    parseClassificationType(reader, newAddress, expectedNs, list, false);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseClassificationType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean vault) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String name = null;
+        Map<String, ModelNode> values = new HashMap<String, ModelNode>();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case REQUIRES_ACCESS: {
+                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.parse(value, reader));
+                        break;
+                    }
+                    case REQUIRES_READ: {
+                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.parse(value, reader));
+                        break;
+                    }
+                    case REQUIRES_WRITE: {
+                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.parse(value, reader));
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null && !vault) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        final ModelNode newAddress = vault ? address : address.clone().add(SensitivityResourceDefinition.PATH_ELEMENT.getKey(),
+                name);
+        for (Map.Entry<String, ModelNode> entry : values.entrySet()) {
+            list.add(Util.getWriteAttributeOperation(newAddress, entry.getKey(), entry.getValue()));
+        }
+        ParseUtils.requireNoContent(reader);
+    }
+
+    private static void parseApplicationTypes(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case APPLICATION_TYPE: {
+                    parseApplicationType(reader, address, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseApplicationType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        String name = null;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+        }
+
+        ModelNode newAddress = address.clone().add(ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey(), name);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case TYPE: {
+                    parseApplicationTypeType(reader, newAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseApplicationTypeType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        String name = null;
+        ModelNode applicationValue = null;
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = value;
+                        break;
+                    }
+                    case APPLICATION: {
+                        applicationValue = ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.parse(value, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        if (applicationValue == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.APPLICATION));
+        }
+        final ModelNode newAddress = address.clone().add(ApplicationTypeConfigResourceDefinition.PATH_ELEMENT.getKey(), name);
+        list.add(Util.getWriteAttributeOperation(newAddress, ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.getName(), applicationValue));
+        ParseUtils.requireNoContent(reader);
+    }
+
+    public static void parseServerGroupScopedRoles(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        String scopedRoleType = ServerGroupScopedRoleResourceDefinition.PATH_ELEMENT.getKey();
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ROLE: {
+                    parseScopedRole(reader, address, expectedNs, list, scopedRoleType, Element.SERVER_GROUP,
+                            ServerGroupScopedRoleResourceDefinition.BASE_ROLE, ServerGroupScopedRoleResourceDefinition.SERVER_GROUPS, true);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+    }
+
+    public static void parseHostScopedRoles(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        ParseUtils.requireNoAttributes(reader);
+
+        String scopedRoleType = HostScopedRolesResourceDefinition.PATH_ELEMENT.getKey();
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ROLE: {
+                    parseScopedRole(reader, address, expectedNs, list, scopedRoleType, Element.HOST,
+                            HostScopedRolesResourceDefinition.BASE_ROLE, HostScopedRolesResourceDefinition.HOSTS, false);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+    }
+
+    private static void parseScopedRole(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs,
+                                 List<ModelNode> ops, String scopedRoleType, final Element listElement,
+                                 SimpleAttributeDefinition baseRoleDefinition, ListAttributeDefinition listDefinition,
+                                 boolean requireChildren) throws XMLStreamException {
+
+        final ModelNode addOp = Util.createAddOperation();
+        ops.add(addOp);
+        final ModelNode ourAddress = addOp.get(OP_ADDR).set(address);
+        final Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.BASE_ROLE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME:
+                    ourAddress.add(scopedRoleType, value);
+                    break;
+                case BASE_ROLE:
+                    baseRoleDefinition.parseAndSetParameter(value, addOp, reader);
+                    break;
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        boolean missingChildren = requireChildren;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            boolean named = false;
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            if (element == listElement) {
+                missingChildren = false;
+                final int groupCount = reader.getAttributeCount();
+                for (int i = 0; i < groupCount; i++) {
+                    final String value = reader.getAttributeValue(i);
+                    if (!isNoNamespaceAttribute(reader, i)) {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                    required.remove(attribute);
+                    if (attribute == Attribute.NAME) {
+                        named = true;
+                        listDefinition.parseAndAddParameterElement(value, addOp, reader);
+                    } else {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            } else {
+                throw unexpectedElement(reader);
+            }
+
+            if (!named) {
+                throw missingRequired(reader, EnumSet.of(Attribute.NAME));
+            }
+
+            requireNoContent(reader);
+        }
+
+        if (missingChildren) {
+            throw missingRequired(reader, EnumSet.of(listElement));
+        }
+    }
+
     public void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, boolean allowInterfaces)
             throws XMLStreamException {
         boolean hasSecurityRealm = management.hasDefined(SECURITY_REALM);
         boolean hasConnection = management.hasDefined(LDAP_CONNECTION);
         boolean hasInterface = allowInterfaces && management.hasDefined(MANAGEMENT_INTERFACE);
 
-        if (!hasSecurityRealm && !hasConnection && !hasInterface) {
+        // TODO - These checks are going to become a source of bugs in certain cases - what we really need is a way to allow writing to continue and
+        // if an element is empty by the time it is closed then undo the write of that element.
+
+        ModelNode accessAuthorization = management.hasDefined(ACCESS) ? management.get(ACCESS, AUTHORIZATION) : null;
+        boolean accessAuthorizationDefined = accessAuthorization != null && accessAuthorization.isDefined();
+        boolean hasServerGroupRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(SERVER_GROUP_SCOPED_ROLE);
+        boolean hasHostRoles = accessAuthorizationDefined && (accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES));
+        boolean hasRoleMapping = accessAuthorizationDefined && accessAuthorization.hasDefined(ROLE_MAPPING);
+        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
+        boolean hasUseRealmRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
+        boolean hasProvider = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
+
+        if (!hasSecurityRealm && !hasConnection && !hasInterface && !hasServerGroupRoles
+              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0 && !hasProvider && !hasUseRealmRoles) {
             return;
         }
 
@@ -1588,6 +2264,55 @@ public class ManagementXml {
 
         if (allowInterfaces && hasInterface) {
             writeManagementInterfaces(writer, management);
+        }
+
+        if (accessAuthorizationDefined) {
+            delegate.writeAccessControl(writer, accessAuthorization);
+        }
+
+        writer.writeEndElement();
+    }
+
+    private static void writeAccessControl(final XMLExtendedStreamWriter writer, final ModelNode accessAuthorization) throws XMLStreamException {
+        if (accessAuthorization == null || accessAuthorization.isDefined()==false) {
+            return; // All subsequent checks are based on this being defined.
+        }
+
+        boolean hasServerGroupRoles =  accessAuthorization.hasDefined(SERVER_GROUP_SCOPED_ROLE);
+        boolean hasHostRoles = accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES);
+        boolean hasRoleMapping = accessAuthorization.hasDefined(ROLE_MAPPING);
+        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
+        boolean hasUseRealmRoles = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
+        boolean hasProvider = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
+
+        if (!hasProvider && !hasUseRealmRoles && !hasServerGroupRoles && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
+            return;
+        }
+
+        writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
+
+        AccessAuthorizationResourceDefinition.PROVIDER.marshallAsAttribute(accessAuthorization, writer);
+
+        if (hasServerGroupRoles) {
+            ModelNode serverGroupRoles = accessAuthorization.get(SERVER_GROUP_SCOPED_ROLE);
+            if (serverGroupRoles.asInt() > 0) {
+                writeServerGroupScopedRoles(writer, serverGroupRoles);
+            }
+        }
+
+        if (hasHostRoles) {
+            ModelNode serverGroupRoles = accessAuthorization.get(HOST_SCOPED_ROLE);
+            if (serverGroupRoles.asInt() > 0) {
+                writeHostScopedRoles(writer, serverGroupRoles);
+            }
+        }
+
+        if (hasUseRealmRoles || hasRoleMapping) {
+            writeRoleMapping(writer, accessAuthorization);
+        }
+
+        if (configuredAccessConstraints.size() > 0) {
+            writeAccessConstraints(writer, accessAuthorization, configuredAccessConstraints);
         }
 
         writer.writeEndElement();
@@ -1805,6 +2530,236 @@ public class ManagementXml {
             delegate.writeHttpManagementProtocol(writer, managementInterfaces.get(HTTP_INTERFACE));
         }
 
+        writer.writeEndElement();
+    }
+
+    private static Map<String, Map<String, Set<String>>> getConfiguredAccessConstraints(ModelNode accessAuthorization) {
+        Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
+        if (accessAuthorization != null && accessAuthorization.hasDefined(CONSTRAINT)) {
+            ModelNode constraint = accessAuthorization.get(CONSTRAINT);
+
+            configuredConstraints.putAll(getVaultConstraints(constraint));
+            configuredConstraints.putAll(getSensitivityClassificationConstraints(constraint));
+            configuredConstraints.putAll(getApplicationTypeConstraints(constraint));
+        }
+
+        return configuredConstraints;
+    }
+
+    private static Map<String, Map<String, Set<String>>> getVaultConstraints(final ModelNode constraint) {
+        Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
+
+        if (constraint.hasDefined(VAULT_EXPRESSION)) {
+            ModelNode classification = constraint.require(VAULT_EXPRESSION);
+            if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName())
+                    || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName())
+                    || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())) {
+                configuredConstraints.put(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
+                        Collections.<String, Set<String>> emptyMap());
+            }
+        }
+
+        return configuredConstraints;
+    }
+
+    private static Map<String, Map<String, Set<String>>> getSensitivityClassificationConstraints(final ModelNode constraint) {
+        Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
+
+        if (constraint.hasDefined(SENSITIVITY_CLASSIFICATION)) {
+            ModelNode sensitivityParent = constraint.require(SENSITIVITY_CLASSIFICATION);
+
+            if (sensitivityParent.hasDefined(SENSITIVITY_CLASSIFICATION)) {
+                for (Property sensitivityProperty : sensitivityParent.get(SENSITIVITY_CLASSIFICATION).asPropertyList()) {
+                    if (sensitivityProperty.getValue().hasDefined(TYPE)) {
+                        for (Property typeProperty : sensitivityProperty.getValue().get(TYPE).asPropertyList()) {
+                            ModelNode classification = typeProperty.getValue();
+                            if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName())
+                                    || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE
+                                            .getName())
+                                    || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ
+                                            .getName())) {
+                                Map<String, Set<String>> constraintMap = configuredConstraints.get(SENSITIVITY_CLASSIFICATION);
+                                if (constraintMap == null) {
+                                    constraintMap = new HashMap<String, Set<String>>();
+                                    configuredConstraints.put(SENSITIVITY_CLASSIFICATION, constraintMap);
+                                }
+                                Set<String> types = constraintMap.get(sensitivityProperty.getName());
+                                if (types == null) {
+                                    types = new HashSet<String>();
+                                    constraintMap.put(sensitivityProperty.getName(), types);
+                                }
+                                types.add(typeProperty.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return configuredConstraints;
+    }
+
+    private static Map<String, Map<String, Set<String>>> getApplicationTypeConstraints(final ModelNode constraint) {
+        Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
+
+        if (constraint.hasDefined(APPLICATION_TYPE)) {
+            ModelNode appTypeParent = constraint.require(APPLICATION_TYPE);
+
+            if (appTypeParent.hasDefined(APPLICATION_TYPE)) {
+                for (Property applicationTypeProperty : appTypeParent.get(APPLICATION_TYPE).asPropertyList()) {
+                    if (applicationTypeProperty.getValue().hasDefined(TYPE)) {
+                        for (Property typeProperty : applicationTypeProperty.getValue().get(TYPE).asPropertyList()) {
+                            ModelNode applicationType = typeProperty.getValue();
+                            if (applicationType.hasDefined(ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.getName())) {
+                                Map<String, Set<String>> constraintMap = configuredConstraints.get(APPLICATION_TYPE);
+                                if (constraintMap == null) {
+                                    constraintMap = new HashMap<String, Set<String>>();
+                                    configuredConstraints.put(APPLICATION_TYPE, constraintMap);
+                                }
+                                Set<String> types = constraintMap.get(applicationTypeProperty.getName());
+                                if (types == null) {
+                                    types = new HashSet<String>();
+                                    constraintMap.put(applicationTypeProperty.getName(), types);
+                                }
+                                types.add(typeProperty.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return configuredConstraints;
+    }
+
+    private static void writeRoleMapping(XMLExtendedStreamWriter writer, ModelNode accessAuthorization)
+            throws XMLStreamException {
+        writer.writeStartElement(Element.ROLE_MAPPING.getLocalName());
+
+        AccessAuthorizationResourceDefinition.USE_REALM_ROLES.marshallAsAttribute(accessAuthorization, writer);
+
+        if (accessAuthorization.hasDefined(ROLE_MAPPING)) {
+            ModelNode roleMappings = accessAuthorization.get(ROLE_MAPPING);
+
+            for (Property variable : roleMappings.asPropertyList()) {
+                writer.writeStartElement(Element.ROLE.getLocalName());
+                writeAttribute(writer, Attribute.NAME, variable.getName());
+                ModelNode role = variable.getValue();
+                if (role.hasDefined(INCLUDE)) {
+                    writeIncludeExclude(writer, Element.INCLUDE.getLocalName(), role.get(INCLUDE));
+                }
+
+                if (role.hasDefined(EXCLUDE)) {
+                    writeIncludeExclude(writer, Element.EXCLUDE.getLocalName(), role.get(EXCLUDE));
+                }
+
+                writer.writeEndElement();
+            }
+        }
+
+        writer.writeEndElement();
+    }
+
+    private static void writeIncludeExclude(XMLExtendedStreamWriter writer, String elementName, ModelNode includeExclude)
+            throws XMLStreamException {
+        writer.writeStartElement(elementName);
+        for (Property current : includeExclude.asPropertyList()) {
+            // The names where only arbitrary to allow unique referencing.
+            writePrincipal(writer, current.getValue());
+        }
+
+        writer.writeEndElement();
+    }
+
+    private static void writePrincipal(XMLExtendedStreamWriter writer, ModelNode principal) throws XMLStreamException {
+        String elementName = principal.require(TYPE).asString().equalsIgnoreCase(GROUP) ? Element.GROUP.getLocalName() : Element.USER.getLocalName();
+        writer.writeStartElement(elementName);
+        PrincipalResourceDefinition.REALM.marshallAsAttribute(principal, writer);
+        PrincipalResourceDefinition.NAME.marshallAsAttribute(principal, writer);
+        writer.writeEndElement();
+    }
+
+    private static void writeAccessConstraints(XMLExtendedStreamWriter writer, ModelNode accessAuthorization, Map<String, Map<String, Set<String>>> configuredConstraints) throws XMLStreamException {
+        writer.writeStartElement(Element.CONSTRAINTS.getLocalName());
+
+        if (configuredConstraints.containsKey(SensitivityResourceDefinition.VAULT_ELEMENT.getKey())){
+            writer.writeStartElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
+            ModelNode model = accessAuthorization.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
+                    SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
+            SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
+            SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
+            SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
+
+            writer.writeEndElement();
+        }
+
+        if (configuredConstraints.containsKey(SENSITIVITY_CLASSIFICATION)) {
+            writer.writeStartElement(Element.SENSITIVE_CLASSIFICATIONS.getLocalName());
+            Map<String, Set<String>> constraints = configuredConstraints.get(SENSITIVITY_CLASSIFICATION);
+            for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
+                writer.writeStartElement(Element.SENSITIVE_CLASSIFICATION.getLocalName());
+                writeAttribute(writer, Attribute.NAME, entry.getKey());
+
+                for (String type : entry.getValue()) {
+                    writer.writeStartElement(Element.TYPE.getLocalName());
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, SENSITIVITY_CLASSIFICATION, SENSITIVITY_CLASSIFICATION, entry.getKey(), TYPE, type);
+                    writeAttribute(writer, Attribute.NAME, type);
+                    SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
+                    SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
+                    SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
+                    writer.writeEndElement();
+                }
+
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+        if (configuredConstraints.containsKey(APPLICATION_TYPE)) {
+            writer.writeStartElement(Element.APPLICATION_TYPES.getLocalName());
+            Map<String, Set<String>> constraints = configuredConstraints.get(APPLICATION_TYPE);
+            for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
+                writer.writeStartElement(Element.APPLICATION_TYPE.getLocalName());
+                writeAttribute(writer, Attribute.NAME, entry.getKey());
+
+                for (String type : entry.getValue()) {
+                    writer.writeStartElement(Element.TYPE.getLocalName());
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, APPLICATION_TYPE, APPLICATION_TYPE, entry.getKey(), TYPE, type);
+                    writeAttribute(writer, Attribute.NAME, type);
+                    ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.marshallAsAttribute(model, writer);
+                    writer.writeEndElement();
+                }
+
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+    }
+
+    private static void writeServerGroupScopedRoles(XMLExtendedStreamWriter writer, ModelNode scopedRoles) throws XMLStreamException {
+        writer.writeStartElement(Element.SERVER_GROUP_SCOPED_ROLES.getLocalName());
+
+        for (Property property : scopedRoles.asPropertyList()) {
+            writer.writeStartElement(Element.ROLE.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            ModelNode value = property.getValue();
+            ServerGroupScopedRoleResourceDefinition.BASE_ROLE.marshallAsAttribute(value, writer);
+            ServerGroupScopedRoleResourceDefinition.SERVER_GROUPS.marshallAsElement(value, writer);
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+    private static void writeHostScopedRoles(XMLExtendedStreamWriter writer, ModelNode scopedRoles) throws XMLStreamException {
+        writer.writeStartElement(Element.HOST_SCOPED_ROLES.getLocalName());
+
+        for (Property property : scopedRoles.asPropertyList()) {
+            writer.writeStartElement(Element.ROLE.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            ModelNode value = property.getValue();
+            HostScopedRolesResourceDefinition.BASE_ROLE.marshallAsAttribute(value, writer);
+            HostScopedRolesResourceDefinition.HOSTS.marshallAsElement(value, writer);
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
     }
 

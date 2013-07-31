@@ -145,4 +145,26 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
             updates.add(operation);
         }
     }
+
+    @Override
+    protected void handleUnknownBridgeAttribute(XMLExtendedStreamReader reader, Element element, ModelNode bridgeAdd) throws XMLStreamException {
+        switch (element) {
+            case RECONNECT_ATTEMPTS_ON_SAME_NODE:
+                handleElementText(reader, element, bridgeAdd);
+                break;
+            default:
+                super.handleUnknownBridgeAttribute(reader, element, bridgeAdd);
+        }
+    }
+
+    @Override
+    protected void handleUnknownAddressSetting(XMLExtendedStreamReader reader, Element element, ModelNode addressSettingsAdd) throws XMLStreamException {
+        switch (element) {
+            case EXPIRY_DELAY:
+                handleElementText(reader, element, addressSettingsAdd);
+                break;
+            default:
+                super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
+        }
+    }
 }

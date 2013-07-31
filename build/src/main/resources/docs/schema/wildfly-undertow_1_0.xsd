@@ -70,6 +70,7 @@
         <xs:attribute name="worker" type="xs:string" default="default"/>
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
         <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+        <xs:attribute name="max-post-size" type="xs:long" default="0" />
     </xs:complexType>
     <xs:complexType name="https-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -78,6 +79,7 @@
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
         <xs:attribute name="enabled" type="xs:boolean" default="true"/>
         <xs:attribute name="security-realm" use="required" type="xs:string"/>
+        <xs:attribute name="max-post-size" type="xs:long" default="0" />
     </xs:complexType>
     <xs:complexType name="ajp-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -86,6 +88,7 @@
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
         <xs:attribute name="enabled" type="xs:boolean" default="true"/>
         <xs:attribute name="scheme" type="xs:string" default="http"/>
+        <xs:attribute name="max-post-size" type="xs:long" default="0" />
     </xs:complexType>
     <xs:complexType name="servletContainerType">
         <xs:sequence>
@@ -93,6 +96,8 @@
             <xs:element name="session-cookie" type="session-cookieType" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="development-mode" use="optional" type="xs:boolean" default="false"/>
+        <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>
@@ -103,7 +108,6 @@
     </xs:complexType>
 
     <xs:complexType name="jsp-configurationType">
-        <xs:attribute name="development" default="false" type="xs:boolean"/>
         <xs:attribute name="disabled" default="false" type="xs:boolean"/>
         <xs:attribute name="keep-generated" default="true" type="xs:boolean"/>
         <xs:attribute name="trim-spaces" default="false" type="xs:boolean"/>
