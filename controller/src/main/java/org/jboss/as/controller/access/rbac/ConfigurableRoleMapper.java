@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access.rbac;
 
+import static org.jboss.as.controller.ControllerLogger.ACCESS_LOGGER;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +54,9 @@ public class ConfigurableRoleMapper implements RoleMapper {
 
     // TODO - May want to consider COMPOSITE operations so all updates are applied simultaneously.
 
-    // TODO - Split immediate into different methods, synchronization isn't needed either.
+    public void addRoleImmediate(final String roleName) {
+        roles.put(roleName, new Role(roleName));
+    }
 
     /**
      * Adds a new role to the list of defined roles.
@@ -61,13 +64,11 @@ public class ConfigurableRoleMapper implements RoleMapper {
      * @param roleName - The name of the role being added.
      * @param immediate - Should the change be applied immediately without cloning the internal collection.
      */
-    public synchronized void addRole(final String roleName, final boolean immediate) {
-        HashMap<String, Role> newRoles = immediate ? roles : new HashMap<String, Role>(roles);
+    public synchronized void addRole(final String roleName) {
+        HashMap<String, Role> newRoles = new HashMap<String, Role>(roles);
         if (newRoles.containsKey(roleName) == false) {
             newRoles.put(roleName, new Role(roleName));
-            if (immediate == false) {
-                roles = newRoles;
-            }
+            roles = newRoles;
         }
     }
 
@@ -90,7 +91,11 @@ public class ConfigurableRoleMapper implements RoleMapper {
     public void addPrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
             final String name, final String realm, final boolean immediate) {
         Role role = roles.get(roleName);
-        role.addPrincipal(createPrincipal(principalType, name, realm), matchType, immediate);
+        if (immediate) {
+            role.addPrincipalImmediate(createPrincipal(principalType, name, realm), matchType);
+        } else {
+            role.addPrincipal(createPrincipal(principalType, name, realm), matchType);
+        }
     }
 
     public void removePrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
@@ -120,6 +125,8 @@ public class ConfigurableRoleMapper implements RoleMapper {
     private Set<String> mapRoles(final Caller caller) {
         Set<String> mappedRoles = new HashSet<String>();
 
+        boolean traceEnabled = ACCESS_LOGGER.isTraceEnabled();
+
         HashMap<String, Role> rolesToCheck;
         if (useRealmRoles) {
             rolesToCheck = new HashMap<String, Role>(roles);
@@ -128,10 +135,27 @@ public class ConfigurableRoleMapper implements RoleMapper {
                 String roleName = current.toUpperCase();
                 if (rolesToCheck.containsKey(roleName)) {
                     Role role = rolesToCheck.remove(roleName);
-                    if (role.isExcluded(caller) == false) {
+                    Principal exclusion = role.isExcluded(caller);
+                    if (exclusion == null) {
+                        if (traceEnabled) {
+                            ACCESS_LOGGER
+                                    .tracef("User '%s' assigned role '%s' due to realm assignment and no exclusion in role mapping definition.",
+                                            caller.getName(), roleName);
+                        }
                         mappedRoles.add(roleName);
+                    } else {
+                        if (traceEnabled) {
+                            ACCESS_LOGGER
+                                    .tracef("User '%s' NOT assigned role '%s' despite realm assignment due to exclusion match against %s.",
+                                            caller.getName(), roleName, exclusion);
+                        }
                     }
                 } else {
+                    if (traceEnabled) {
+                        ACCESS_LOGGER
+                                .tracef("User '%s' assigned role '%s' due to realm assignment and no role mapping to check for exclusion.",
+                                        caller.getName(), roleName);
+                    }
                     mappedRoles.add(roleName);
                 }
             }
@@ -141,9 +165,37 @@ public class ConfigurableRoleMapper implements RoleMapper {
         }
 
         for (Role current : rolesToCheck.values()) {
-            if (current.isIncluded(caller) && (current.isExcluded(caller) == false)) {
-                mappedRoles.add(current.getName());
+            Principal inclusion = current.isIncluded(caller);
+            if (inclusion != null) {
+                Principal exclusion = current.isExcluded(caller);
+                if (exclusion == null) {
+                    if (traceEnabled) {
+                        ACCESS_LOGGER.tracef("User '%s' assiged role '%s' due to match on inclusion %s", caller.getName(),
+                                current.getName(), inclusion);
+                    }
+                    mappedRoles.add(current.getName());
+                } else {
+                    if (traceEnabled) {
+                        ACCESS_LOGGER.tracef("User '%s' denied membership of role '%s' due to exclusion %s", caller.getName(),
+                                current.getName(), exclusion);
+                    }
+                }
+            } else {
+                if (traceEnabled) {
+                    ACCESS_LOGGER.tracef(
+                            "User '%s' not assigned role '%s' as no match on the include definition of the role mapping.",
+                            caller.getName(), current.getName());
+                }
             }
+        }
+
+        if (traceEnabled) {
+            StringBuilder sb = new StringBuilder("User '").append(caller.getName()).append("' Assigned Roles { ");
+            for (String current : mappedRoles) {
+                sb.append("'").append(current).append("' ");
+            }
+            sb.append("}");
+            ACCESS_LOGGER.trace(sb.toString());
         }
 
         // TODO - We could consider something along the lines of a WeakHashMap to hold this result keyed on the Caller.
@@ -183,11 +235,17 @@ public class ConfigurableRoleMapper implements RoleMapper {
             return sb.toString();
         }
 
-        private synchronized void addPrincipal(final Principal principal, final MatchType matchType, final boolean immediate) {
-            HashSet<Principal> set = getSet(matchType, immediate);
+        private void addPrincipalImmediate(final Principal principal, final MatchType matchType) {
+            HashSet<Principal> set = getSet(matchType, true);
+            set.add(principal); // TODO - Work out how to handle duplicates.
+            setSet(set, matchType, true);
+        }
+
+        private synchronized void addPrincipal(final Principal principal, final MatchType matchType) {
+            HashSet<Principal> set = getSet(matchType, false);
             set.add(principal); // TODO - Work out how to handle duplicates.
 
-            setSet(set, matchType, immediate);
+            setSet(set, matchType, false);
         }
 
         private synchronized void removePrincipal(final Principal principal, final MatchType matchType) {
@@ -197,15 +255,15 @@ public class ConfigurableRoleMapper implements RoleMapper {
             setSet(set, matchType, false);
         }
 
-        private boolean isIncluded(Caller caller) {
+        private Principal isIncluded(Caller caller) {
             return isInSet(caller, includes);
         }
 
-        private boolean isExcluded(Caller caller) {
+        private Principal isExcluded(Caller caller) {
             return isInSet(caller, excludes);
         }
 
-        private boolean isInSet(Caller caller, HashSet<Principal> theSet) {
+        private Principal isInSet(Caller caller, HashSet<Principal> theSet) {
             // One match is all it takes - return true on first match found.
 
             String accountName = null;
@@ -219,11 +277,11 @@ public class ConfigurableRoleMapper implements RoleMapper {
                         if (expectedRealm != null) {
                             if (current.getName().equals((accountName = getAccountName(caller, accountName)))
                                     && expectedRealm.equals((realm = getRealmName(caller, realm)))) {
-                                return true;
+                                return current;
                             }
                         } else {
                             if (current.getName().equals((accountName = getAccountName(caller, accountName)))) {
-                                return true;
+                                return current;
                             }
                         }
                         break;
@@ -231,11 +289,11 @@ public class ConfigurableRoleMapper implements RoleMapper {
                         if (expectedRealm != null) {
                             if ((groups = getGroups(caller, groups)).contains(current.getName())
                                     && expectedRealm.equals((realm = getRealmName(caller, realm)))) {
-                                return true;
+                                return current;
                             }
                         } else {
                             if ((groups = getGroups(caller, groups)).contains(current.getName())) {
-                                return true;
+                                return current;
                             }
                         }
 
@@ -243,7 +301,7 @@ public class ConfigurableRoleMapper implements RoleMapper {
                 }
             }
 
-            return false;
+            return null;
         }
 
         private String getAccountName(final Caller caller, final String currentValue) {
