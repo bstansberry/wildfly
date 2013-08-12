@@ -49,6 +49,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.core.security.SimplePrincipal;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
@@ -89,21 +90,6 @@ public class RealmIdentityManager implements IdentityManager {
         }
 
         return plainTextDigest;
-    }
-
-    private class SimplePrincipal implements Principal {
-
-        private final String name;
-
-        private SimplePrincipal(final String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
     }
 
     /*
