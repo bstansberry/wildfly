@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
@@ -231,34 +230,6 @@ public class RealmIdentityManager implements IdentityManager {
             //This is impossible, only here for testing if someone messed up a change
             throw new IllegalStateException("Unexpected authentication mechanism executing.");
         }
-    }
-
-    private class RealmIdentityAccount implements SubjectAccount {
-
-        private final Subject subject;
-        private final Principal principal;
-
-        private RealmIdentityAccount(final Subject subject, final Principal principal) {
-            this.subject = subject;
-            this.principal = principal;
-        }
-
-        @Override
-        public Principal getPrincipal() {
-            return principal;
-        }
-
-        @Override
-        public boolean isUserInRole(String role) {
-            // TODO - Not really used for domains yet.
-            return false;
-        }
-
-        public Subject getSubject() {
-            // TODO may need to map this method to a domain management API to ensure it can be used.
-            return subject;
-        }
-
     }
 
 }
