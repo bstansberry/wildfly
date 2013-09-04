@@ -70,7 +70,6 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
-import org.jboss.as.domain.management.DomainManagementLogger;
 import org.jboss.as.domain.management.access.AccessAuthorizationDomainSlaveConfigHandler;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.access.AccessConstraintResources;
