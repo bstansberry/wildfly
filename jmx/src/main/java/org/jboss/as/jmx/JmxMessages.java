@@ -29,10 +29,10 @@ import java.util.Map;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.InvalidAttributeValueException;
+import javax.management.JMRuntimeException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import javax.management.RuntimeMBeanException;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 
@@ -385,6 +385,15 @@ public interface JmxMessages {
     IllegalStateException noHandlerCalled(String name);
 
     @Message(id = 11360, value = "Unauthorized access")
-    RuntimeMBeanException unauthorized();
+    JMRuntimeException unauthorized();
+
+    @Message(id = 11361, value = "Not authorized to write attribute: '%s'")
+    JMRuntimeException notAuthorizedToWriteAttribute(String attributeName);
+
+    @Message(id = 11362, value = "Not authorized to read attribute: '%s'")
+    JMRuntimeException notAuthorizedToReadAttribute(String attributeName);
+
+    @Message(id = 11363, value = "Not authorized to invoke operation: '%s'")
+    JMRuntimeException notAuthorizedToExecuteOperation(String operationName);
 }
 

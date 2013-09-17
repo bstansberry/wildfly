@@ -46,6 +46,7 @@ import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.InvalidAttributeValueException;
+import javax.management.JMRuntimeException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MalformedObjectNameException;
@@ -54,6 +55,7 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 import javax.management.ReflectionException;
 
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.PathAddress;
@@ -62,6 +64,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
+import org.jboss.as.jmx.model.ResourceAccessControlUtil.ResourceAccessControl;
 import org.jboss.as.jmx.model.RootResourceIterator.ResourceAction;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.server.operations.RootResourceHack.ResourceAndRegistration;
@@ -74,8 +77,11 @@ import org.jboss.dmr.ModelNode;
 public class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
+    private static final String AUTHORIZED_ERROR = "JBAS013456";
+
     private final boolean standalone;
     private final ModelController controller;
+    private final ResourceAccessControlUtil accessControlUtil;
     private final PathAddress CORE_SERVICE_PLATFORM_MBEAN = PathAddress.pathAddress(PathElement.pathElement("core-service", "platform-mbean"));
 
     private final TypeConverters converters;
@@ -87,6 +93,7 @@ public class ModelControllerMBeanHelper {
         this.configuredDomains = configuredDomains;
         this.domain = domain;
         this.controller = controller;
+        this.accessControlUtil = new ResourceAccessControlUtil(controller);
 
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_ATTRIBUTE_OPERATION);
@@ -101,7 +108,7 @@ public class ModelControllerMBeanHelper {
     }
 
     int getMBeanCount() {
-        return new RootResourceIterator<Integer>(getRootResourceAndRegistration().getResource(), new ResourceAction<Integer>() {
+        return new RootResourceIterator<Integer>(accessControlUtil, getRootResourceAndRegistration().getResource(), new ResourceAction<Integer>() {
             int count;
             public boolean onResource(PathAddress address) {
                 if (isExcludeAddress(address)) {
@@ -118,7 +125,7 @@ public class ModelControllerMBeanHelper {
     }
 
     Set<ObjectInstance> queryMBeans(final ObjectName name, final QueryExp query) {
-        return new RootResourceIterator<Set<ObjectInstance>>(getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectInstance>>() {
+        return new RootResourceIterator<Set<ObjectInstance>>(accessControlUtil, getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectInstance>>() {
             Set<ObjectInstance> set = new HashSet<ObjectInstance>();
 
             @Override
@@ -145,7 +152,7 @@ public class ModelControllerMBeanHelper {
     }
 
     Set<ObjectName> queryNames(final ObjectName name, final QueryExp query) {
-        return new RootResourceIterator<Set<ObjectName>>(getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectName>>() {
+        return new RootResourceIterator<Set<ObjectName>>(accessControlUtil, getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectName>>() {
             Set<ObjectName> set = new HashSet<ObjectName>();
 
             @Override
@@ -176,36 +183,41 @@ public class ModelControllerMBeanHelper {
         return ObjectNameAddressUtil.resolvePathAddress(domain, getRootResourceAndRegistration().getResource(), name);
     }
 
+    PathAddress resolvePathAddress(final ObjectName name, ResourceAndRegistration reg) {
+        return ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+    }
 
     MBeanInfo getMBeanInfo(final ObjectName name) throws InstanceNotFoundException {
-        ResourceAndRegistration reg = getRootResourceAndRegistration();
-        PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw createInstanceNotFoundException(name);
+            throw MESSAGES.mbeanNotFound(name);
         }
-
+        final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, true);
         return MBeanInfoFactory.createMBeanInfo(name, converters, configuredDomains, standalone, address, getMBeanRegistration(address, reg));
     }
 
     Object getAttribute(final ObjectName name, final String attribute)  throws AttributeNotFoundException, InstanceNotFoundException, ReflectionException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+        final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw createInstanceNotFoundException(name);
+            throw MESSAGES.mbeanNotFound(name);
         }
-        return getAttribute(reg, address, name, attribute);
+        final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
+        return getAttribute(reg, address, name, attribute, accessControl);
     }
 
     AttributeList getAttributes(ObjectName name, String[] attributes) throws InstanceNotFoundException, ReflectionException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+        final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw createInstanceNotFoundException(name);
+            throw MESSAGES.mbeanNotFound(name);
         }
+        final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
         AttributeList list = new AttributeList();
         for (String attribute : attributes) {
             try {
-                list.add(new Attribute(attribute, getAttribute(reg, address, name, attribute)));
+                list.add(new Attribute(attribute, getAttribute(reg, address, name, attribute, accessControl)));
             } catch (AttributeNotFoundException e) {
                 throw new ReflectionException(e);
             }
@@ -213,7 +225,7 @@ public class ModelControllerMBeanHelper {
         return list;
     }
 
-    private Object getAttribute(final ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final String attribute)  throws ReflectionException, AttributeNotFoundException, InstanceNotFoundException {
+    private Object getAttribute(final ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final String attribute, final ResourceAccessControl accessControl)  throws ReflectionException, AttributeNotFoundException, InstanceNotFoundException {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
         final DescriptionProvider provider = registration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         if (provider == null) {
@@ -221,6 +233,11 @@ public class ModelControllerMBeanHelper {
         }
         final ModelNode description = provider.getModelDescription(null);
         final String attributeName = findAttributeName(description.get(ATTRIBUTES), attribute);
+
+        if (!accessControl.isReadableAttribute(attributeName)) {
+            throw MESSAGES.notAuthorizedToReadAttribute(attributeName);
+        }
+
 
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_ATTRIBUTE_OPERATION);
@@ -238,24 +255,29 @@ public class ModelControllerMBeanHelper {
 
     void setAttribute(ObjectName name, Attribute attribute) throws InstanceNotFoundException, AttributeNotFoundException, InvalidAttributeValueException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+        final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw createInstanceNotFoundException(name);
+            throw MESSAGES.mbeanNotFound(name);
         }
-        setAttribute(reg, address, name, attribute);
+        final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
+        setAttribute(reg, address, name, attribute, accessControl);
 
     }
 
     AttributeList setAttributes(ObjectName name, AttributeList attributes) throws InstanceNotFoundException, ReflectionException {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        final PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+        final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw createInstanceNotFoundException(name);
+            throw MESSAGES.mbeanNotFound(name);
         }
+        final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
 
         for (Attribute attribute : attributes.asList()) {
             try {
-                setAttribute(reg, address, name, attribute);
+                setAttribute(reg, address, name, attribute, accessControl);
+            } catch (JMRuntimeException e) {
+                //Propagate the JMRuntimeException thrown from authorization
+                throw e;
             } catch (Exception e) {
                 throw MESSAGES.cannotSetAttribute(e, attribute.getName());
             }
@@ -264,7 +286,7 @@ public class ModelControllerMBeanHelper {
         return attributes;
     }
 
-    private void setAttribute(final ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final Attribute attribute)  throws InvalidAttributeValueException, AttributeNotFoundException, InstanceNotFoundException {
+    private void setAttribute(final ResourceAndRegistration reg, final PathAddress address, final ObjectName name, final Attribute attribute, ResourceAccessControl accessControl)  throws InvalidAttributeValueException, AttributeNotFoundException, InstanceNotFoundException {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
         final DescriptionProvider provider = registration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         if (provider == null) {
@@ -275,6 +297,10 @@ public class ModelControllerMBeanHelper {
 
         if (!standalone) {
             throw MESSAGES.attributeNotWritable(attribute);
+        }
+
+        if (!accessControl.isWritableAttribute(attributeName)) {
+            throw MESSAGES.notAuthorizedToWriteAttribute(attributeName);
         }
 
         ModelNode op = new ModelNode();
@@ -289,14 +315,22 @@ public class ModelControllerMBeanHelper {
         ModelNode result = execute(op);
         String error = getFailureDescription(result);
         if (error != null) {
+            //Since read-resource-description does not know the parameters of the operation, i.e. if a vault expression is used or not,
+            //check the error code
+            //TODO add a separate authorize step where we check ourselves that the operation will pass authorization?
+            if (isVaultExpression(attribute.getValue()) && error.contains(AUTHORIZED_ERROR)) {
+                throw MESSAGES.notAuthorizedToWriteAttribute(attributeName);
+            }
             throw new InvalidAttributeValueException(error);
         }
     }
 
     ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException {
-        if (resolvePathAddress(name) == null) {
-            throw createInstanceNotFoundException(name);
+        final PathAddress address = resolvePathAddress(name);
+        if (address == null) {
+            throw MESSAGES.mbeanNotFound(name);
         }
+        accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
         return new ObjectInstance(name, CLASS_NAME);
     }
 
@@ -315,9 +349,9 @@ public class ModelControllerMBeanHelper {
         }
 
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
-        PathAddress address = ObjectNameAddressUtil.resolvePathAddress(domain, reg.getResource(), name);
+        final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw createInstanceNotFoundException(name);
+            throw MESSAGES.mbeanNotFound(name);
         }
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
 
@@ -345,6 +379,7 @@ public class ModelControllerMBeanHelper {
             }
         }
 
+
         if (opEntry == null) {
             ChildAddOperationEntry entry = ChildAddOperationFinder.findAddChildOperation(reg.getRegistration().getSubModel(address), operationName);
             if (entry == null) {
@@ -360,6 +395,7 @@ public class ModelControllerMBeanHelper {
                 System.arraycopy(params, 1, newParams, 0, newParams.length);
                 params = newParams;
             }
+
             return invoke(entry.getOperationEntry(), ADD, address.append(element), params);
         }
         return invoke(opEntry, realOperationName, address, params);
@@ -368,6 +404,19 @@ public class ModelControllerMBeanHelper {
     private Object invoke(final OperationEntry entry, final String operationName, PathAddress address, Object[] params)  throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (!standalone && !entry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
             throw MESSAGES.noOperationCalled(operationName);
+        }
+
+        ResourceAccessControl accessControl;
+        if (operationName.equals("add")) {
+            accessControl = accessControlUtil.getResourceAccess(address, true);
+        } else {
+            ObjectName objectName = ObjectNameAddressUtil.createObjectName(operationName, address);
+            accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(
+                    objectName, address, true);
+        }
+
+        if (!accessControl.isExecutableOperation(operationName)) {
+            throw MESSAGES.notAuthorizedToExecuteOperation(operationName);
         }
 
         final ModelNode description = entry.getDescriptionProvider().getModelDescription(null);
@@ -391,6 +440,16 @@ public class ModelControllerMBeanHelper {
         ModelNode result = execute(op);
         String error = getFailureDescription(result);
         if (error != null) {
+            if (error.contains(AUTHORIZED_ERROR)) {
+                for (Object param : params) {
+                    //Since read-resource-description does not know the parameters of the operation, i.e. if a vault expression is used or not,
+                    //check the error code
+                    //TODO add a separate authorize step where we check ourselves that the operation will pass authorization?
+                    if (isVaultExpression(param)) {
+                        throw MESSAGES.notAuthorizedToExecuteOperation(operationName);
+                    }
+                }
+            }
             throw new ReflectionException(null, error);
         }
 
@@ -399,10 +458,6 @@ public class ModelControllerMBeanHelper {
         }
         //TODO we could have more than one reply property
         return converters.fromModelNode(description.get(REPLY_PROPERTIES), result.get(RESULT));
-    }
-
-    static InstanceNotFoundException createInstanceNotFoundException(ObjectName name) {
-        return MESSAGES.mbeanNotFound(name);
     }
 
     private ResourceAndRegistration getRootResourceAndRegistration() {
@@ -443,6 +498,17 @@ public class ModelControllerMBeanHelper {
 
     private boolean isExcludeAddress(PathAddress pathAddress) {
         return pathAddress.equals(CORE_SERVICE_PLATFORM_MBEAN);
+    }
+
+    private boolean isVaultExpression(Object value) {
+        if (value != null && value.getClass() == String.class){
+            String valueString = (String)value;
+            if (ExpressionResolver.EXPRESSION_PATTERN.matcher(valueString).matches()) {
+                return TypeConverters.VAULT_PATTERN.matcher(valueString).matches();
+            }
+
+        }
+        return false;
     }
 
     public static ObjectName createRootObjectName(String domain) {

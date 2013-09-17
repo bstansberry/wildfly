@@ -147,8 +147,8 @@
         <version.org.glassfish.javax.el>3.0-b07</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0</version.org.glassfish.javax.json>
-        <version.org.hibernate>4.3.0.Beta3</version.org.hibernate>
-        <version.org.hibernate.commons.annotations>4.0.2.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate>4.3.0.Beta4</version.org.hibernate>
+        <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
@@ -174,7 +174,7 @@
         <version.org.jboss.ironjacamar>1.1.0.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.1.0.Alpha1</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.2.0.Final</version.org.jboss.jboss-dmr>
-        <version.org.jboss.jboss-transaction-spi>7.0.1.Final</version.org.jboss.jboss-transaction-spi>
+        <version.org.jboss.jboss-transaction-spi>7.0.2.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jboss-vfs>3.2.2.Final</version.org.jboss.jboss-vfs>
         <version.org.jboss.narayana>5.0.0.M4</version.org.jboss.narayana>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
@@ -190,7 +190,7 @@
         <version.org.jboss.osgi.metadata>3.0.0.Final</version.org.jboss.osgi.metadata>
         <version.org.jboss.remote-naming>2.0.0.Beta2</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
-        <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.CR2</version.org.jboss.remotingjmx.remoting-jmx>
+        <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.CR3</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.jboss.resteasy>3.0.4.Final</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.3.Final</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
@@ -225,8 +225,8 @@
         <version.org.jboss.stdio>1.0.2.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.1.Final</version.org.jboss.threads>
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
-        <version.org.jboss.weld.weld>2.1.0.Beta1</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>2.1.Beta1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>2.1.0.Beta2</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>2.1.Beta2</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>2.2.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.2.0.Final</version.org.jboss.ws.common>
@@ -3471,6 +3471,10 @@
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3490,6 +3494,10 @@
                     <exclusion>
                         <groupId>org.rhq.helpers</groupId>
                         <artifactId>rhq-pluginAnnotations</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3535,6 +3543,10 @@
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3542,6 +3554,12 @@
                <groupId>org.hibernate.common</groupId>
                <artifactId>hibernate-commons-annotations</artifactId>
                <version>${version.org.hibernate.commons.annotations}</version>
+	       <exclusions>
+	           <exclusion>
+                       <groupId>org.jboss.logging</groupId>
+                       <artifactId>jboss-logging-annotations</artifactId>
+                   </exclusion>
+               </exclusions>
             </dependency>
 
             <dependency>
@@ -3584,6 +3602,10 @@
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                       <groupId>org.jboss.logging</groupId>
+                       <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
