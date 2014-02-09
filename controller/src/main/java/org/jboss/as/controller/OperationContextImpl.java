@@ -245,6 +245,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         //    throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         //}
         authorize(false, READ_WRITE_CONFIG);
+        assertConfigurationUnlocked();
         if (!affectsResourceRegistration) {
             takeWriteLock();
             affectsResourceRegistration = true;
@@ -476,6 +477,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(address);
         authorize(false, READ_WRITE_CONFIG);
+        assertConfigurationUnlocked();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -596,6 +598,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(address);
         authorize(false, READ_WRITE_CONFIG);
+        assertConfigurationUnlocked();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -640,6 +643,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(absoluteAddress);
         authorizeAdd();
+        assertConfigurationUnlocked();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -694,6 +698,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(address);
         authorize(false, READ_WRITE_CONFIG);
+        assertConfigurationUnlocked();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();

@@ -2746,5 +2746,18 @@ public interface ControllerMessages {
     @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
     String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
 
+    /**
+     * Exception for when a client attempts to modify configuration when the process state does not allow that.
+     * @param locked must be {@link org.jboss.as.controller.ControlledProcessState.State#CONFIGURATION_LOCKED_RESTART_REQUIRED}
+     * @return an {@code OperationFailedRuntimeException}. This can be considered a client mistake, making this exception
+     *         type appropriate, because in theory the client should check the process state before making config
+     *         changes. In practice we use this exception type because we do not want these kinds of exceptions to spam
+     *         the server logs. They should simply be reported to the client, which will be the case with
+     *         {@code OperationFailedRuntimeException}. The server log should report the event that puts the process
+     *         in this state.
+     */
+    @Message(id = 13484, value = "Process is in state '%s' -- changes to the persistent configuration are not allowed until the process has been restarted")
+    OperationFailedRuntimeException configurationLocked(ControlledProcessState.State locked);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

@@ -55,6 +55,12 @@ public class ControlledProcessState {
          * the running state in line with the persistent configuration.
          */
         RESTART_REQUIRED("restart-required"),
+        /**
+         * Changes to the process' persistent configuration are not allowed until the process has been terminated
+         * and replaced with a new process. Differs from {@link #RESTART_REQUIRED} in that it indicates some error
+         * has occurred.
+         */
+        CONFIGURATION_LOCKED_RESTART_REQUIRED("configuration-locked-restart-required"),
         /** The process is stopping. */
         STOPPING("stopping");
 
@@ -76,7 +82,7 @@ public class ControlledProcessState {
     private final boolean reloadSupported;
     private final ControlledProcessStateService service;
 
-    private boolean restartRequiredFlag = false;
+    private Boolean restartRequiredFlag;
 
     public ControlledProcessState(final boolean reloadSupported) {
         this.reloadSupported = reloadSupported;
@@ -110,7 +116,9 @@ public class ControlledProcessState {
                 break;
             }
             synchronized (service) {
-                State newState = restartRequiredFlag ? State.RESTART_REQUIRED : State.RUNNING;
+                State newState = restartRequiredFlag == null
+                        ? State.RUNNING
+                        : restartRequiredFlag ? State.CONFIGURATION_LOCKED_RESTART_REQUIRED : State.RESTART_REQUIRED;
                 if (state.compareAndSet(was, newState, receiver[0], newStamp)) {
                     service.stateChanged(newState);
                     break;
@@ -146,7 +154,7 @@ public class ControlledProcessState {
                 }
             }
         }
-        return Integer.valueOf(newStamp);
+        return newStamp;
     }
 
     public Object setRestartRequired() {
@@ -161,14 +169,31 @@ public class ControlledProcessState {
             }
             synchronized (service) {
                 if (stateRef.compareAndSet(was, State.RESTART_REQUIRED, receiver[0], newStamp)) {
-                    restartRequiredFlag = true;
+                    restartRequiredFlag = Boolean.FALSE;
                     service.stateChanged(State.RESTART_REQUIRED);
                     break;
                 }
             }
         }
-        return Integer.valueOf(newStamp);
-    };
+        return newStamp;
+    }
+
+    public void setConfigurationLockedRestartRequired() {
+        AtomicStampedReference<State> stateRef = state;
+        int newStamp = stamp.incrementAndGet();
+        int[] receiver = new int[1];
+        // Keep trying until stateRef is CONFIGURATION_LOCKED_RESTART_REQUIRED with our stamp
+        for (;;) {
+            State was = stateRef.get(receiver);
+            synchronized (service) {
+                if (stateRef.compareAndSet(was, State.CONFIGURATION_LOCKED_RESTART_REQUIRED, receiver[0], newStamp)) {
+                    restartRequiredFlag = Boolean.TRUE;
+                    service.stateChanged(State.CONFIGURATION_LOCKED_RESTART_REQUIRED);
+                    break;
+                }
+            }
+        }
+    }
 
     public void revertReloadRequired(Object stamp) {
         if (!reloadSupported) {
@@ -189,7 +214,7 @@ public class ControlledProcessState {
         Integer theirStamp = Integer.class.cast(stamp);
         synchronized (service) {
             if (state.compareAndSet(State.RESTART_REQUIRED, State.RUNNING, theirStamp, this.stamp.incrementAndGet())) {
-                restartRequiredFlag = false;
+                restartRequiredFlag = null;
                 service.stateChanged(State.RUNNING);
             }
         }

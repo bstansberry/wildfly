@@ -851,6 +851,14 @@ abstract class AbstractOperationContext implements OperationContext {
         return callEnvironment;
     }
 
+
+
+    void assertConfigurationUnlocked() {
+        if (processState.getState() == ControlledProcessState.State.CONFIGURATION_LOCKED_RESTART_REQUIRED) {
+            throw ControllerMessages.MESSAGES.configurationLocked(ControlledProcessState.State.CONFIGURATION_LOCKED_RESTART_REQUIRED);
+        }
+    }
+
     class Step {
         private final OperationStepHandler handler;
         final ModelNode response;
