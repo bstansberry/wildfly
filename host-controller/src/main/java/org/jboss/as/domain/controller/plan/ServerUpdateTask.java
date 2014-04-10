@@ -48,24 +48,18 @@ abstract class ServerUpdateTask {
 
     protected final ServerUpdatePolicy updatePolicy;
     protected final ServerIdentity serverId;
-    protected final ServerUpdateResultHandler resultHandler;
 
     /**
      * Create a new update task.
-     *
-     * @param serverId the id of the server being updated. Cannot be <code>null</code>
+     *  @param serverId the id of the server being updated. Cannot be <code>null</code>
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
-     * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
     ServerUpdateTask(final ServerIdentity serverId,
-                     final ServerUpdatePolicy updatePolicy,
-                     final ServerUpdateResultHandler resultHandler) {
+                     final ServerUpdatePolicy updatePolicy) {
         assert serverId != null : "serverId is null";
         assert updatePolicy != null : "updatePolicy is null";
-        assert resultHandler != null : "resultHandler is null";
         this.serverId = serverId;
         this.updatePolicy = updatePolicy;
-        this.resultHandler = resultHandler;
     }
 
     public abstract ModelNode getOperation();
