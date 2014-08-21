@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -42,6 +43,7 @@ import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.txn.subsystem.JTSCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
@@ -68,8 +70,6 @@ import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import com.sun.corba.se.impl.orbutil.ORBConstants;
-
 /**
  * <p>
  * This class implements a {@code ModelAddOperationHandler} that installs the IIOP subsystem services:
@@ -92,8 +92,17 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 //    protected IIOPSubsystemAdd() {
 //    }
 
+    private final AttributeDefinition jtsAttribute;
+
     public IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes) {
-        super(attributes);
+        super(IIOPExtension.IIOP_CAPABILITIES, attributes);
+        jtsAttribute = IIOPRootDefinition.TRANSACTIONS;
+    }
+
+    /** Constructor only for use by the JacORB compatibility subsystem */
+    protected IIOPSubsystemAdd(final Collection<? extends AttributeDefinition> attributes, final AttributeDefinition jtsAttribute) {
+        super(IIOPExtension.IIOP_CAPABILITIES, attributes);
+        this.jtsAttribute = jtsAttribute;
     }
 
     private static final ServiceName SECURITY_DOMAIN_SERVICE_NAME = ServiceName.JBOSS.append("security").append(
@@ -151,16 +160,16 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         Properties props = this.getConfigurationProperties(context, model);
 
         // setup the ORB initializers using the configured properties.
-        this.setupInitializers(props);
+        this.setupInitializers(context, props);
 
         // setup the SSL socket factories, if necessary.
         this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
 
-
+        ServiceName orbServiceName = IIOPExtension.IIOP_ORB_CAPABILITY.getCapabilityServiceName();
         CorbaORBService orbService = new CorbaORBService(props);
-        final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
+        final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(orbServiceName, orbService);
         org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector(), false);
 
         // if a security domain has been specified, add a dependency to the domain service.
@@ -181,7 +190,7 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         // create the service the initializes the Root POA.
         CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa");
         context.getServiceTarget().addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
-                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector())
+                .addDependency(orbServiceName, ORB.class, rootPOAService.getORBInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the interface repository POA.
@@ -204,8 +213,8 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
         final CorbaNamingService namingService = new CorbaNamingService(props);
         context
                 .getServiceTarget()
-                .addService(CorbaNamingService.SERVICE_NAME, namingService)
-                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingService.getORBInjector())
+                .addService(IIOPExtension.IIOP_NAMING_CAPABILITY.getCapabilityServiceName(), namingService)
+                .addDependency(orbServiceName, ORB.class, namingService.getORBInjector())
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingService.getRootPOAInjector())
                 .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
                         namingService.getNamingPOAInjector())
@@ -285,9 +294,10 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
      * Sets up the ORB initializers according to what has been configured in the subsystem.
      * </p>
      *
+     * @param context the context for the operation that has triggered this setup work
      * @param props the subsystem configuration properties.
      */
-    private void setupInitializers(Properties props) {
+    private void setupInitializers(OperationContext context, Properties props) throws OperationFailedException {
         List<String> orbInitializers = new ArrayList<String>();
 
         // check which groups of initializers are to be installed.
@@ -300,6 +310,12 @@ public class IIOPSubsystemAdd extends AbstractAddStepHandler {
 
         String installTransaction = (String) props.remove(Constants.ORB_INIT_TRANSACTIONS);
         if (installTransaction.equalsIgnoreCase(Constants.FULL)) {
+            // We require JTS
+            context.requireOptionalCapability(IIOPExtension.JTS_CAPABILITY,
+                    IIOPExtension.IIOP_ORB_CAPABILITY.getName(),
+                    jtsAttribute.getName());
+            JTSCapability jtsCapability = context.getCapabilityRuntimeAPI(IIOPExtension.JTS_CAPABILITY, JTSCapability.class);
+            orbInitializers.addAll(jtsCapability.getORBInitializerClasses());
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.TRANSACTIONS.getInitializerClasses()));
         } else if (installTransaction.equalsIgnoreCase(Constants.SPEC)) {
             orbInitializers.addAll(Arrays.asList(IIOPInitializer.SPEC_TRANSACTIONS.getInitializerClasses()));

@@ -46,7 +46,7 @@ public class JacORBSubsystemAdd extends IIOPSubsystemAdd {
     static final JacORBSubsystemAdd INSTANCE = new JacORBSubsystemAdd();
 
     private JacORBSubsystemAdd() {
-        super(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES);
+        super(JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES, JacORBSubsystemDefinitions.ORB_INIT_TX);
     }
 
     @Override

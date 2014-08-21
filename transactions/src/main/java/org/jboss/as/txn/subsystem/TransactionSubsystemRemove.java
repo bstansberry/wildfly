@@ -22,8 +22,12 @@
 
 package org.jboss.as.txn.subsystem;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Removes the transaction subsystem root resource.
@@ -33,6 +37,18 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 class TransactionSubsystemRemove extends ReloadRequiredRemoveStepHandler {
 
     static final TransactionSubsystemRemove INSTANCE = new TransactionSubsystemRemove();
+
+    private TransactionSubsystemRemove() {
+        super(TransactionSubsystemRootResourceDefinition.BASIC_CAPABILITY);
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+        // Deregister JTS capability regardless of whether it was registered.
+        // It won't fail if it's not registered, so this saves tricky logic to check if it was
+        context.deregisterCapability(TransactionSubsystemRootResourceDefinition.JTS_CAPABILITY.getName());
+    }
 
     /**
      * Suppresses removal of the log-store=log-store child, as that remove op handler is a no-op.
