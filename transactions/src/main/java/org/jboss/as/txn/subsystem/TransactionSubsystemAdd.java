@@ -26,6 +26,7 @@ import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.IIOP_CAPABILITY;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -34,6 +35,10 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -85,13 +90,7 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
-import org.wildfly.iiop.openjdk.service.CorbaNamingService;
-
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
-
+import org.omg.CosNaming.NamingContextExt;
 
 /**
  * Adds the transaction management subsystem.
@@ -191,6 +190,16 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         TransactionSubsystemRootResourceDefinition.BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.STATUS_BINDING.validateAndSet(operation, model);
         TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.validateAndSet(operation, model);
+    }
+
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+
+        context.registerCapability(TransactionSubsystemRootResourceDefinition.BASIC_CAPABILITY, null);
+        ModelNode model = resource.getModel();
+        if (TransactionSubsystemRootResourceDefinition.JTS.resolveModelAttribute(context, model).asBoolean()) {
+            context.registerCapability(TransactionSubsystemRootResourceDefinition.JTS_CAPABILITY,TransactionSubsystemRootResourceDefinition.JTS.getName());
+        }
     }
 
     @Override
@@ -403,7 +412,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         recoveryManagerServiceServiceBuilder.addDependencies(deps);
 
         if (jts) {
-            recoveryManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"), ORB.class, recoveryManagerService.getOrbInjector());
+            recoveryManagerServiceServiceBuilder.addDependency(context.getCapabilityServiceName(IIOP_CAPABILITY, ORB.class),
+                    ORB.class, recoveryManagerService.getOrbInjector());
         }
 
         recoveryManagerServiceServiceBuilder
@@ -437,8 +447,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //if jts is enabled we need the ORB
         if (jts) {
-            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
-            transactionManagerServiceServiceBuilder.addDependency(CorbaNamingService.SERVICE_NAME);
+            transactionManagerServiceServiceBuilder.addDependency(context.getCapabilityServiceName(IIOP_CAPABILITY, ORB.class),
+                    ORB.class, transactionManagerService.getOrbInjector());
+            transactionManagerServiceServiceBuilder.addDependency(context.getCapabilityServiceName(IIOP_CAPABILITY, NamingContextExt.class));
         }
 
         transactionManagerServiceServiceBuilder
