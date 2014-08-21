@@ -24,11 +24,17 @@ package org.wildfly.iiop.openjdk;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -73,6 +79,13 @@ public class IIOPExtension implements Extension {
     private static final String RESOURCE_NAME = IIOPExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(1, 0, 0);
+
+
+    // Capability names
+    public static final String JTS_CAPABILITY = "org.wildfly.transactions.jts";
+    public static final RuntimeCapability<Void> IIOP_ORB_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.orb", org.omg.CORBA.ORB.class).build();
+    public static final RuntimeCapability<Void> IIOP_NAMING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.naming", org.omg.CosNaming.NamingContextExt.class).build();
+    public static final Set<RuntimeCapability> IIOP_CAPABILITIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(IIOP_ORB_CAPABILITY, IIOP_NAMING_CAPABILITY)));
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(IIOPExtension.SUBSYSTEM_NAME);

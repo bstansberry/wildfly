@@ -28,6 +28,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import com.sun.corba.se.impl.orb.ORBImpl;
+import com.sun.corba.se.impl.orb.ORBSingleton;
+import com.sun.corba.se.impl.orbutil.ORBConstants;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.inject.Injector;
@@ -47,10 +50,6 @@ import org.wildfly.iiop.openjdk.logging.IIOPLogger;
 import org.wildfly.iiop.openjdk.naming.jndi.CorbaUtils;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import com.sun.corba.se.impl.orb.ORBImpl;
-import com.sun.corba.se.impl.orb.ORBSingleton;
-import com.sun.corba.se.impl.orbutil.ORBConstants;
-
 /**
  * <p>
  * This class implements a {@code Service} that creates and installs a CORBA {@code ORB}.
@@ -61,7 +60,9 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
  */
 public class CorbaORBService implements Service<ORB> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(IIOPExtension.SUBSYSTEM_NAME, "orb-service");
+    /** @deprecated use capability-based service name discovery */
+    @Deprecated
+    public static final ServiceName SERVICE_NAME = IIOPExtension.IIOP_ORB_CAPABILITY.getCapabilityServiceName();
 
     private static final Properties properties = new Properties();
 
@@ -219,7 +220,7 @@ public class CorbaORBService implements Service<ORB> {
     }
 
     public static ORB getCurrent() {
-        return (ORB) currentServiceContainer().getRequiredService(SERVICE_NAME).getValue();
+        return (ORB) currentServiceContainer().getRequiredService(IIOPExtension.IIOP_ORB_CAPABILITY.getCapabilityServiceName()).getValue();
     }
 
     /**
