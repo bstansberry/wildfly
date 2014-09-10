@@ -43,6 +43,7 @@ import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsCapability;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
@@ -57,7 +58,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.jmx.JmxCapability;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.server.Services;
@@ -168,6 +169,13 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             }
         }
 
+        // Use the JMX capability if it is available
+        ServiceName jmxCapability = null;
+        if (context.requestOptionalCapability(InfinispanSubsystemResourceDefinition.JMX_CAPABILITY,
+                InfinispanSubsystemResourceDefinition.LOCAL_RUNTIME_CAPABILITY.getName(), null)) {
+            jmxCapability = context.getCapabilityRuntimeAPI(InfinispanSubsystemResourceDefinition.JMX_CAPABILITY, JmxCapability.class).getMBeanServerServiceName();
+        }
+
         final ModuleIdentifier moduleId = (resolvedValue = CacheContainerResourceDefinition.MODULE.resolveModelAttribute(context, containerModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
 
         // if we have a transport defined, pick up the transport-related attributes and install a channel
@@ -199,7 +207,8 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
             transportConfig.setClusterName(clusterName);
             transportConfig.setLockTimeout(lockTimeout);
 
-            controllers.addAll(installChannelServices(target, name, stack, verificationHandler));
+            JGroupsCapability jGroupsCapability = context.getCapabilityRuntimeAPI(TransportResourceDefinition.JGROUPS_CAPABILITY, JGroupsCapability.class);
+            controllers.addAll(installChannelServices(target, name, stack, jGroupsCapability, jmxCapability, verificationHandler));
 
             // register the protocol metrics by adding a step
             ChannelInstanceResourceDefinition.addChannelProtocolMetricsRegistrationStep(context, clusterName, stack);
@@ -211,7 +220,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
 
         // install the cache container configuration service
         controllers.add(installContainerConfigurationService(target, name, defaultCache, statistics, moduleId, stack, transportConfig,
-                        transportExecutor, listenerExecutor, evictionExecutor, replicationQueueExecutor, verificationHandler));
+                        transportExecutor, listenerExecutor, evictionExecutor, replicationQueueExecutor, jmxCapability, verificationHandler));
 
         // install a cache container service
         controllers.add(installContainerService(target, name, aliases, transportConfig, initialMode, verificationHandler));
@@ -291,15 +300,12 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 .install();
     }
 
-    private static Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String stack, ServiceVerificationHandler verificationHandler) {
+    private static Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String stack, JGroupsCapability jGroupsCapability, ServiceName jmxCapability, ServiceVerificationHandler verificationHandler) {
 
         ContextNames.BindInfo bindInfo = createChannelBinding(containerName);
-        ServiceName name = ChannelService.getServiceName(containerName);
-        ServiceController<?> binderService = new BinderServiceBuilder(target).build(bindInfo, name, Channel.class).install();
 
-        ServiceController<?> channelService = ChannelService.build(target, containerName, stack)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install();
+        ServiceController<?> channelService = jGroupsCapability.installOnDemandChannelService(target, containerName, stack, jmxCapability);
+        ServiceController<?> binderService = new BinderServiceBuilder(target).build(bindInfo, channelService.getName(), Channel.class).install();
 
         return Arrays.asList(binderService, channelService);
     }
@@ -309,18 +315,19 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
     }
 
     private static ServiceController<?> installContainerConfigurationService(ServiceTarget target,
-            String containerName, String defaultCache, boolean statistics, ModuleIdentifier moduleId, String stack, Transport transportConfig,
-            String transportExecutor, String listenerExecutor, String evictionExecutor, String replicationQueueExecutor,
-            ServiceVerificationHandler verificationHandler) {
+                                                                             String containerName, String defaultCache, boolean statistics, ModuleIdentifier moduleId, String stack, Transport transportConfig,
+                                                                             String transportExecutor, String listenerExecutor, String evictionExecutor, String replicationQueueExecutor,
+                                                                             ServiceName jmxCapability, ServiceVerificationHandler verificationHandler) {
 
         final ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(containerName);
         final EmbeddedCacheManagerDependencies dependencies = new EmbeddedCacheManagerDependencies(transportConfig);
         final Service<EmbeddedCacheManagerConfiguration> service = new EmbeddedCacheManagerConfigurationService(containerName, defaultCache, statistics, moduleId, dependencies);
         final ServiceBuilder<EmbeddedCacheManagerConfiguration> configBuilder = target.addService(configServiceName, service)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, dependencies.getModuleLoaderInjector())
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, dependencies.getMBeanServerInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+        if (jmxCapability != null) {
+            configBuilder.addDependency(jmxCapability, MBeanServer.class, dependencies.getMBeanServerInjector());
+        }
 
         // add these dependencies only if we have a transport defined
         if (transportConfig != null) {

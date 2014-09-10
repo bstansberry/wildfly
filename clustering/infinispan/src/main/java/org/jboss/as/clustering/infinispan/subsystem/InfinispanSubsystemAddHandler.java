@@ -55,6 +55,10 @@ public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandle
         target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
     }
 
+    InfinispanSubsystemAddHandler() {
+        super(InfinispanSubsystemResourceDefinition.LOCAL_RUNTIME_CAPABILITY);
+    }
+
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
         populate(operation, model);

@@ -4,6 +4,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.util.Collections;
+
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsCapability;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
@@ -21,12 +29,13 @@ import org.junit.runner.RunWith;
 @RunWith(BMUnitRunner.class)
 public class OperationSequencesTestCase extends OperationTestCaseBase {
 
+
     @Test
     public void testCacheContainerAddRemoveAddSequence() throws Exception {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -58,7 +67,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -90,7 +99,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
     public void testCacheContainerRemoveRollback() throws Exception {
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -126,7 +135,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addOp = getCacheAddOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
         ModelNode removeOp = getCacheRemoveOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
@@ -149,7 +158,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
+        KernelServices servicesA = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION).setSubsystemXml(subsystemXml).build();
 
         ModelNode addOp = getCacheAddOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
         ModelNode removeOp = getCacheRemoveOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");

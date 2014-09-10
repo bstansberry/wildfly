@@ -64,7 +64,7 @@ public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
     }
 
     JGroupsSubsystemAddHandler(AttributeDefinition... attributes) {
-        super(attributes);
+        super(JGroupsSubsystemResourceDefinition.JGROUPS_CAPABILITY, attributes);
     }
 
     @Override

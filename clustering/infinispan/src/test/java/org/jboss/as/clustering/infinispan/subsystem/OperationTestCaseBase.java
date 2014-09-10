@@ -9,10 +9,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.IOException;
+import java.util.Collections;
 
+import org.jboss.as.clustering.jgroups.subsystem.JGroupsCapability;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -24,6 +27,15 @@ import org.jboss.dmr.ModelNode;
 public class OperationTestCaseBase extends AbstractSubsystemTest {
 
     static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan-3_0.xml" ;
+
+    static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities(Collections.singletonMap("org.wildfly.extension.jgroups", (Object) new JGroupsCapability()));
+
+    // For use in tests where we don't need OperationContext.Stage.RUNTIME execution
+    // We need to pretend the JGroups capability is there though because our capabilities have a hard requirement for it
+    // We don't have a hard requirement for JMX though so we don't have to register it
+    static final AdditionalInitialization ADMIN_ONLY_INIT =
+            AdditionalInitialization.withCapabilities(//InfinispanSubsystemResourceDefinition.JMX_CAPABILITY,
+                    TransportResourceDefinition.JGROUPS_CAPABILITY);
 
     public OperationTestCaseBase() {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());

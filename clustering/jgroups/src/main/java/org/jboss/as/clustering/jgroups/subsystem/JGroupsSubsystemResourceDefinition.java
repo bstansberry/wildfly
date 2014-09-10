@@ -28,6 +28,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -53,6 +54,10 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DEFAULT_STACK };
+
+    static final RuntimeCapability<JGroupsCapability> JGROUPS_CAPABILITY =
+            new RuntimeCapability<>("org.wildfly.extension.jgroups", new JGroupsCapability());
+
 
     private final boolean allowRuntimeOnlyRegistration;
 

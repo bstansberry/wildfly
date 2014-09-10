@@ -22,10 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Collections;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -33,6 +36,7 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.wildfly.extension.io.IOCapability;
 
 /**
  * The root resource of the Infinispan subsystem.
@@ -40,6 +44,10 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinition {
+
+    static final String JMX_CAPABILITY ="org.wildfly.extension.jmx";
+    static final RuntimeCapability<IOCapability> LOCAL_RUNTIME_CAPABILITY =
+            new RuntimeCapability<IOCapability>("org.wildfly.extension.infinispan.local", null, null, Collections.singleton(JMX_CAPABILITY));
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME);
 
@@ -55,7 +63,8 @@ public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinit
     private final boolean allowRuntimeOnlyRegistration;
 
     InfinispanSubsystemResourceDefinition(ResolvePathHandler resolvePathHandler, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, InfinispanExtension.getResourceDescriptionResolver(), new InfinispanSubsystemAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, InfinispanExtension.getResourceDescriptionResolver(), new InfinispanSubsystemAddHandler(),
+                new ReloadRequiredRemoveStepHandler(LOCAL_RUNTIME_CAPABILITY));
         this.resolvePathHandler = resolvePathHandler;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }

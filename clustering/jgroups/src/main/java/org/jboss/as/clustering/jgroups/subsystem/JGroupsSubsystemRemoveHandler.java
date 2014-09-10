@@ -42,6 +42,10 @@ import org.jboss.msc.service.ServiceName;
  */
 public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
 
+    JGroupsSubsystemRemoveHandler() {
+        super(JGroupsSubsystemResourceDefinition.JGROUPS_CAPABILITY);
+    }
+
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 

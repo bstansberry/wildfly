@@ -37,7 +37,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
@@ -153,10 +152,10 @@ public class TransformersTestCase extends OperationTestCaseBase {
     }
 
     private KernelServices buildKernelServices(String xml, ModelTestControllerVersion controllerVersion, ModelVersion version, String... mavenResourceURLs) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADMIN_ONLY_INIT)
                 .setSubsystemXml(xml);
 
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+        builder.createLegacyKernelServicesBuilder(ADMIN_ONLY_INIT, controllerVersion, version)
                 .addMavenResourceURL(mavenResourceURLs)
                 .skipReverseControllerCheck()
                 .dontPersistXml();
@@ -389,7 +388,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = InfinispanModel.VERSION_1_3_0.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builderA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builderA = createKernelServicesBuilder(ADMIN_ONLY_INIT);
 
         // initialise the legacy services
         builderA.createLegacyKernelServicesBuilder(null, controllerVersion, version)
@@ -411,7 +410,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         mainServicesA.shutdown();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builderB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builderB = createKernelServicesBuilder(ADMIN_ONLY_INIT);
 
         // initialize the legacy services
         builderB.createLegacyKernelServicesBuilder(null, controllerVersion, version)
@@ -444,7 +443,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = InfinispanModel.VERSION_1_4_0.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADMIN_ONLY_INIT);
 
         // initialize the legacy services
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
@@ -475,7 +474,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
         ModelVersion version = InfinispanModel.VERSION_1_4_1.getVersion();
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADMIN_ONLY_INIT);
 
         // initialise the legacy services
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)

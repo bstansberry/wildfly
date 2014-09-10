@@ -27,7 +27,6 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -55,12 +54,14 @@ public class ChannelService implements Service<Channel>, ChannelListener {
         return SERVICE_NAME.append(id);
     }
 
-    public static ServiceBuilder<Channel> build(ServiceTarget target, String id, String stack) {
+    public static ServiceBuilder<Channel> build(ServiceTarget target, String id, String stack, ServiceName jmxCapability) {
         ChannelService service = new ChannelService(id);
-        return target.addService(getServiceName(id), service)
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, service.factory)
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
-        ;
+        ServiceBuilder<Channel> result = target.addService(getServiceName(id), service)
+                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, service.factory);
+        if (jmxCapability != null) {
+            result = result.addDependency(jmxCapability, MBeanServer.class, service.server);
+        }
+        return result;
     }
 
     private final InjectedValue<MBeanServer> server = new InjectedValue<>();
@@ -86,7 +87,10 @@ public class ChannelService implements Service<Channel>, ChannelListener {
             this.channel.addChannelListener(this);
             // Don't connect the channel here
             // This will be done by Infinispan (see AS7-5904)
-            JmxConfigurator.registerChannel((JChannel) this.channel, this.server.getValue(), this.id);
+            MBeanServer mBeanServer = this.server.getOptionalValue();
+            if (mBeanServer != null) {
+                JmxConfigurator.registerChannel((JChannel) this.channel, mBeanServer, this.id);
+            }
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -103,7 +107,10 @@ public class ChannelService implements Service<Channel>, ChannelListener {
             this.channel.removeChannelListener(this);
             this.channel.close();
             try {
-                JmxConfigurator.unregisterChannel((JChannel) this.channel, this.server.getValue(), this.id);
+                MBeanServer mBeanServer = this.server.getOptionalValue();
+                if (mBeanServer != null) {
+                    JmxConfigurator.unregisterChannel((JChannel) this.channel, mBeanServer, this.id);
+                }
             } catch (Exception e) {
                 ROOT_LOGGER.debug(e.getMessage(), e);
             }

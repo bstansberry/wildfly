@@ -29,6 +29,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -36,6 +37,14 @@ import org.jboss.msc.service.ServiceController;
  * @author Paul Ferraro
  */
 public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
+
+    public ReloadRequiredAddStepHandler(RuntimeCapability<?> capability, final AttributeDefinition... attributes) {
+        super(capability, attributes);
+    }
+
+    public ReloadRequiredAddStepHandler(RuntimeCapability<?> capability, final Collection<AttributeDefinition> attributes) {
+        super(capability, attributes);
+    }
 
     public ReloadRequiredAddStepHandler(final AttributeDefinition... attributes) {
         super(attributes);
