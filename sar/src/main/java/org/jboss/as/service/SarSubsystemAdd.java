@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.jmx.JmxCapability;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -42,22 +43,26 @@ public class SarSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final SarSubsystemAdd INSTANCE = new SarSubsystemAdd();
 
     private SarSubsystemAdd() {
+        super(SarExtension.SAR_CAPABILITY);
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(final OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
 
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
+
+                JmxCapability jmxCapability = context.getCapabilityRuntimeAPI(SarExtension.JMX_CAPABILITY, JmxCapability.class);
+
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SAR_SUB_DEPLOY_CHECK, new SarSubDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SAR, new SarStructureProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_SAR_MODULE, new SarModuleDependencyProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_SERVICE_DEPLOYMENT, new ServiceDeploymentParsingProcessor());
                 processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_SAR_SERVICE_COMPONENT, new ServiceComponentProcessor());
-                processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVICE_DEPLOYMENT, new ParsedServiceDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(SarExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVICE_DEPLOYMENT, new ParsedServiceDeploymentProcessor(jmxCapability.getMBeanServerServiceName()));
             }
         }, OperationContext.Stage.RUNTIME);
 
