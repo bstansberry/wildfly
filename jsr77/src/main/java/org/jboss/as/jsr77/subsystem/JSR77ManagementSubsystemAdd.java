@@ -43,6 +43,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.RemoteViewManagedReferenceFactory;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
+import org.jboss.as.jmx.JmxCapability;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -70,6 +71,7 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
 
 
     private JSR77ManagementSubsystemAdd() {
+        super(JSR77ManagementRootResource.JSR77_CAPABILITY);
     }
 
     @Override
@@ -93,9 +95,10 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
 
                 ServiceTarget target = context.getServiceTarget();
 
+                JmxCapability jmxCapability = context.getCapabilityRuntimeAPI(JSR77ManagementRootResource.JMX_CAPABILITY, JmxCapability.class);
                 RegisterMBeanServerDelegateService mbeanServerService = new RegisterMBeanServerDelegateService();
                 newControllers.add(target.addService(RegisterMBeanServerDelegateService.SERVICE_NAME, mbeanServerService)
-                    .addDependency(MBeanServerService.SERVICE_NAME, PluggableMBeanServer.class, mbeanServerService.injectedMbeanServer)
+                    .addDependency(jmxCapability.getMBeanServerServiceName(), PluggableMBeanServer.class, mbeanServerService.injectedMbeanServer)
                     .addDependency(Services.JBOSS_SERVER_CONTROLLER, ModelController.class, mbeanServerService.injectedController)
                     .addListener(verificationHandler)
                     .setInitialMode(Mode.ACTIVE)
