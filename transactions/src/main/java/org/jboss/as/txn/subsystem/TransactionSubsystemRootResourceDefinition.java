@@ -228,10 +228,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
 
-    static final String IIOP_CAPABILITY = "org.wildfly.iiop";
+    static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
     static final RuntimeCapability<Void> BASIC_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions")
+                .addRequirements(JMX_CAPABILITY)
                 .build();
+    static final String IIOP_CAPABILITY = "org.wildfly.iiop";
     static final RuntimeCapability<JTSCapability> JTS_CAPABILITY =
             RuntimeCapability.Builder.of("org.wildfly.transactions.jts", new JTSCapability())
                 .addRequirements(BASIC_CAPABILITY.getName(), IIOP_CAPABILITY)
