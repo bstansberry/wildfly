@@ -24,6 +24,10 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +40,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -49,10 +54,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the root resource of the transaction subsystem.
@@ -230,13 +231,17 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true)
             .setRequires(CommonAttributes.USE_JDBC_STORE).build();
 
+    static final String JMX_CAPABILITY = "org.wildfly.extension.jmx";
+    static final RuntimeCapability<Void> BASIC_CAPABILITY = new RuntimeCapability<Void>("org.wildfly.extension.transactions",
+            null, JMX_CAPABILITY);
 
     private final boolean registerRuntimeOnly;
 
     TransactionSubsystemRootResourceDefinition(boolean registerRuntimeOnly) {
         super(TransactionExtension.SUBSYSTEM_PATH,
                 TransactionExtension.getResourceDescriptionResolver(),
-                TransactionSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
+                TransactionSubsystemAdd.INSTANCE,
+                new ReloadRequiredRemoveStepHandler(BASIC_CAPABILITY),
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }

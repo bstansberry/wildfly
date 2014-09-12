@@ -195,6 +195,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+
+        context.registerCapability(TransactionSubsystemRootResourceDefinition.BASIC_CAPABILITY, null);
+    }
+
+    @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> controllers) throws OperationFailedException {

@@ -49,10 +49,10 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.jmx.JmxCapability;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
@@ -76,7 +76,6 @@ public class TransactionExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
-    private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
     static final PathElement PARTICIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
@@ -92,8 +91,9 @@ public class TransactionExtension implements Extension {
     }
 
     static MBeanServer getMBeanServer(OperationContext context) {
+        JmxCapability jmxCapability = context.getCapabilityRuntimeAPI(TransactionSubsystemRootResourceDefinition.JMX_CAPABILITY, JmxCapability.class);
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-        final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
+        final ServiceController<?> serviceController = serviceRegistry.getService(jmxCapability.getMBeanServerServiceName());
         if (serviceController == null) {
             throw TransactionLogger.ROOT_LOGGER.jmxSubsystemNotInstalled();
         }
