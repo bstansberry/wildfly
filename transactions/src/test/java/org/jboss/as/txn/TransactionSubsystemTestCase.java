@@ -80,7 +80,7 @@ import org.junit.Test;
  */
 public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities("org.wildfly.iiop.orb", "org.wildfly.iiop.naming");
+    private static final AdditionalInitialization ADDITIONAL_INITIALIZATION = AdditionalInitialization.withCapabilities("org.wildfly.iiop.orb", "org.wildfly.iiop.naming", "org.wildfly.management.jmx");
 
     public TransactionSubsystemTestCase() {
         super(TransactionExtension.SUBSYSTEM_NAME, new TransactionExtension());
@@ -175,7 +175,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         String subsystemXml = readResource("full.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(ADDITIONAL_INITIALIZATION)
                 .setSubsystemXml(subsystemXml);
 
         final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()));
@@ -183,7 +183,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         LegacyKernelServicesInitializer init = builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
-            .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
+            .configureReverseControllerCheck(ADDITIONAL_INITIALIZATION, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
             .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
         if (controllerVersion == ModelTestControllerVersion.EAP_6_0_0) {
             //EAP_6_0_0 does not have OperationFixer, so disable the validation of the ADD operation
