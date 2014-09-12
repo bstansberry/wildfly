@@ -123,6 +123,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.jmx.JmxCapability;
 import org.jboss.as.messaging.jms.JMSService;
 import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.network.OutboundSocketBinding;
@@ -246,8 +247,11 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Add the HornetQ Service
                 ServiceName hqServiceName = MessagingServices.getHornetQServiceName(serverName);
-                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService)
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
+                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService);
+                if (context.requestOptionalCapability(MessagingSubsystemRootResourceDefinition.JMX_CAPABILITY, MessagingSubsystemRootResourceDefinition.MESSAGING_CAPABILITY.getName(), null)) {
+                    JmxCapability jmxCapability = context.getCapabilityRuntimeAPI(MessagingSubsystemRootResourceDefinition.JMX_CAPABILITY, JmxCapability.class);
+                    serviceBuilder.addDependency(jmxCapability.getMBeanServerServiceName(), MBeanServer.class, hqService.getMBeanServer());
+                }
 
                 serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, hqService.getPathManagerInjector());
 

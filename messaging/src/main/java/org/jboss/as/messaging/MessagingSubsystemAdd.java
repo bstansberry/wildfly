@@ -31,9 +31,9 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.deployment.CDIDeploymentProcessor;
 import org.jboss.as.messaging.deployment.DefaultJMSConnectionFactoryBindingProcessor;
 import org.jboss.as.messaging.deployment.DefaultJMSConnectionFactoryResourceReferenceProcessor;
+import org.jboss.as.messaging.deployment.MessagingDependencyProcessor;
 import org.jboss.as.messaging.deployment.MessagingJMSDefinitionAnnotationParser;
 import org.jboss.as.messaging.deployment.MessagingJMSDefinitionDeploymentProcessor;
-import org.jboss.as.messaging.deployment.MessagingDependencyProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlParsingDeploymentUnitProcessor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -52,6 +52,7 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public static final MessagingSubsystemAdd INSTANCE = new MessagingSubsystemAdd();
 
     private MessagingSubsystemAdd() {
+        super(MessagingSubsystemRootResourceDefinition.BASIC_CAPABILITIES);
     }
 
     @Override

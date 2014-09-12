@@ -22,8 +22,14 @@
 
 package org.jboss.as.messaging;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the messaging subsystem root resource.
@@ -32,12 +38,22 @@ import org.jboss.as.controller.SimpleResourceDefinition;
  */
 public class MessagingSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
+    static final String JMX_CAPABILITY = "org.wildfly.extension.jmx";
+
+    static final RuntimeCapability<Void> MESSAGING_CAPABILITY = new RuntimeCapability<Void>("org.wildfly.extension.messaging",
+            null, null, Collections.singleton(JMX_CAPABILITY));
+
+    static final RuntimeCapability<Void> JMS_CAPABILITY = new RuntimeCapability<Void>("org.wildfly.extension.messaging.jms",
+            null, MESSAGING_CAPABILITY.getName());
+
+    static final Set<RuntimeCapability> BASIC_CAPABILITIES = new HashSet<RuntimeCapability>(Arrays.asList(MESSAGING_CAPABILITY, JMS_CAPABILITY));
+
     public static final MessagingSubsystemRootResourceDefinition INSTANCE = new MessagingSubsystemRootResourceDefinition();
 
     private MessagingSubsystemRootResourceDefinition() {
         super(MessagingExtension.SUBSYSTEM_PATH,
                 MessagingExtension.getResourceDescriptionResolver(MessagingExtension.SUBSYSTEM_NAME),
                 MessagingSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                new ReloadRequiredRemoveStepHandler(MESSAGING_CAPABILITY, JMS_CAPABILITY));
     }
 }
