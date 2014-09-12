@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
@@ -118,6 +117,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
@@ -148,6 +148,12 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
  */
 class HornetQServerAdd implements OperationStepHandler {
 
+    private static final String JMX_CAPABILITY = "org.wildfly.management.jmx";
+
+    private static final RuntimeCapability<Void> HORNETQ_SERVER_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.messaging.hornetq.server", true)
+            .addRuntimeOnlyRequirements(JMX_CAPABILITY)
+            .build();
+
     static final String PATH_BASE = "paths";
 
     public static final HornetQServerAdd INSTANCE = new HornetQServerAdd();
@@ -176,6 +182,9 @@ class HornetQServerAdd implements OperationStepHandler {
             seVal.set(mceVal);
             mceVal.set(new ModelNode());
         }
+
+        // Register this resource's capability
+        context.registerCapability(RuntimeCapability.fromBaseCapability(HORNETQ_SERVER_CAPABILITY, context.getCurrentAddressValue()), null);
 
         if (context.isNormalServer()) {
             // add an operation to create all the messaging paths resources that have not been already been created
@@ -225,7 +234,7 @@ class HornetQServerAdd implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServiceTarget serviceTarget = context.getServiceTarget();
 
-                final String serverName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+                final String serverName = context.getCurrentAddressValue();
 
                 // Transform the configuration based on the recursive model
                 final ModelNode model = Resource.Tools.readModel(resource);
@@ -247,8 +256,11 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Add the HornetQ Service
                 ServiceName hqServiceName = MessagingServices.getHornetQServiceName(serverName);
-                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService)
-                        .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("mbean", "server"), MBeanServer.class, hqService.getMBeanServer());
+                final ServiceBuilder<HornetQServer> serviceBuilder = serviceTarget.addService(hqServiceName, hqService);
+                if (context.hasOptionalCapability(JMX_CAPABILITY, HORNETQ_SERVER_CAPABILITY.getDynamicName(serverName), null)) {
+                    ServiceName jmxCapability = context.getCapabilityServiceName(JMX_CAPABILITY, MBeanServer.class);
+                    serviceBuilder.addDependency(jmxCapability, MBeanServer.class, hqService.getMBeanServer());
+                }
 
                 serviceBuilder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, hqService.getPathManagerInjector());
 
