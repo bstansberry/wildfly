@@ -29,12 +29,11 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
@@ -55,7 +54,6 @@ import org.jboss.wsf.spi.management.ServerConfig;
  */
 public final class ServerConfigService implements Service<ServerConfig> {
 
-    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private final AbstractServerConfig serverConfig;
 
     private ServerConfigService(final AbstractServerConfig serverConfig) {
@@ -89,10 +87,11 @@ public final class ServerConfigService implements Service<ServerConfig> {
     }
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig,
-            final ServiceListener<Object> listener, final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable) {
+                                               final ServiceListener<Object> listener, final List<ServiceName> dependencies,
+                                               final ServiceName mbeanServerServiceName) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
-        if (jmxSubsystemAvailable) {
-            builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
+        if (mbeanServerServiceName != null) {
+            builder.addDependency(mbeanServerServiceName, MBeanServer.class, serverConfig.getMBeanServerInjector());
         } else {
             serverConfig.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
         }

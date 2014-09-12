@@ -21,13 +21,11 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_PATH_REWRITE_RULE;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_URI_SCHEME;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_PATH_REWRITE_RULE;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -38,17 +36,16 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
-import org.jboss.as.jmx.JMXExtension;
+import org.jboss.as.jmx.JmxCapability;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.web.host.CommonWebServer;
-import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.service.XTSClientIntegrationService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
@@ -64,6 +61,10 @@ import org.jboss.msc.service.ServiceTarget;
  */
 class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
+
+    private WSSubsystemAdd() {
+        super(WSExtension.WEBSERVICES_CAPABILITY);
+    }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
@@ -86,14 +87,14 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         ServiceTarget serviceTarget = context.getServiceTarget();
-        final boolean jmxAvailable = isJMXSubsystemAvailable(context);
+        final ServiceName mbeanServerServiceName = getMBeanServerServiceName(context);
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), jmxAvailable));
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), mbeanServerServiceName));
         }
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), jmxAvailable));
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient), mbeanServerServiceName));
         }
         newControllers.add(XTSClientIntegrationService.install(serviceTarget, verificationHandler));
     }
@@ -148,8 +149,11 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    private static boolean isJMXSubsystemAvailable(final OperationContext context) {
-        Resource root = context.readResourceFromRoot(PathAddress.pathAddress(PathAddress.EMPTY_ADDRESS), false);
-        return root.hasChild(PathElement.pathElement(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME));
+    private static ServiceName getMBeanServerServiceName(final OperationContext context) {
+        ServiceName result = null;
+        if (context.requestOptionalCapability(WSExtension.JMX_CAPABILITY, WSExtension.WEBSERVICES_CAPABILITY.getName(), null)) {
+            result = context.getCapabilityRuntimeAPI(WSExtension.JMX_CAPABILITY, JmxCapability.class).getMBeanServerServiceName();
+        }
+        return result;
     }
 }
