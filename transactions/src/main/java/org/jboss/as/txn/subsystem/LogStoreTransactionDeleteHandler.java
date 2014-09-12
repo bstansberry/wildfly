@@ -22,6 +22,10 @@
 
 package org.jboss.as.txn.subsystem;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -30,10 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 /**
  * Operation handler for removing transaction logs from the TM and from the subsystem model
@@ -49,36 +49,43 @@ public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        MBeanServer mbs = TransactionExtension.getMBeanServer(context);
+
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
 
-        try {
-            final ObjectName on = LogStoreResource.getObjectName(resource);
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                MBeanServer mbs = TransactionExtension.getMBeanServer(context);
 
-            //  Invoke operation
-            Object res = mbs.invoke(on, "remove", null, null);
+                try {
+                    final ObjectName on = LogStoreResource.getObjectName(resource);
 
-            try {
-                // validate that the MBean was removed:
-                mbs.getObjectInstance(on);
+                    //  Invoke operation
+                    Object res = mbs.invoke(on, "remove", null, null);
 
-                String reason = res != null ? res.toString() : LOG_DELETE_FAILURE_MESSAGE;
+                    try {
+                        // validate that the MBean was removed:
+                        mbs.getObjectInstance(on);
 
-                throw new OperationFailedException(reason);
-            } catch (InstanceNotFoundException e) {
-                // success, the MBean was deleted
-                final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-                final PathElement element = address.getLastElement();
+                        String reason = res != null ? res.toString() : LOG_DELETE_FAILURE_MESSAGE;
 
-                logStoreResource.removeChild(element);
+                        throw new OperationFailedException(reason);
+                    } catch (InstanceNotFoundException e) {
+                        // success, the MBean was deleted
+                        final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+                        final PathElement element = address.getLastElement();
+
+                        logStoreResource.removeChild(element);
+                    }
+                } catch (OperationFailedException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new OperationFailedException(e.getMessage());
+                }
+
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
-        } catch (OperationFailedException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new OperationFailedException(e.getMessage());
-        }
-
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }, OperationContext.Stage.RUNTIME);
 
     }
 }
