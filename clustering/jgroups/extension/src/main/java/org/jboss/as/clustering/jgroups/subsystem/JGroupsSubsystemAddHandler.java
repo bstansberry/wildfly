@@ -53,7 +53,7 @@ import org.wildfly.clustering.spi.GroupBuilderProvider;
 public class JGroupsSubsystemAddHandler extends AbstractAddStepHandler {
 
     JGroupsSubsystemAddHandler() {
-        super(JGroupsSubsystemResourceDefinition.ATTRIBUTES);
+        super(JGroupsSubsystemResourceDefinition.JGROUPS_CAPABILITY, JGroupsSubsystemResourceDefinition.ATTRIBUTES);
     }
 
     @Override

@@ -73,5 +73,7 @@ public class JGroupsSubsystemInitialization extends AdditionalInitialization imp
 
         Resource transport = Resource.Factory.create();
         stack.registerChild(TransportResourceDefinition.pathElement("TCP"), transport);
+
+        AdditionalInitialization.registerCapabilities(capabilityRegistry, JGroupsSubsystemResourceDefinition.JGROUPS_CAPABILITY.getName());
     }
 }

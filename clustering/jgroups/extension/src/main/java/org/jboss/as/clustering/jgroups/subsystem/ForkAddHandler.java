@@ -25,6 +25,8 @@ package org.jboss.as.clustering.jgroups.subsystem;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
+import javax.management.MBeanServer;
+
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -34,6 +36,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.jgroups.spi.ChannelFactory;
@@ -88,7 +91,13 @@ public class ForkAddHandler extends AbstractAddStepHandler {
         new ChannelBuilder(name).build(target).install();
 
         // Install channel connector
-        new ChannelConnectorBuilder(name).build(target).install();
+        // Use the JMX capability if it is available
+        ServiceName jmxCapability = null;
+        if (context.hasOptionalCapability(JGroupsSubsystemResourceDefinition.JMX_CAPABILITY,
+                JGroupsSubsystemResourceDefinition.JGROUPS_CAPABILITY.getName(), null)) {
+            jmxCapability = context.getCapabilityServiceName(JGroupsSubsystemResourceDefinition.JMX_CAPABILITY, MBeanServer.class);
+        }
+        new ChannelConnectorBuilder(name, jmxCapability).build(target).install();
 
         // Install channel jndi binding
         new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();

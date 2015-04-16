@@ -45,6 +45,10 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
  */
 public class InfinispanSubsystemAddHandler extends AbstractBoottimeAddStepHandler {
 
+    InfinispanSubsystemAddHandler() {
+        super(InfinispanSubsystemResourceDefinition.LOCAL_RUNTIME_CAPABILITY);
+    }
+
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();

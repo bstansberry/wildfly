@@ -26,6 +26,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,6 +42,12 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
  */
 public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinition {
 
+    static final String JMX_CAPABILITY ="org.wildfly.extension.jmx";
+    static final RuntimeCapability<Void> LOCAL_RUNTIME_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.extension.infinispan.local")
+                    .addRuntimeOnlyRequirements(JMX_CAPABILITY)
+                    .build();
+
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME);
 
     static TransformationDescription buildTransformation(ModelVersion version) {
@@ -55,7 +62,7 @@ public class InfinispanSubsystemResourceDefinition extends SimpleResourceDefinit
     private final boolean allowRuntimeOnlyRegistration;
 
     InfinispanSubsystemResourceDefinition(PathManager pathManager, boolean allowRuntimeOnlyRegistration) {
-        super(PATH, new InfinispanResourceDescriptionResolver(), new InfinispanSubsystemAddHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new InfinispanResourceDescriptionResolver(), new InfinispanSubsystemAddHandler(), new ReloadRequiredRemoveStepHandler(LOCAL_RUNTIME_CAPABILITY));
         this.pathManager = pathManager;
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }

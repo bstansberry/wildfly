@@ -36,7 +36,6 @@ import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.Services;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.marshalling.ModularClassResolver;
@@ -69,6 +68,7 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
     private final String name;
     private boolean statisticsEnabled;
     private ModuleIdentifier module;
+    private ServiceName mbeanServerServiceName;
     private ValueDependency<TransportConfiguration> transport = null;
     private ValueDependency<Executor> listenerExecutor = null;
     private ValueDependency<ScheduledExecutorService> evictionExecutor = null;
@@ -86,9 +86,10 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
     @Override
     public ServiceBuilder<GlobalConfiguration> build(ServiceTarget target) {
         ServiceBuilder<GlobalConfiguration> builder = target.addService(this.getServiceName(), new ValueService<>(this))
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader)
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, this.server)
-        ;
+                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, this.loader);
+        if (this.mbeanServerServiceName != null) {
+            builder = builder.addDependency(this.mbeanServerServiceName, MBeanServer.class, this.server);
+        }
         if (this.transport != null) {
             this.transport.register(builder);
         }
@@ -162,11 +163,11 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         if (replicationQueueExecutor != null) {
             builder.replicationQueueThreadPool().threadPoolFactory(new ManagedExecutorFactory(replicationQueueExecutor));
         }
-
+        MBeanServer mBeanServer = this.server.getOptionalValue();
         builder.globalJmxStatistics()
-                .enabled(this.statisticsEnabled)
+                .enabled(this.statisticsEnabled && mBeanServer != null)
                 .cacheManagerName(this.name)
-                .mBeanServerLookup(new MBeanServerProvider(this.server.getValue()))
+                .mBeanServerLookup(new MBeanServerProvider(mBeanServer))
                 .jmxDomain(CacheContainerServiceName.CACHE_CONTAINER.getServiceName(CacheServiceNameFactory.DEFAULT_CACHE).getParent().getCanonicalName())
                 .allowDuplicateDomains(true);
 
@@ -207,6 +208,11 @@ public class CacheContainerConfigurationBuilder implements Builder<GlobalConfigu
         if (executorName != null) {
             this.replicationQueueExecutor = new InjectedValueDependency<>(ThreadsServices.executorName(executorName), ScheduledExecutorService.class);
         }
+        return this;
+    }
+
+    public CacheContainerConfigurationBuilder setMBeanServerServiceName(ServiceName serviceName) {
+        this.mbeanServerServiceName = serviceName;
         return this;
     }
 }

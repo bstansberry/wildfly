@@ -29,6 +29,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -63,6 +64,11 @@ public class JGroupsSubsystemResourceDefinition extends SimpleResourceDefinition
             .setDeprecated(JGroupsModel.VERSION_3_0_0.getVersion())
             .build()
     ;
+    static final String JMX_CAPABILITY ="org.wildfly.extension.jmx";
+    static final RuntimeCapability<Void> JGROUPS_CAPABILITY =
+            RuntimeCapability.Builder.of("org.wildfly.extension.jgroups")
+                    .addRuntimeOnlyRequirements(JMX_CAPABILITY)
+                    .build();
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { DEFAULT_CHANNEL, DEFAULT_STACK };
 

@@ -40,6 +40,7 @@ public class JGroupsSubsystemRemoveHandler extends AbstractRemoveStepHandler {
     private final boolean allowRuntimeOnlyRegistration;
 
     JGroupsSubsystemRemoveHandler(boolean allowRuntimeOnlyRegistration) {
+        super(JGroupsSubsystemResourceDefinition.JGROUPS_CAPABILITY);
         this.allowRuntimeOnlyRegistration = allowRuntimeOnlyRegistration;
     }
 

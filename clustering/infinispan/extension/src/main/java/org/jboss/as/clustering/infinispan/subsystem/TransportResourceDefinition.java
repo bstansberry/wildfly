@@ -42,6 +42,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -60,6 +61,13 @@ import org.jboss.dmr.ModelType;
 public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+
+    static final String JGROUPS_CAPABILITY ="org.wildfly.extension.jgroups";
+
+    static final RuntimeCapability<Void> CLUSTERED_CACHE_CAPABILTIY =
+             RuntimeCapability.Builder.of("org.wildfly.extension.infinispan.clustered")
+                .addRequirements(InfinispanSubsystemResourceDefinition.LOCAL_RUNTIME_CAPABILITY.getName(), JGROUPS_CAPABILITY)
+                .build();
 
     static final SimpleAttributeDefinition CHANNEL = new SimpleAttributeDefinitionBuilder(ModelKeys.CHANNEL, ModelType.STRING, true)
             .setXmlName(Attribute.CHANNEL.getLocalName())
@@ -206,7 +214,8 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     }
 
     TransportResourceDefinition() {
-        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.TRANSPORT), new ReloadRequiredAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PATH, new InfinispanResourceDescriptionResolver(ModelKeys.TRANSPORT),
+                new ReloadRequiredAddStepHandler(CLUSTERED_CACHE_CAPABILTIY, ATTRIBUTES), new ReloadRequiredRemoveStepHandler(CLUSTERED_CACHE_CAPABILTIY));
     }
 
     @Override

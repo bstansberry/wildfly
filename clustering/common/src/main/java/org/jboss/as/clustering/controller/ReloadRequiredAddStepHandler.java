@@ -27,6 +27,7 @@ import java.util.Collection;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -41,6 +42,14 @@ public class ReloadRequiredAddStepHandler extends AbstractAddStepHandler {
 
     public ReloadRequiredAddStepHandler(Collection<AttributeDefinition> attributes) {
         super(attributes);
+    }
+
+    public ReloadRequiredAddStepHandler(RuntimeCapability<?> capability, AttributeDefinition... attributes) {
+        super(capability, attributes);
+    }
+
+    public ReloadRequiredAddStepHandler(RuntimeCapability<?> capability, Collection<AttributeDefinition> attributes) {
+        super(capability, attributes);
     }
 
     @Override

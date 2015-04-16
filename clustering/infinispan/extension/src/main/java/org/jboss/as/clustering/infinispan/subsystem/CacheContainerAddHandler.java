@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.MBeanServer;
+
 import org.infinispan.Cache;
 import org.jboss.as.clustering.dmr.ModelNodes;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsBindingFactory;
@@ -43,6 +45,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jgroups.Channel;
 import org.wildfly.clustering.infinispan.spi.CacheContainer;
@@ -59,8 +62,8 @@ import org.wildfly.clustering.jgroups.spi.service.ProtocolStackServiceName;
 import org.wildfly.clustering.service.AliasServiceBuilder;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.spi.CacheGroupBuilderProvider;
-import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.ClusteredCacheGroupBuilderProvider;
+import org.wildfly.clustering.spi.ClusteredGroupBuilderProvider;
 import org.wildfly.clustering.spi.GroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalCacheGroupBuilderProvider;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
@@ -113,12 +116,20 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
         ServiceController.Mode initialMode = StartMode.valueOf(CacheContainerResourceDefinition.START.resolveModelAttribute(context, model).asString()).getMode();
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheContainerResourceDefinition.MODULE.resolveModelAttribute(context, model));
 
+        // Use the JMX capability if it is available
+        ServiceName jmxCapability = null;
+        if (context.hasOptionalCapability(InfinispanSubsystemResourceDefinition.JMX_CAPABILITY,
+                InfinispanSubsystemResourceDefinition.LOCAL_RUNTIME_CAPABILITY.getName(), null)) {
+            jmxCapability = context.getCapabilityServiceName(InfinispanSubsystemResourceDefinition.JMX_CAPABILITY, MBeanServer.class);
+        }
+
         CacheContainerConfigurationBuilder configBuilder = new CacheContainerConfigurationBuilder(name)
                 .setModule(module)
                 .setStatisticsEnabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean())
                 .setListenerExecutor(ModelNodes.asString(CacheContainerResourceDefinition.LISTENER_EXECUTOR.resolveModelAttribute(context, model)))
                 .setEvictionExecutor(ModelNodes.asString(CacheContainerResourceDefinition.EVICTION_EXECUTOR.resolveModelAttribute(context, model)))
-                .setReplicationQueueExecutor(ModelNodes.asString(CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model)));
+                .setReplicationQueueExecutor(ModelNodes.asString(CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, model)))
+                .setMBeanServerServiceName(jmxCapability);
 
         if (model.hasDefined(TransportResourceDefinition.PATH.getKey())) {
             ModelNode transport = model.get(TransportResourceDefinition.PATH.getKeyValuePair());
@@ -133,7 +144,7 @@ public class CacheContainerAddHandler extends AbstractAddStepHandler {
                 new BinderServiceBuilder<>(JGroupsBindingFactory.createChannelBinding(name), ChannelServiceName.CHANNEL.getServiceName(name), Channel.class).build(target).install();
 
                 new ChannelBuilder(name).build(target).install();
-                new ChannelConnectorBuilder(name).build(target).install();
+                new ChannelConnectorBuilder(name, jmxCapability).build(target).install();
                 new AliasServiceBuilder<>(ChannelServiceName.FACTORY.getServiceName(name), ProtocolStackServiceName.CHANNEL_FACTORY.getServiceName(channel), ChannelFactory.class).build(target).install();
 
                 for (GroupBuilderProvider provider : ServiceLoader.load(ClusteredGroupBuilderProvider.class, ClusteredGroupBuilderProvider.class.getClassLoader())) {
