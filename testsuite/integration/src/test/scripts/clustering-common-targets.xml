@@ -50,7 +50,7 @@
             <echo>  mpingMcastAddress: @{mpingMcastAddress}</echo>
             <echo>  modclusterMcastAddress: @{modclusterMcastAddress}</echo>
 
-            <execute-xslt-transform transform="changeIPAddresses.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="changeIPAddresses.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="managementIPAddress" expression="@{managementIPAddress}"/>
                     <param name="publicIPAddress"     expression="@{publicIPAddress}"/>
@@ -60,7 +60,7 @@
                     <param name="mpingMcastAddress"       expression="@{mpingMcastAddress}"/>
                     <param name="modclusterMcastAddress"  expression="@{modclusterMcastAddress}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -79,11 +79,11 @@
         <sequential>
             <echo message="Changing JGroups stack for config @{name}"/>
 
-            <execute-xslt-transform transform="changeTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="changeTransportStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="defaultStack" expression="@{defaultStack}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -103,20 +103,20 @@
             <echo message="Changing cache mode for config @{name}"/>
 
             <!-- WEB Cache -->
-            <execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="name" expression="web"/>
                     <param name="mode" expression="@{cacheMode}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
             <!-- EJB Cache -->
-            <execute-xslt-transform transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="changeCacheMode.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="name" expression="ejb"/>
                     <param name="mode" expression="@{cacheMode}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -136,13 +136,12 @@
 
         <sequential>
             <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
-                
-            <execute-xslt-transform transform="addCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
-                <transform-params>
-                    <param name="cacheLoader" expression="@{cacheLoader}" />
-                    <param name="cacheType" expression="@{cacheType}" />
-                    <param name="mode" expression="@{mode}" />
-                </transform-params>
+
+            <!-- Only run this transform on the *-ha configs, as the others do not have the required jgroups -->
+            <execute-xslt-transform fileset.include.pattern="**/standalone*-ha.xml" transform="addCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <param name="cacheLoader" expression="@{cacheLoader}" />
+                <param name="cacheType" expression="@{cacheType}" />
+                <param name="mode" expression="@{mode}" />
             </execute-xslt-transform>
         </sequential>
     </macrodef>
@@ -159,11 +158,11 @@
         <attribute name="ds.jdbc.driver" default="org.h2.jdbcx.JdbcDataSource" />
         <attribute name="ds.jdbc.driver.module" default="com.h2database.h2" />
         <attribute name="ds.jdbc.isModule" default="true" />
-        
+
         <sequential>
             <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
-           
-            <execute-xslt-transform transform="changeDatabase.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+
+            <xsl-transform-standalone-configs transform="changeDatabase.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="ds.jdbc.url" expression="@{ds.jdbc.url}" />
                     <param name="ds.jdbc.user" expression="@{ds.jdbc.user}" />
@@ -173,7 +172,7 @@
                     <param name="ds.jdbc.driver.module" expression="@{ds.jdbc.driver.module}" />
                     <param name="ds.jdbc.isModule" expression="@{ds.jdbc.isModule}" />
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
         </sequential>
     </macrodef>
 
@@ -193,13 +192,13 @@
         <sequential>
             <echo message="Copying cache container @{container.base} to cache container @{container.name} in Infinispan subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="copyCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="copyCacheContainer.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="container.name" expression="@{container.name}"/>
                     <param name="container.base" expression="@{container.base}"/>
                     <param name="container.default-cache" expression="@{container.default-cache}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -219,12 +218,12 @@
         <sequential>
             <echo message="Copying stack @{stack.base} to stack @{stack.name} in JGroups subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="copyStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="copyStack.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="stack.name" expression="@{stack.name}"/>
                     <param name="stack.base" expression="@{stack.base}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -240,11 +239,11 @@
 
         <sequential>
             <echo message="Configuring TTL for all multicast messages to @{ip_ttl} in JGroups subsystem"/>
-            <execute-xslt-transform transform="changeMulticastTTL.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="changeMulticastTTL.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="mcast.ttl" expression="@{mcast.ttl}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
         </sequential>
     </macrodef>
 
@@ -265,14 +264,14 @@
         <sequential>
             <echo message="Copying cache @{cache.base} to cache @{cache.name} in container @{container.name} in Infinispan subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="copyCache.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="copyCache.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="container.name" expression="@{container.name}"/>
                     <param name="cache.base" expression="@{cache.base}"/>
                     <param name="cache.name" expression="@{cache.name}"/>
                     <param name="cache-type" expression="@{cache-type}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -295,7 +294,7 @@
         <sequential>
             <echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="addXsiteRelay.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="addXsiteRelay.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="stack" expression="@{stack}"/>
                     <param name="relay.site" expression="@{relay.site}"/>
@@ -303,7 +302,7 @@
                     <param name="remote-site.stack" expression="@{remote-site.stack}"/>
                     <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -325,14 +324,14 @@
         <sequential>
             <echo message="Adding relay layer to stack @{stack} in JGroups subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="addXsiteRemoteSite.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="addXsiteRemoteSite.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="stack" expression="@{stack}"/>
                     <param name="remote-site.site" expression="@{remote-site.site}"/>
                     <param name="remote-site.stack" expression="@{remote-site.stack}"/>
                     <param name="remote-site.cluster" expression="@{remote-site.cluster}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
 
         </sequential>
     </macrodef>
@@ -358,7 +357,7 @@
         <sequential>
             <echo message="Adding backup element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="addXsiteBackup.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="addXsiteBackup.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="container" expression="@{container}"/>
                     <param name="cache-type" expression="@{cache-type}"/>
@@ -369,7 +368,7 @@
                     <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
                     <param name="backup.enabled" expression="@{backup.enabled}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
         </sequential>
     </macrodef>
 
@@ -394,7 +393,7 @@
         <sequential>
             <echo message="Adding backups element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="addXsiteBackups.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="addXsiteBackups.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="container" expression="@{container}"/>
                     <param name="cache-type" expression="@{cache-type}"/>
@@ -405,7 +404,7 @@
                     <param name="backup.replication-timeout" expression="@{backup.replication-timeout}"/>
                     <param name="backup.enabled" expression="@{backup.enabled}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
         </sequential>
     </macrodef>
 
@@ -427,7 +426,7 @@
         <sequential>
             <echo message="Adding backup-for element to cache @{cache} in container @{container} in Infinispan subsystem for config @{name}"/>
 
-            <execute-xslt-transform transform="addXsiteBackupFor.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <xsl-transform-standalone-configs transform="addXsiteBackupFor.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="container" expression="@{container}"/>
                     <param name="cache-type" expression="@{cache-type}"/>
@@ -435,14 +434,14 @@
                     <param name="remote-site" expression="@{remote-site}"/>
                     <param name="remote-cache" expression="@{remote-cache}"/>
                 </transform-params>
-            </execute-xslt-transform>
+            </xsl-transform-standalone-configs>
         </sequential>
     </macrodef>
 
     <!--
-        Execute an XSLT transform in place.
+        Execute an XSLT transform in place on the various standalone.xml configurations.
     -->
-    <macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">
+    <macrodef name="xsl-transform-standalone-configs" description="Execute an XSLT transform on an xml file (in place)">
 
         <attribute name="name" default="wildfly"/>
         <attribute name="output.dir" default="${project.build.directory}"/>
@@ -452,28 +451,51 @@
         <element name="transform-params" optional="yes"/>
 
         <sequential>
+            <!-- **/standalone*-ha.xml -->
+            <execute-xslt-transform fileset.include.pattern="**/standalone*-ha.xml" transform="@{transform}" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params/>
+            </execute-xslt-transform>
+            <!-- **/standalone.xml -->
+            <execute-xslt-transform fileset.include.pattern="**/standalone.xml" transform="@{transform}" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params/>
+            </execute-xslt-transform>
+            <!-- **/standalone-full.xml -->
+            <execute-xslt-transform fileset.include.pattern="**/standalone-full.xml" transform="@{transform}" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+                <transform-params/>
+            </execute-xslt-transform>
+        </sequential>
+    </macrodef>
+
+    <!-- Perform an xsl transformation in place on files in a dir named by the config.dir.name param whose
+         name matches a fileset include specified by the fileset.include.pattern param -->
+    <macrodef name="execute-xslt-transform" description="Execute an XSLT transform on an xml file (in place)">
+
+        <attribute name="name" default="wildfly"/>
+        <attribute name="output.dir" default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+        <attribute name="fileset.include.pattern" default="**/standalone*-ha.xml"/>
+        <attribute name="transform"/>
+        <element name="transform-params" optional="yes" implicit="true"/>
+
+        <sequential>
             <!-- Process *.xml to *.xml.mod. -->
             <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
                   style="${jbossas.ts.integ.dir}/src/test/xslt/@{transform}"
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone*-ha.xml"/>
-                    <include name="**/standalone.xml"/>
-                    <include name="**/standalone-full.xml"/>
+                    <include name="@{fileset.include.pattern}"/>
                 </fileset>
                 <transform-params/>
             </xslt>
 
             <!-- Move processed files back. -->
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
-               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone*-ha.xml.mod"/>
-                   <include name="**/standalone.xml.mod"/>
-                   <include name="**/standalone-full.xml.mod"/>
-               </fileset>
-               <mapper type="glob" from="*.mod" to="*"/>
-             </move>
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="@{fileset.include.pattern}.mod"/>
+                </fileset>
+                <mapper type="glob" from="*.mod" to="*"/>
+            </move>
         </sequential>
     </macrodef>
 
