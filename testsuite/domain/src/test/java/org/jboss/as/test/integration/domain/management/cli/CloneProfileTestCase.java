@@ -27,6 +27,7 @@ import org.jboss.as.test.integration.domain.suites.CLITestSuite;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.logging.Logger;
@@ -96,7 +97,7 @@ public class CloneProfileTestCase extends AbstractCliTestBase {
     public void testProfile() throws IOException {
         // get domain configuration
         String domainCfgContent = FileUtils.readFileToString(domainCfg);
-        assertTrue("Domain configuration is not initialized correctly.", domainCfgContent.indexOf(NEW_PROFILE) == -1);
+        assertFalse("Domain configuration is not initialized correctly.", domainCfgContent.contains(NEW_PROFILE));
 
         // clone profile
         cliRequest("/profile=" + ORIGINAL_PROFILE + ":clone(to-profile=" + NEW_PROFILE + ")", true);
@@ -108,6 +109,13 @@ public class CloneProfileTestCase extends AbstractCliTestBase {
 
         // check domain configuration
         domainCfgContent = FileUtils.readFileToString(domainCfg);
-        assertTrue("Domain configuration doesn't contain " + NEW_PROFILE + "profile.", domainCfgContent.indexOf(NEW_PROFILE) != -1);
+        assertTrue("Domain configuration doesn't contain " + NEW_PROFILE + "profile.", domainCfgContent.contains(NEW_PROFILE));
+
+        // Remove the new profile (WFCORE-808 test)
+        cliRequest("/profile=" + NEW_PROFILE + ":remove", true);
+
+        // check domain configuration
+        domainCfgContent = FileUtils.readFileToString(domainCfg);
+        assertFalse("Domain configuration still contains " + NEW_PROFILE + " profile.", domainCfgContent.contains(NEW_PROFILE));
     }
 }

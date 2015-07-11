@@ -22,13 +22,16 @@
 
 package org.jboss.as.test.integration.domain;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLONE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_PROFILE;
 
 import java.io.IOException;
 import java.net.URL;
@@ -37,6 +40,7 @@ import java.net.URLConnection;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.WildFlyManagedConfiguration;
@@ -69,9 +73,24 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
             if (Boolean.getBoolean("expression.audit")) {
                 writeExpressionAudit(utils);
             }
+
+            testProfileRemove(utils);
+
         } finally {
             utils.stop(); // Stop
         }
+    }
+
+    private void testProfileRemove(DomainLifecycleUtil utils) throws IOException {
+        ModelNode op = Util.createEmptyOperation(CLONE, PathAddress.pathAddress(PathElement.pathElement(PROFILE, "full-ha")));
+        op.get(TO_PROFILE).set("clone");
+
+        ModelNode result = utils.getDomainClient().execute(op);
+        Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(OUTCOME).asString());
+
+        op = Util.createRemoveOperation(PathAddress.pathAddress(PathElement.pathElement(PROFILE, "clone")));
+        result = utils.getDomainClient().execute(op);
+        Assert.assertEquals(result.toString(), ModelDescriptionConstants.SUCCESS, result.get(OUTCOME).asString());
     }
 
     @Test
