@@ -44,6 +44,8 @@ import org.wildfly.iiop.openjdk.logging.IIOPLogger;
  */
 public class IORSecConfigMetaDataService implements Service<IORSecurityConfigMetaData> {
 
+    /** @deprecated use capability-based service name discovery */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS
             .append(IIOPExtension.SUBSYSTEM_NAME, "ior-security-config");
 

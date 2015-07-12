@@ -58,6 +58,8 @@ public class CorbaPOAService implements Service<POA> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(IIOPExtension.SUBSYSTEM_NAME, "poa-service");
 
+    /** @deprecated use capability-based service name discovery */
+    @Deprecated
     public static final ServiceName ROOT_SERVICE_NAME = SERVICE_NAME.append("rootpoa");
 
     public static final ServiceName INTERFACE_REPOSITORY_SERVICE_NAME = SERVICE_NAME.append("irpoa");

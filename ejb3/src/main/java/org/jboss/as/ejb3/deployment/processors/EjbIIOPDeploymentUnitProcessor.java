@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -38,7 +39,6 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.utils.ClassLoadingUtils;
-import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -46,6 +46,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.iiop.EjbIIOPService;
 import org.jboss.as.ejb3.iiop.EjbIIOPTransactionInterceptor;
 import org.jboss.as.ejb3.iiop.POARegistry;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.subsystem.IIOPSettingsService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -71,8 +72,6 @@ import org.wildfly.iiop.openjdk.rmi.InterfaceAnalysis;
 import org.wildfly.iiop.openjdk.rmi.OperationAnalysis;
 import org.wildfly.iiop.openjdk.rmi.RMIIIOPViolationException;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
-import org.wildfly.iiop.openjdk.service.CorbaNamingService;
-import org.wildfly.iiop.openjdk.service.CorbaORBService;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 
@@ -117,6 +116,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (moduleDescription != null) {
+            final CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
             for (final ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if (componentDescription instanceof EJBComponentDescription) {
                     final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
@@ -130,7 +130,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
                         // has been enabled by default in the EJB3 subsystem.
                         if (iiopMetaData != null || settingsService.isEnabledByDefault()) {
                             processEjb(ejbComponentDescription, deploymentReflectionIndex, module,
-                                    phaseContext.getServiceTarget(), iiopMetaData);
+                                    phaseContext.getServiceTarget(), capabilityServiceSupport, iiopMetaData);
                         }
                     }
                 }
@@ -145,7 +145,8 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     private void processEjb(final EJBComponentDescription componentDescription,
                             final DeploymentReflectionIndex deploymentReflectionIndex, final Module module,
-                            final ServiceTarget serviceTarget, final IIOPMetaData iiopMetaData) {
+                            final ServiceTarget serviceTarget, final CapabilityServiceSupport capabilityServiceSupport,
+                            final IIOPMetaData iiopMetaData) {
         componentDescription.setExposedViaIiop(true);
 
 
@@ -246,21 +247,24 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         // Initialize repository ids of home interface
         final String[] homeRepositoryIds = homeInterfaceAnalysis.getAllTypeIds();
 
-
         final EjbIIOPService service = new EjbIIOPService(beanMethodMap, beanRepositoryIds, homeMethodMap, homeRepositoryIds,
                 settingsService.isUseQualifiedName(), iiopMetaData, module);
         final ServiceBuilder<EjbIIOPService> builder = serviceTarget.addService(componentDescription.getServiceName().append(EjbIIOPService.SERVICE_NAME), service);
         builder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
         builder.addDependency(homeView.getServiceName(), ComponentView.class, service.getHomeView());
         builder.addDependency(remoteView.getServiceName(), ComponentView.class, service.getRemoteView());
-        builder.addDependency(CorbaORBService.SERVICE_NAME, ORB.class, service.getOrb());
+        builder.addDependency(capabilityServiceSupport.getCapabilityServiceName("org.wildfly.iiop.orb"), ORB.class, service.getOrb());
         builder.addDependency(POARegistry.SERVICE_NAME, POARegistry.class, service.getPoaRegistry());
+        // TODO get this service name via a capability
         builder.addDependency(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
-        builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
+        builder.addDependency(capabilityServiceSupport.getCapabilityServiceName("org.wildfly.iiop.naming"), NamingContextExt.class, service.getCorbaNamingContext());
+        // TODO get this service name via a capability
         builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME, IORSecurityConfigMetaData.class, service.getIORSecConfigMetaDataInjectedValue());
+        // TODO get this service name via a capability
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
 
         //we need the arjunta transaction manager to be up, as it performs some initialization that is required by the orb interceptors
+        // TODO get this service name via a capability
         builder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
         builder.install();
 

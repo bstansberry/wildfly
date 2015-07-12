@@ -85,7 +85,9 @@ public class IIOPExtension implements Extension {
     public static final String JTS_CAPABILITY = "org.wildfly.transactions.jts";
     public static final RuntimeCapability<Void> IIOP_ORB_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.orb", org.omg.CORBA.ORB.class).build();
     public static final RuntimeCapability<Void> IIOP_NAMING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.naming", org.omg.CosNaming.NamingContextExt.class).build();
-    public static final Set<RuntimeCapability> IIOP_CAPABILITIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(IIOP_ORB_CAPABILITY, IIOP_NAMING_CAPABILITY)));
+    public static final RuntimeCapability<Void> IIOP_POA_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.poa", org.omg.CORBA.ORB.class).build();
+    public static final RuntimeCapability<Void> IIOP_SECURITY_CONFIG_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.ior-security-config", org.omg.CosNaming.NamingContextExt.class).build();
+    public static final Set<RuntimeCapability> IIOP_CAPABILITIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(IIOP_ORB_CAPABILITY, IIOP_NAMING_CAPABILITY, IIOP_POA_CAPABILITY, IIOP_SECURITY_CONFIG_CAPABILITY)));
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(IIOPExtension.SUBSYSTEM_NAME);
