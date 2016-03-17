@@ -159,6 +159,13 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
+    }
+
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
         parent.addChildResource(INSTANCE.getPathElement())
             .getAttributeBuilder()

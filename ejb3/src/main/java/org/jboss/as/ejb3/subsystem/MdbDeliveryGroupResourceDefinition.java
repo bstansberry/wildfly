@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -90,6 +92,13 @@ public class MdbDeliveryGroupResourceDefinition extends SimpleResourceDefinition
                                 resolvedValue.asBoolean() ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER);
                     }
                 });
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
     }
 
     static void registerTransformers_1_2_0_and_1_3_0(ResourceTransformationDescriptionBuilder parent) {

@@ -112,6 +112,13 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new RemoteConnectorChannelCreationOptionResource());
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
+    }
+
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder builder) {
         RemoteConnectorChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
     }

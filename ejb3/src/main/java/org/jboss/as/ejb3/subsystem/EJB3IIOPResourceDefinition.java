@@ -101,6 +101,13 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
         });
     }
 
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
+    }
+
     private abstract static class AbstractIIOPSettingWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
         public AbstractIIOPSettingWriteHandler(final AttributeDefinition attribute) {

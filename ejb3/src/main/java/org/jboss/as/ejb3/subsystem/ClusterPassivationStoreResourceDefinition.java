@@ -22,10 +22,13 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
@@ -88,6 +91,13 @@ public class ClusterPassivationStoreResourceDefinition extends LegacyPassivation
 
     private ClusterPassivationStoreResourceDefinition() {
         super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {

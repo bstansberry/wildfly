@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -69,5 +71,12 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attribute: ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attribute,  null, handler);
         }
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
     }
 }

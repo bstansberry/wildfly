@@ -72,6 +72,13 @@ public class RemotingProfileResourceDefinition extends SimpleResourceDefinition 
     }
 
     @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition attr : ATTRIBUTES.values()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new RemotingProfileResourceChildWriteAttributeHandler(attr));

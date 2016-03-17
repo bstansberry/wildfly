@@ -102,6 +102,13 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
+    }
+
+    @Override
     public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new FileDataStoreResourceDefinition(pathManager));
 

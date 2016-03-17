@@ -4,6 +4,7 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -70,6 +71,13 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
         for (AttributeDefinition definition: READ_WRITE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(definition, null, WRITE_HANDLER);
         }
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
     }
 
     /*

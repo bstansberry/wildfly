@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.shared.ServerReload;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,8 +43,6 @@ class DatabaseTimerServerSetup implements ServerSetupTask {
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-
-        ServerReload.BeforeSetupTask.INSTANCE.setup(managementClient, containerId);
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);

@@ -23,12 +23,14 @@
 package org.jboss.as.ejb3.subsystem;
 
 import java.io.File;
+import java.util.Collections;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
@@ -92,6 +94,13 @@ public class FilePassivationStoreResourceDefinition extends LegacyPassivationSto
 
     private FilePassivationStoreResourceDefinition() {
         super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
