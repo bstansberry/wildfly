@@ -21,6 +21,7 @@
  */
 package org.jboss.as.security;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,13 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(OPTIONS, null, new ReloadRequiredWriteAttributeHandler(OPTIONS));
         resourceRegistration.registerReadWriteAttribute(CODE, null, new ReloadRequiredWriteAttributeHandler(CODE));
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        super.registerCapabilities(resourceRegistration);
+        //TODO register a normal capability and then this empty incorporating capability set is unneeded
+        resourceRegistration.registerIncorporatingCapabilities(Collections.emptySet());
     }
 
     static class VaultResourceDefinitionAdd extends AbstractBoottimeAddStepHandler {
