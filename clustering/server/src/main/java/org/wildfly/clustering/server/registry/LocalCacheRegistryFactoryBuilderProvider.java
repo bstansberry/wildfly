@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,32 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.clustering.server.registry;
 
-package org.wildfly.clustering.server;
-
-import java.util.function.Function;
-
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.deployment.JndiName;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.registry.RegistryFactory;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
+ * Provides the requisite builders for a non-clustered {@link RegistryFactory}.
  * @author Paul Ferraro
  */
-public enum GroupJndiNameFactory implements Function<String, JndiName> {
+@MetaInfServices(LocalCacheBuilderProvider.class)
+public class LocalCacheRegistryFactoryBuilderProvider extends CacheRegistryFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
-    COMMAND_DISPATCHER_FACTORY("dispatcher"),
-    GROUP("group"),
-    REGISTRY_FACTORY("registry"),
-    SERVICE_PROVIDER_REGISTRY("providers"),
-    ;
-    private final String component;
-
-    GroupJndiNameFactory(String component) {
-        this.component = component;
-    }
-
-    @Override
-    public JndiName apply(String group) {
-        return JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", this.component, group);
+    public LocalCacheRegistryFactoryBuilderProvider() {
+        super((name, containerName, cacheName) -> new LocalRegistryFactoryBuilder<>(name, support -> ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, cacheName)));
     }
 }

@@ -20,31 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server;
+package org.wildfly.clustering.server.registry;
 
-import java.util.function.Function;
+import java.util.Map;
 
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.deployment.JndiName;
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
  * @author Paul Ferraro
  */
-public enum GroupJndiNameFactory implements Function<String, JndiName> {
+public class LocalEntryCommand<K, V> implements Command<Map.Entry<K, V>, RegistryEntryProvider<K, V>> {
 
-    COMMAND_DISPATCHER_FACTORY("dispatcher"),
-    GROUP("group"),
-    REGISTRY_FACTORY("registry"),
-    SERVICE_PROVIDER_REGISTRY("providers"),
-    ;
-    private final String component;
-
-    GroupJndiNameFactory(String component) {
-        this.component = component;
-    }
+    private static final long serialVersionUID = 3708764336851329409L;
 
     @Override
-    public JndiName apply(String group) {
-        return JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", this.component, group);
+    public Map.Entry<K, V> execute(RegistryEntryProvider<K, V> provider) {
+        return provider.getLocalEntry();
     }
 }

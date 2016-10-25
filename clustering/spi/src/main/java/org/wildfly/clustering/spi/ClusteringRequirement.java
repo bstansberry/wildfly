@@ -37,6 +37,9 @@ public enum ClusteringRequirement implements DefaultableUnaryRequirement, Defaul
     COMMAND_DISPATCHER_FACTORY("org.wildfly.clustering.command-dispatcher-factory", ClusteringDefaultRequirement.COMMAND_DISPATCHER_FACTORY),
     GROUP("org.wildfly.clustering.group", ClusteringDefaultRequirement.GROUP),
     NODE_FACTORY("org.wildfly.clustering.node-factory", ClusteringDefaultRequirement.NODE_FACTORY),
+    REGISTRY("org.wildfly.clustering.registry", ClusteringDefaultRequirement.REGISTRY),
+    REGISTRY_ENTRY("org.wildfly.clustering.registry-entry", ClusteringDefaultRequirement.REGISTRY_ENTRY),
+    REGISTRY_FACTORY("org.wildfly.clustering.registry-factory", ClusteringDefaultRequirement.REGISTRY_FACTORY),
     SERVICE_PROVIDER_REGISTRY("org.wildfly.clustering.service-provider-registry", ClusteringDefaultRequirement.SERVICE_PROVIDER_REGISTRY),
     ;
     private final String name;

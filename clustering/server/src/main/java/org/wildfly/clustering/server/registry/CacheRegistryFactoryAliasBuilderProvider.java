@@ -39,9 +39,9 @@ import org.wildfly.clustering.spi.ServiceNameRegistry;
  * @author Paul Ferraro
  */
 @MetaInfServices(CacheAliasBuilderProvider.class)
-public class RegistryFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
+public class CacheRegistryFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
-    public RegistryFactoryAliasBuilderProvider() {
+    public CacheRegistryFactoryAliasBuilderProvider() {
         super(ClusteringCacheRequirement.REGISTRY_FACTORY, CacheJndiNameFactory.REGISTRY_FACTORY);
     }
 

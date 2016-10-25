@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.registry;
 
 import java.util.ArrayList;
@@ -27,28 +28,27 @@ import java.util.List;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.CacheJndiNameFactory;
-import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.server.GroupCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.GroupJndiNameFactory;
+import org.wildfly.clustering.server.GroupRequirementBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
- * Provides the requisite builders for a clustered {@link RegistryFactory} created from the specified factory.
  * @author Paul Ferraro
  */
-public class RegistryFactoryBuilderProvider extends CacheRequirementBuilderProvider<RegistryFactory<Object, Object>> {
+public class GroupRegistryFactoryBuilderProvider extends GroupRequirementBuilderProvider<RegistryFactory<Object, Object>> {
 
-    protected RegistryFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<RegistryFactory<Object, Object>> factory) {
-        super(ClusteringCacheRequirement.REGISTRY_FACTORY, factory, CacheJndiNameFactory.REGISTRY_FACTORY);
+    protected GroupRegistryFactoryBuilderProvider(GroupCapabilityServiceBuilderFactory<RegistryFactory<Object, Object>> factory) {
+        super(ClusteringRequirement.REGISTRY_FACTORY, factory, GroupJndiNameFactory.REGISTRY_FACTORY);
     }
 
     @Override
-    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
-        Collection<CapabilityServiceBuilder<?>> builders = super.getBuilders(registry, containerName, cacheName);
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringRequirement> registry, String group) {
+        Collection<CapabilityServiceBuilder<?>> builders = super.getBuilders(registry, group);
         List<CapabilityServiceBuilder<?>> result = new ArrayList<>(builders.size() + 1);
         result.addAll(builders);
-        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), support -> ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, containerName, cacheName), support -> ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, containerName, cacheName)));
+        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringRequirement.REGISTRY), support -> ClusteringRequirement.REGISTRY_FACTORY.getServiceName(support, group), support -> ClusteringRequirement.REGISTRY_ENTRY.getServiceName(support, group)));
         return result;
     }
 }

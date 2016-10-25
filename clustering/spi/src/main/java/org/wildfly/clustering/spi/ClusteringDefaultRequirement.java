@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.spi;
 
+import java.util.Map;
+
 import org.jboss.as.clustering.controller.RequirementServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactory;
 import org.jboss.as.clustering.controller.ServiceNameFactoryProvider;
@@ -28,6 +30,8 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistry;
+import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.service.Requirement;
 
 /**
@@ -38,6 +42,9 @@ public enum ClusteringDefaultRequirement implements Requirement, ServiceNameFact
     COMMAND_DISPATCHER_FACTORY("org.wildfly.clustering.default-command-dispatcher-factory", CommandDispatcherFactory.class),
     GROUP("org.wildfly.clustering.default-group", Group.class),
     NODE_FACTORY("org.wildfly.clustering.default-node-factory", NodeFactory.class),
+    REGISTRY("org.wildfly.clustering.default-registry", Registry.class),
+    REGISTRY_ENTRY("org.wildfly.clustering.default-registry-entry", Map.Entry.class),
+    REGISTRY_FACTORY("org.wildfly.clustering.default-registry-factory", RegistryFactory.class),
     SERVICE_PROVIDER_REGISTRY("org.wildfly.clustering.default-service-provider-registry", ServiceProviderRegistry.class),
     ;
     private final String name;

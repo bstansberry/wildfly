@@ -20,31 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server;
+package org.wildfly.clustering.server.registry;
 
-import java.util.function.Function;
+import java.util.Collection;
+import java.util.Collections;
 
-import org.jboss.as.clustering.naming.JndiNameFactory;
-import org.jboss.as.naming.deployment.JndiName;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
 
 /**
  * @author Paul Ferraro
  */
-public enum GroupJndiNameFactory implements Function<String, JndiName> {
-
-    COMMAND_DISPATCHER_FACTORY("dispatcher"),
-    GROUP("group"),
-    REGISTRY_FACTORY("registry"),
-    SERVICE_PROVIDER_REGISTRY("providers"),
-    ;
-    private final String component;
-
-    GroupJndiNameFactory(String component) {
-        this.component = component;
-    }
+@MetaInfServices(ClassTableContributor.class)
+public class RegistryClassTableContributor implements ClassTableContributor {
 
     @Override
-    public JndiName apply(String group) {
-        return JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", this.component, group);
+    public Collection<Class<?>> getKnownClasses() {
+        return Collections.singleton(LocalEntryCommand.class);
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/ejb-jar_3_2.xsd"
+         version="3.2">
+    <enterprise-beans>
+        <session>
+            <ejb-name>RegistryBean</ejb-name>
+            <resource-ref>
+                <res-ref-name>clustering/registry-factory</res-ref-name>
+                <res-type>org.wildfly.clustering.registry.RegistryFactory</res-type>
+                <lookup-name>java:jboss/clustering/registry/default</lookup-name>
+            </resource-ref>
+        </session>
+    </enterprise-beans>
+</ejb-jar>
