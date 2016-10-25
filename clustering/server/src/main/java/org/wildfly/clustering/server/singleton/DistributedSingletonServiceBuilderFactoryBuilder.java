@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
@@ -37,27 +38,26 @@ import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.ClusteringRequirement;
 
 /**
  * Builds a clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilder implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, DistributedSingletonServiceBuilderContext {
+public class DistributedSingletonServiceBuilderFactoryBuilder implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, DistributedSingletonServiceBuilderContext {
 
     private final ServiceName name;
-    private final String containerName;
-    private final String cacheName;
+    private final Function<CapabilityServiceSupport, ServiceName> registryServiceNameProvider;
+    private final String group;
 
     @SuppressWarnings("rawtypes")
     private volatile Supplier<ValueDependency<ServiceProviderRegistry>> registry;
     private volatile Supplier<ValueDependency<CommandDispatcherFactory>> dispatcherFactory;
 
-    public CacheSingletonServiceBuilderFactoryBuilder(ServiceName name, String containerName, String cacheName) {
+    public DistributedSingletonServiceBuilderFactoryBuilder(ServiceName name, String group, Function<CapabilityServiceSupport, ServiceName> registryServiceNameProvider) {
         this.name = name;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+        this.group = group;
+        this.registryServiceNameProvider = registryServiceNameProvider;
     }
 
     @Override
@@ -67,8 +67,8 @@ public class CacheSingletonServiceBuilderFactoryBuilder implements CapabilitySer
 
     @Override
     public Builder<SingletonServiceBuilderFactory> configure(CapabilityServiceSupport support) {
-        this.registry = () -> new InjectedValueDependency<>(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY.getServiceName(support, this.containerName, this.cacheName), ServiceProviderRegistry.class);
-        this.dispatcherFactory = () -> new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.containerName), CommandDispatcherFactory.class);
+        this.registry = () -> new InjectedValueDependency<>(this.registryServiceNameProvider.apply(support), ServiceProviderRegistry.class);
+        this.dispatcherFactory = () -> new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.group), CommandDispatcherFactory.class);
         return this;
     }
 

@@ -20,19 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.server.singleton;
+package org.jboss.as.test.clustering.cluster.singleton.service;
 
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilderProvider extends CacheRequirementBuilderProvider<SingletonServiceBuilderFactory> {
+public class ChannelNodeServiceActivator extends NodeServiceActivator {
 
-    protected CacheSingletonServiceBuilderFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<SingletonServiceBuilderFactory> factory) {
-        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, factory);
+    public ChannelNodeServiceActivator() {
+        super(ServiceName.parse("org.wildfly.clustering.default-singleton-service-builder-factory"));
     }
 }

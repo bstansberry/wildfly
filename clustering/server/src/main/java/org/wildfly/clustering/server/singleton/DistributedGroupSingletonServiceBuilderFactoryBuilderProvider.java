@@ -22,17 +22,17 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryBuilderProvider extends CacheRequirementBuilderProvider<SingletonServiceBuilderFactory> {
+@MetaInfServices(DistributedGroupBuilderProvider.class)
+public class DistributedGroupSingletonServiceBuilderFactoryBuilderProvider extends GroupSingletonServiceBuilderFactoryBuilderProvider implements DistributedGroupBuilderProvider {
 
-    protected SingletonServiceBuilderFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<SingletonServiceBuilderFactory> factory) {
-        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, factory);
+    public DistributedGroupSingletonServiceBuilderFactoryBuilderProvider() {
+        super((name, group) -> new DistributedSingletonServiceBuilderFactoryBuilder(name, group, support -> ClusteringRequirement.SERVICE_PROVIDER_REGISTRY.getServiceName(support, group)));
     }
 }

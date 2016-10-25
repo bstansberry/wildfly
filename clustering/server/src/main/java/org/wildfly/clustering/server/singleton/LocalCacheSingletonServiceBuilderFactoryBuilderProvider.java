@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.server.singleton;
 
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
+ * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class CacheSingletonServiceBuilderFactoryBuilderProvider extends CacheRequirementBuilderProvider<SingletonServiceBuilderFactory> {
+@MetaInfServices(LocalCacheBuilderProvider.class)
+public class LocalCacheSingletonServiceBuilderFactoryBuilderProvider extends CacheSingletonServiceBuilderFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
-    protected CacheSingletonServiceBuilderFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<SingletonServiceBuilderFactory> factory) {
-        super(ClusteringCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY, factory);
+    public LocalCacheSingletonServiceBuilderFactoryBuilderProvider() {
+        super((name, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name));
     }
 }

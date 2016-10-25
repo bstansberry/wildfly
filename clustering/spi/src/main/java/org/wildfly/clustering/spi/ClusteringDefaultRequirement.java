@@ -33,6 +33,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.service.Requirement;
+import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
  * @author Paul Ferraro
@@ -46,6 +47,7 @@ public enum ClusteringDefaultRequirement implements Requirement, ServiceNameFact
     REGISTRY_ENTRY("org.wildfly.clustering.default-registry-entry", Map.Entry.class),
     REGISTRY_FACTORY("org.wildfly.clustering.default-registry-factory", RegistryFactory.class),
     SERVICE_PROVIDER_REGISTRY("org.wildfly.clustering.default-service-provider-registry", ServiceProviderRegistry.class),
+    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.default-singleton-service-builder-factory", SingletonServiceBuilderFactory.class),
     ;
     private final String name;
     private final Class<?> type;

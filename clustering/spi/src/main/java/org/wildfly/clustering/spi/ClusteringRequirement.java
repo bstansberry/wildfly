@@ -41,6 +41,7 @@ public enum ClusteringRequirement implements DefaultableUnaryRequirement, Defaul
     REGISTRY_ENTRY("org.wildfly.clustering.registry-entry", ClusteringDefaultRequirement.REGISTRY_ENTRY),
     REGISTRY_FACTORY("org.wildfly.clustering.registry-factory", ClusteringDefaultRequirement.REGISTRY_FACTORY),
     SERVICE_PROVIDER_REGISTRY("org.wildfly.clustering.service-provider-registry", ClusteringDefaultRequirement.SERVICE_PROVIDER_REGISTRY),
+    SINGLETON_SERVICE_BUILDER_FACTORY("org.wildfly.clustering.singleton-service-builder-factory", ClusteringDefaultRequirement.SINGLETON_SERVICE_BUILDER_FACTORY),
     ;
     private final String name;
     private final UnaryServiceNameFactory factory = new UnaryRequirementServiceNameFactory(this);

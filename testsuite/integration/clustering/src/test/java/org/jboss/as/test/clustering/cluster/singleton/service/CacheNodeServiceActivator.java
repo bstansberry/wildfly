@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.singleton;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
+package org.jboss.as.test.clustering.cluster.singleton.service;
+
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
 
 /**
- * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.singleton.SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-@MetaInfServices(LocalCacheBuilderProvider.class)
-public class LocalSingletonServiceBuilderFactoryBuilderProvider extends SingletonServiceBuilderFactoryBuilderProvider implements LocalCacheBuilderProvider {
+public class CacheNodeServiceActivator extends NodeServiceActivator {
 
-    public LocalSingletonServiceBuilderFactoryBuilderProvider() {
-        super((name, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name));
+    public CacheNodeServiceActivator() {
+        super(ServiceName.parse(SingletonDefaultCacheRequirement.SINGLETON_SERVICE_BUILDER_FACTORY.resolve("server")));
     }
 }
