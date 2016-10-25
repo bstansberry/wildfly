@@ -33,7 +33,7 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
  */
 public class ServiceProviderRegistryBuilderProvider extends CacheRequirementBuilderProvider<ServiceProviderRegistry<Object>> {
 
-    public ServiceProviderRegistryBuilderProvider(CacheCapabilityServiceBuilderFactory<ServiceProviderRegistry<Object>> factory) {
+    protected ServiceProviderRegistryBuilderProvider(CacheCapabilityServiceBuilderFactory<ServiceProviderRegistry<Object>> factory) {
         super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, factory, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
     }
 }

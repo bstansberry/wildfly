@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.DistributedGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for creating a channel-based {@link org.wildfly.clustering.group.NodeFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(DistributedGroupBuilderProvider.class)
 public class ChannelNodeFactoryBuilderProvider extends JGroupsNodeFactoryBuilderProvider<ChannelNodeFactory> implements DistributedGroupBuilderProvider {
 
     public ChannelNodeFactoryBuilderProvider() {

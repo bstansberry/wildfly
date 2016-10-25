@@ -21,12 +21,14 @@
  */
 package org.wildfly.clustering.server.group;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
  * Provides the requisite builders for a non-clustered {@link org.wildfly.clustering.group.NodeFactory}.
  * @author Paul Ferraro
  */
+@MetaInfServices(LocalGroupBuilderProvider.class)
 public class LocalNodeFactoryBuilderProvider extends JGroupsNodeFactoryBuilderProvider<JGroupsNodeFactory> implements LocalGroupBuilderProvider {
 
     public LocalNodeFactoryBuilderProvider() {

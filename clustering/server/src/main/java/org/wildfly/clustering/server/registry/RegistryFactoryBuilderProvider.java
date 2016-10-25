@@ -48,7 +48,7 @@ public class RegistryFactoryBuilderProvider extends CacheRequirementBuilderProvi
         Collection<CapabilityServiceBuilder<?>> builders = super.getBuilders(registry, containerName, cacheName);
         List<CapabilityServiceBuilder<?>> result = new ArrayList<>(builders.size() + 1);
         result.addAll(builders);
-        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), containerName, cacheName));
+        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), support -> ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, containerName, cacheName), support -> ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, containerName, cacheName)));
         return result;
     }
 }

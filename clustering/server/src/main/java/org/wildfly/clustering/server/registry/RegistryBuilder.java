@@ -42,7 +42,6 @@ import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.SuppliedValueService;
 import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a {@link Registry} service.
@@ -51,18 +50,18 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<K, V>> {
 
     private final ServiceName name;
-    private final String containerName;
-    private final String cacheName;
+    private final Function<CapabilityServiceSupport, ServiceName> entryServiceNameProvider;
+    private final Function<CapabilityServiceSupport, ServiceName> factoryServiceNameProvider;
 
     @SuppressWarnings("rawtypes")
     private volatile ValueDependency<RegistryFactory> factory;
     @SuppressWarnings("rawtypes")
     private volatile ValueDependency<Map.Entry> entry;
 
-    public RegistryBuilder(ServiceName name, String containerName, String cacheName) {
+    public RegistryBuilder(ServiceName name, Function<CapabilityServiceSupport, ServiceName> factoryServiceNameProvider, Function<CapabilityServiceSupport, ServiceName> entryServiceNameProvider) {
         this.name = name;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+        this.entryServiceNameProvider = entryServiceNameProvider;
+        this.factoryServiceNameProvider = factoryServiceNameProvider;
     }
 
     @Override
@@ -72,8 +71,8 @@ public class RegistryBuilder<K, V> implements CapabilityServiceBuilder<Registry<
 
     @Override
     public Builder<Registry<K, V>> configure(CapabilityServiceSupport support) {
-        this.factory = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, this.containerName, this.cacheName), RegistryFactory.class);
-        this.entry = new InjectedValueDependency<>(ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, this.containerName, this.cacheName), Map.Entry.class);
+        this.factory = new InjectedValueDependency<>(this.factoryServiceNameProvider.apply(support), RegistryFactory.class);
+        this.entry = new InjectedValueDependency<>(this.entryServiceNameProvider.apply(support), Map.Entry.class);
         return this;
     }
 

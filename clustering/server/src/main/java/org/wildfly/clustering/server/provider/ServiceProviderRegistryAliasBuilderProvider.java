@@ -22,16 +22,19 @@
 
 package org.wildfly.clustering.server.provider;
 
-import org.jboss.as.clustering.naming.JndiNameFactory;
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.server.CacheJndiNameFactory;
 import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(CacheAliasBuilderProvider.class)
 public class ServiceProviderRegistryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
     public ServiceProviderRegistryAliasBuilderProvider() {
-        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, (containerName, cacheName) -> JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "providers", containerName, cacheName));
+        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
     }
 }

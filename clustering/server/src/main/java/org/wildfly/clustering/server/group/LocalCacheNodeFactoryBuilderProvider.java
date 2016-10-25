@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,17 +23,11 @@
 package org.wildfly.clustering.server.group;
 
 import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
-import org.wildfly.clustering.spi.ClusteringRequirement;
-import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(GroupAliasBuilderProvider.class)
-public class GroupNodeFactoryAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
-
-    public GroupNodeFactoryAliasBuilderProvider() {
-        super(ClusteringRequirement.NODE_FACTORY);
-    }
+@MetaInfServices(LocalCacheBuilderProvider.class)
+public class LocalCacheNodeFactoryBuilderProvider extends CacheNodeFactoryBuilderProvider implements LocalCacheBuilderProvider {
 }
