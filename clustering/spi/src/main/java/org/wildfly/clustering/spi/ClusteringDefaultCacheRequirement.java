@@ -38,6 +38,7 @@ import org.wildfly.clustering.singleton.SingletonDefaultCacheRequirement;
  * @author Paul Ferraro
  */
 public enum ClusteringDefaultCacheRequirement implements UnaryRequirement, UnaryServiceNameFactoryProvider {
+
     GROUP("org.wildfly.clustering.cache.default-group", Group.class),
     NODE_FACTORY("org.wildfly.clustering.cache.default-node-factory", NodeFactory.class),
     REGISTRY("org.wildfly.clustering.cache.default-registry", Registry.class),

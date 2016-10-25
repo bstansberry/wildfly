@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,18 @@
 
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.server.CacheJndiNameFactory;
-import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
+import java.util.Set;
+
+import org.wildfly.clustering.group.Node;
 
 /**
  * @author Paul Ferraro
  */
-@MetaInfServices(CacheAliasBuilderProvider.class)
-public class ServiceProviderRegistryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
-
-    public ServiceProviderRegistryAliasBuilderProvider() {
-        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
-    }
+public interface ServiceNotifier<T> {
+    /**
+     * Notifies any listener that the specified service is now provided by the specified nodes.
+     * @param service a service
+     * @param providers the set of nodes providing the given service
+     */
+    void notifyListener(T service, Set<Node> providers);
 }

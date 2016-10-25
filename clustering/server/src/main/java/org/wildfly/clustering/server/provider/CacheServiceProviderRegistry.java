@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -46,6 +47,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.group.Group;
@@ -64,7 +66,7 @@ import org.wildfly.clustering.server.logging.ClusteringServerLogger;
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener(sync = false)
-public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, Group.Listener, AutoCloseable {
+public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<T>, ServiceProvider<T>, Group.Listener, AutoCloseable {
 
     private static ThreadFactory createThreadFactory(Class<?> targetClass) {
         PrivilegedAction<ThreadFactory> action = () -> new JBossThreadFactory(new ThreadGroup(targetClass.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null);
@@ -75,15 +77,20 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     private final Batcher<? extends Batch> batcher;
     private final Cache<T, Set<Node>> cache;
     private final Group group;
-    private final CommandDispatcher<Set<T>> dispatcher;
+    private final CommandDispatcher<ServiceProvider<T>> dispatcher;
 
     public CacheServiceProviderRegistry(CacheServiceProviderRegistryConfiguration<T> config) {
         this.group = config.getGroup();
         this.cache = config.getCache();
         this.batcher = config.getBatcher();
-        this.dispatcher = config.getCommandDispatcherFactory().createCommandDispatcher(config.getId(), this.listeners.keySet());
+        this.dispatcher = config.getCommandDispatcherFactory().createCommandDispatcher(config.getId(), this);
         this.cache.addListener(this);
         this.group.addListener(this);
+    }
+
+    @Override
+    public Set<T> getLocalServices() {
+        return this.listeners.keySet();
     }
 
     @Override
@@ -105,11 +112,6 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
     @Override
     public Group getGroup() {
         return this.group;
-    }
-
-    @Override
-    public ServiceProviderRegistration<T> register(T service) {
-        return this.register(service, null);
     }
 
     @Override
@@ -200,11 +202,11 @@ public class CacheServiceProviderRegistry<T> implements ServiceProviderRegistry<
                 // Re-assert services for new members following merge since these may have been lost following split
                 for (Node node: newNodes) {
                     try {
-                        Collection<T> services = this.dispatcher.executeOnNode(new GetLocalServicesCommand<>(), node).get();
+                        Collection<T> services = this.dispatcher.executeOnNode(new ServiceQueryCommand<>(), node).get();
                         try (Batch batch = this.batcher.createBatch()) {
                             services.forEach(service -> this.register(node, service));
                         }
-                    } catch (Exception e) {
+                    } catch (CommandDispatcherException | ExecutionException e) {
                         ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
                     }
                 }

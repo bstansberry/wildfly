@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.CacheJndiNameFactory;
-import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
- * Provides the requisite builders for a {@link ServiceProviderRegistrationFactory} created from the specified factory.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistryBuilderProvider extends CacheRequirementBuilderProvider<ServiceProviderRegistry<Object>> {
+@MetaInfServices(LocalGroupBuilderProvider.class)
+public class LocalGroupServiceProviderRegistryBuilderProvider extends GroupServiceProviderRegistryBuilderProvider implements LocalGroupBuilderProvider {
 
-    protected CacheServiceProviderRegistryBuilderProvider(CacheCapabilityServiceBuilderFactory<ServiceProviderRegistry<Object>> factory) {
-        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, factory, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
+    public LocalGroupServiceProviderRegistryBuilderProvider() {
+        super((name, group) -> new LocalServiceProviderRegistryBuilder<>(name, support -> ClusteringRequirement.GROUP.getServiceName(support, group)));
     }
 }

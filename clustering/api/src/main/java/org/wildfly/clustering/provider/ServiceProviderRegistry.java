@@ -48,7 +48,9 @@ public interface ServiceProviderRegistry<T> {
      * @param service a service to register
      * @return a new service provider registration
      */
-    ServiceProviderRegistration<T> register(T service);
+    default ServiceProviderRegistration<T> register(T service) {
+        return this.register(service, null);
+    }
 
     /**
      * Registers the local node as providing the specified service, using the specified listener.

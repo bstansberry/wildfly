@@ -106,4 +106,8 @@ public interface ClusteringServerLogger extends BasicLogger {
 
     @Message(id = 14, value = "Specified quorum %d must be greater than zero")
     IllegalArgumentException invalidQuorum(int quorum);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Failed to notify %s service provider registration listener of new providers: %s")
+    void serviceProviderRegistrationListenerFailed(@Cause Throwable e, String group, Set<Node> providers);
 }

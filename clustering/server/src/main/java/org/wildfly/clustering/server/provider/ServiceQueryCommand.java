@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,18 +21,20 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import org.kohsuke.MetaInfServices;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.wildfly.clustering.dispatcher.Command;
 
 /**
- * Provides the requisite builders for a {@link ServiceProviderRegistrationFactory} created from the specified factory.
+ * Command to obtain the service providers provided by this node.
  * @author Paul Ferraro
  */
-@MetaInfServices(LocalCacheBuilderProvider.class)
-public class LocalServiceProviderRegistryBuilderProvider extends ServiceProviderRegistryBuilderProvider implements LocalCacheBuilderProvider {
+public class ServiceQueryCommand<T> implements Command<Collection<T>, ServiceProvider<T>> {
+    private static final long serialVersionUID = -6038614943434229434L;
 
-    public LocalServiceProviderRegistryBuilderProvider() {
-        super((name, containerName, cacheName) -> new LocalServiceProviderRegistryBuilder<>(name, support -> ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, cacheName)));
+    @Override
+    public Collection<T> execute(ServiceProvider<T> provider) {
+        return new ArrayList<>(provider.getLocalServices());
     }
 }

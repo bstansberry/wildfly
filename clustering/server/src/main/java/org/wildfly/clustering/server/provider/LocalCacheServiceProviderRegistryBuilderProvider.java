@@ -21,19 +21,18 @@
  */
 package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.provider.ServiceProviderRegistry;
-import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
-import org.wildfly.clustering.server.CacheJndiNameFactory;
-import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
  * Provides the requisite builders for a {@link ServiceProviderRegistrationFactory} created from the specified factory.
  * @author Paul Ferraro
  */
-public class CacheServiceProviderRegistryBuilderProvider extends CacheRequirementBuilderProvider<ServiceProviderRegistry<Object>> {
+@MetaInfServices(LocalCacheBuilderProvider.class)
+public class LocalCacheServiceProviderRegistryBuilderProvider extends CacheServiceProviderRegistryBuilderProvider implements LocalCacheBuilderProvider {
 
-    protected CacheServiceProviderRegistryBuilderProvider(CacheCapabilityServiceBuilderFactory<ServiceProviderRegistry<Object>> factory) {
-        super(ClusteringCacheRequirement.SERVICE_PROVIDER_REGISTRY, factory, CacheJndiNameFactory.SERVICE_PROVIDER_REGISTRY);
+    public LocalCacheServiceProviderRegistryBuilderProvider() {
+        super((name, containerName, cacheName) -> new LocalServiceProviderRegistryBuilder<>(name, support -> ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, cacheName)));
     }
 }
