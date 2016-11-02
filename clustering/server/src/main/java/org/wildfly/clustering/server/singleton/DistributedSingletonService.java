@@ -22,9 +22,12 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -40,6 +43,7 @@ import org.jboss.msc.value.Value;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherException;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
@@ -98,6 +102,29 @@ public class DistributedSingletonService<T> implements SingletonService<T>, Sing
     @Override
     public boolean isPrimary() {
         return this.primary.get();
+    }
+
+    @Override
+    public Optional<Node> getPrimaryProvider() {
+        List<Node> primaryNodes = new LinkedList<>();
+        try {
+            Map<Node, CommandResponse<Boolean>> responses = this.dispatcher.executeOnCluster(new SingletonLocatorCommand<>());
+            for (Map.Entry<Node, CommandResponse<Boolean>> entry : responses.entrySet()) {
+                try {
+                    if (entry.getValue().get().booleanValue()) {
+                        primaryNodes.add(entry.getKey());
+                    }
+                } catch (ExecutionException e) {
+                    ClusteringServerLogger.ROOT_LOGGER.info(e.getLocalizedMessage(), e);
+                }
+            }
+            if (primaryNodes.size() > 1) {
+                throw ClusteringServerLogger.ROOT_LOGGER.multiplePrimaryProvidersDetected(this.serviceName.getCanonicalName(), primaryNodes);
+            }
+        } catch (CommandDispatcherException e) {
+            ClusteringServerLogger.ROOT_LOGGER.warn(e.getLocalizedMessage(), e);
+        }
+        return primaryNodes.isEmpty() ? Optional.empty() : Optional.of(primaryNodes.get(0));
     }
 
     @Override

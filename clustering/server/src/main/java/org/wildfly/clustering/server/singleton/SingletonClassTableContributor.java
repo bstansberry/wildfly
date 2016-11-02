@@ -36,6 +36,6 @@ public class SingletonClassTableContributor implements ClassTableContributor {
 
     @Override
     public Collection<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(SingletonValueCommand.class, StartCommand.class, StopCommand.class);
+        return Arrays.asList(SingletonLocatorCommand.class, SingletonValueCommand.class, StartCommand.class, StopCommand.class);
     }
 }

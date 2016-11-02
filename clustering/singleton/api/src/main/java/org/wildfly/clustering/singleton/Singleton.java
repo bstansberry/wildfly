@@ -21,6 +21,10 @@
  */
 package org.wildfly.clustering.singleton;
 
+import java.util.Optional;
+
+import org.wildfly.clustering.group.Node;
+
 /**
  * @author Paul Ferraro
  */
@@ -38,4 +42,10 @@ public interface Singleton {
      * @return true, if this node is the primary node, false if it is a backup node.
      */
     boolean isPrimary();
+
+    /**
+     * Returns the node currently serving as the primary provider of this singleton.
+     * @return an optional node, that is only present if a primary provider exists.
+     */
+    Optional<Node> getPrimaryProvider();
 }

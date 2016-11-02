@@ -51,8 +51,8 @@ public class DistributedSingletonServiceBuilderFactoryBuilder implements Capabil
     private final String group;
 
     @SuppressWarnings("rawtypes")
-    private volatile Supplier<ValueDependency<ServiceProviderRegistry>> registry;
-    private volatile Supplier<ValueDependency<CommandDispatcherFactory>> dispatcherFactory;
+    private volatile Supplier<ValueDependency<ServiceProviderRegistry>> registryDependency;
+    private volatile Supplier<ValueDependency<CommandDispatcherFactory>> dispatcherFactoryDependency;
 
     public DistributedSingletonServiceBuilderFactoryBuilder(ServiceName name, String group, Function<CapabilityServiceSupport, ServiceName> registryServiceNameProvider) {
         this.name = name;
@@ -67,8 +67,8 @@ public class DistributedSingletonServiceBuilderFactoryBuilder implements Capabil
 
     @Override
     public Builder<SingletonServiceBuilderFactory> configure(CapabilityServiceSupport support) {
-        this.registry = () -> new InjectedValueDependency<>(this.registryServiceNameProvider.apply(support), ServiceProviderRegistry.class);
-        this.dispatcherFactory = () -> new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.group), CommandDispatcherFactory.class);
+        this.registryDependency = () -> new InjectedValueDependency<>(this.registryServiceNameProvider.apply(support), ServiceProviderRegistry.class);
+        this.dispatcherFactoryDependency = () -> new InjectedValueDependency<>(ClusteringRequirement.COMMAND_DISPATCHER_FACTORY.getServiceName(support, this.group), CommandDispatcherFactory.class);
         return this;
     }
 
@@ -81,11 +81,11 @@ public class DistributedSingletonServiceBuilderFactoryBuilder implements Capabil
     @SuppressWarnings("rawtypes")
     @Override
     public ValueDependency<ServiceProviderRegistry> getServiceProviderRegistryDependency() {
-        return this.registry.get();
+        return this.registryDependency.get();
     }
 
     @Override
     public ValueDependency<CommandDispatcherFactory> getCommandDispatcherFactoryDependency() {
-        return this.dispatcherFactory.get();
+        return this.dispatcherFactoryDependency.get();
     }
 }

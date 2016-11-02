@@ -22,9 +22,12 @@
 
 package org.wildfly.clustering.server.singleton;
 
+import java.util.Optional;
+
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.service.AsynchronousServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceInstaller;
@@ -51,5 +54,10 @@ public class AsynchronousSingletonServiceBuilder<T> extends AsynchronousServiceB
     @Override
     public boolean isPrimary() {
         return this.service.isPrimary();
+    }
+
+    @Override
+    public Optional<Node> getPrimaryProvider() {
+        return this.service.getPrimaryProvider();
     }
 }

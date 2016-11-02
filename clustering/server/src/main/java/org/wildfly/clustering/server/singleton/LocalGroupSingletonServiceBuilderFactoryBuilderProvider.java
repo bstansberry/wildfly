@@ -23,6 +23,7 @@
 package org.wildfly.clustering.server.singleton;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.ClusteringRequirement;
 import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 
 /**
@@ -32,6 +33,6 @@ import org.wildfly.clustering.spi.LocalGroupBuilderProvider;
 public class LocalGroupSingletonServiceBuilderFactoryBuilderProvider extends GroupSingletonServiceBuilderFactoryBuilderProvider implements LocalGroupBuilderProvider {
 
     public LocalGroupSingletonServiceBuilderFactoryBuilderProvider() {
-        super((name, group) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name));
+        super((name, group) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name, support -> ClusteringRequirement.GROUP.getServiceName(support, group)));
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,15 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.server.singleton;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.singleton.SingletonServiceBuilder;
-import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.service.ValueDependency;
 
 /**
- * Service that provides a non-clustered {@link SingletonServiceBuilderFactory}
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
-
-    private LocalSingletonServiceBuilderContext context;
-
-    public LocalSingletonServiceBuilderFactory(LocalSingletonServiceBuilderContext context) {
-        this.context = context;
-    }
-
-    @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
-        return new LocalSingletonServiceBuilder<>(this.context, name, service);
-    }
+public interface LocalSingletonServiceBuilderContext {
+    ValueDependency<Group> getGroupDependency();
 }

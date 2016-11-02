@@ -22,6 +22,7 @@
 package org.wildfly.clustering.server.singleton;
 
 import org.kohsuke.MetaInfServices;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 
 /**
@@ -32,6 +33,6 @@ import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 public class LocalCacheSingletonServiceBuilderFactoryBuilderProvider extends CacheSingletonServiceBuilderFactoryBuilderProvider implements LocalCacheBuilderProvider {
 
     public LocalCacheSingletonServiceBuilderFactoryBuilderProvider() {
-        super((name, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name));
+        super((name, containerName, cacheName) -> new LocalSingletonServiceBuilderFactoryBuilder<>(name, support -> ClusteringCacheRequirement.GROUP.getServiceName(support, containerName, cacheName)));
     }
 }
