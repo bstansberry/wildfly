@@ -22,21 +22,14 @@
 
 package org.wildfly.clustering.singleton;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
+import org.jboss.msc.service.ServiceController;
 
 /**
+ * {@link SingletonServiceController} for singleton services.
  * @author Paul Ferraro
  */
-public interface SingletonBuilder<T> extends Builder<T> {
-    /**
-     * Defines an optional service to run while this node is not the primary singleton provider.
-     * @param service a service
-     * @return this builder
-     */
-    SingletonBuilder<T> backupService(Service<T> service);
+public interface SingletonServiceController<S> extends ServiceController<S> {
 
     @Override
-    SingletonServiceInstaller<T> build(ServiceTarget target);
+    SingletonService<S> getService();
 }

@@ -22,7 +22,6 @@
 package org.jboss.as.test.clustering.single.singleton;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
@@ -64,7 +63,8 @@ public abstract class SingletonServiceTestCase {
             HttpResponse response = client.execute(new HttpGet(defaultURI));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
@@ -72,8 +72,9 @@ public abstract class SingletonServiceTestCase {
             // Service should be started regardless of whether a quorum was required.
             response = client.execute(new HttpGet(quorumURI));
             try {
-                assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(NODE_1, response.getFirstHeader("node").getValue());
+                Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
+                Assert.assertTrue(response.containsHeader(NodeServiceServlet.NODE_HEADER));
+                Assert.assertEquals(NODE_1, response.getFirstHeader(NodeServiceServlet.NODE_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }

@@ -23,11 +23,12 @@
 package org.wildfly.clustering.server.singleton;
 
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.SingletonServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -61,8 +62,9 @@ public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     }
 
     @Override
-    public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, new LocalSingletonService<>(this.service));
+    public SingletonServiceInstaller<T> build(ServiceTarget target) {
+        SingletonService<T> service = new LocalSingletonService<>(this.service);
+        return new AsynchronousSingletonServiceBuilder<>(this.name, service).build(target);
     }
 
     @Override

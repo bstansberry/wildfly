@@ -20,23 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.singleton;
+package org.wildfly.clustering.server.singleton;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.AsynchronousServiceBuilder;
+import org.wildfly.clustering.singleton.SingletonService;
+import org.wildfly.clustering.singleton.SingletonServiceInstaller;
 
 /**
+ * Builder for asynchronously started/stopped singleton services.
  * @author Paul Ferraro
+ * @param <T> the type of value provided by services built by this builder
  */
-public interface SingletonBuilder<T> extends Builder<T> {
-    /**
-     * Defines an optional service to run while this node is not the primary singleton provider.
-     * @param service a service
-     * @return this builder
-     */
-    SingletonBuilder<T> backupService(Service<T> service);
+public class AsynchronousSingletonServiceBuilder<T> extends AsynchronousServiceBuilder<T> implements SingletonService<T> {
+
+    private final SingletonService<T> service;
+
+    public AsynchronousSingletonServiceBuilder(ServiceName name, SingletonService<T> service) {
+        super(name, service);
+        this.service = service;
+    }
 
     @Override
-    SingletonServiceInstaller<T> build(ServiceTarget target);
+    public SingletonServiceInstaller<T> build(ServiceTarget target) {
+        return new SingletonServiceInstallerImpl<>(super.build(target), this.service).setInitialMode(ServiceController.Mode.ACTIVE);
+    }
+
+    @Override
+    public boolean isPrimary() {
+        return this.service.isPrimary();
+    }
 }
