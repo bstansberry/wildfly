@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
@@ -47,6 +46,7 @@ import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.logging.NamingLogger;
+import org.jboss.as.naming.service.AbstractServiceBasedNamingStore;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -57,13 +57,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Jason T. Greene
  * @author Eduardo Martins
  */
-public class ServiceBasedNamingStore implements NamingStore {
+public class ServiceBasedNamingStore extends AbstractServiceBasedNamingStore {
     private final Name EMPTY_NAME = new CompositeName();
     private Name baseName;
     private final ServiceRegistry serviceRegistry;
     private final ServiceName serviceNameBase;
-
-    private ConcurrentSkipListSet<ServiceName> boundServices = new ConcurrentSkipListSet<ServiceName>();
 
     public ServiceBasedNamingStore(final ServiceRegistry serviceRegistry, final ServiceName serviceNameBase) {
         this.serviceRegistry = serviceRegistry;
@@ -75,6 +73,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         return lookup(name, true);
     }
 
+    @Override
     public Object lookup(final Name name, boolean dereference) throws NamingException {
         if (name.isEmpty()) {
             return new NamingContext(EMPTY_NAME, this, null);
@@ -82,7 +81,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         final ServiceName lookupName = buildServiceName(name);
         Object obj = lookup(name.toString(), lookupName, dereference);
         if (obj == null) {
-            final ServiceName lower = boundServices.lower(lookupName);
+            final ServiceName lower = getBoundServices().lower(lookupName);
             if (lower != null && lower.isParentOf(lookupName)) {
                 // Parent might be a reference or a link
                 obj = lookup(name.toString(), lower, dereference);
@@ -95,7 +94,7 @@ public class ServiceBasedNamingStore implements NamingStore {
                 }
             }
 
-            final ServiceName ceiling = boundServices.ceiling(lookupName);
+            final ServiceName ceiling = getBoundServices().ceiling(lookupName);
             if (ceiling != null && lookupName.isParentOf(ceiling)) {
                 if (lookupName.equals(ceiling)) {
                     //the binder service returned null
@@ -160,9 +159,10 @@ public class ServiceBasedNamingStore implements NamingStore {
         }
     }
 
+    @Override
     public List<NameClassPair> list(final Name name) throws NamingException {
         final ServiceName lookupName = buildServiceName(name);
-        final ServiceName floor = boundServices.floor(lookupName);
+        final ServiceName floor = getBoundServices().floor(lookupName);
         boolean isContextBinding = false;
         if (floor != null && floor.isParentOf(lookupName)) {
             // Parent might be a reference or a link
@@ -204,9 +204,10 @@ public class ServiceBasedNamingStore implements NamingStore {
         return results;
     }
 
+    @Override
     public List<Binding> listBindings(final Name name) throws NamingException {
         final ServiceName lookupName = buildServiceName(name);
-        final ServiceName floor = boundServices.floor(lookupName);
+        final ServiceName floor = getBoundServices().floor(lookupName);
         boolean isContextBinding = false;
         if (floor != null && floor.isParentOf(lookupName)) {
             // Parent might be a reference or a link
@@ -237,11 +238,11 @@ public class ServiceBasedNamingStore implements NamingStore {
     }
 
     private List<ServiceName> listChildren(final ServiceName name, boolean isContextBinding) throws NamingException {
-        final ConcurrentSkipListSet<ServiceName> boundServices = this.boundServices;
+        final NavigableSet<ServiceName> boundServices = this.getBoundServices();
         if (!isContextBinding && boundServices.contains(name)) {
             throw NamingLogger.ROOT_LOGGER.cannotListNonContextBinding();
         }
-        final NavigableSet<ServiceName> tail = boundServices.tailSet(name);
+        final NavigableSet<ServiceName> tail = boundServices.tailSet(name, true);
         final List<ServiceName> children = new ArrayList<ServiceName>();
         for (ServiceName next : tail) {
             if (name.isParentOf(next)) {
@@ -255,29 +256,20 @@ public class ServiceBasedNamingStore implements NamingStore {
         return children;
     }
 
+    @Override
     public void close() throws NamingException {
-        boundServices.clear();
+        getBoundServices().clear();
     }
 
+    @Override
     public void addNamingListener(Name target, int scope, NamingListener listener) {
     }
 
+    @Override
     public void removeNamingListener(NamingListener listener) {
     }
 
-    public void add(final ServiceName serviceName) {
-        final ConcurrentSkipListSet<ServiceName> boundServices = this.boundServices;
-        if (boundServices.contains(serviceName)) {
-            throw NamingLogger.ROOT_LOGGER.serviceAlreadyBound(serviceName);
-        }
-        boundServices.add(serviceName);
-    }
-
-    public void remove(final ServiceName serviceName) {
-        boundServices.remove(serviceName);
-    }
-
-    protected ServiceName buildServiceName(final Name name) {
+    ServiceName buildServiceName(final Name name) {
         final Enumeration<String> parts = name.getAll();
         ServiceName current = serviceNameBase;
         while (parts.hasMoreElements()) {
@@ -320,11 +312,11 @@ public class ServiceBasedNamingStore implements NamingStore {
         return name;
     }
 
-    protected ServiceName getServiceNameBase() {
+    ServiceName getServiceNameBase() {
         return serviceNameBase;
     }
 
-    protected ServiceRegistry getServiceRegistry() {
+    ServiceRegistry getServiceRegistry() {
         return serviceRegistry;
     }
 

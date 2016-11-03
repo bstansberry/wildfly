@@ -115,7 +115,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @throws StartException If the entity can not be bound
      */
     public void start(StartContext context) throws StartException {
-        final ServiceBasedNamingStore namingStore = namingStoreValue.getValue();
+        final AbstractServiceBasedNamingStore namingStore = namingStoreValue.getValue();
         controller = context.getController();
         namingStore.add(controller.getName());
         ROOT_LOGGER.tracef("Bound resource %s into naming store %s (service name %s)", name, namingStore, controller.getName());
@@ -127,7 +127,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @param context The stop context
      */
     public void stop(StopContext context) {
-        final ServiceBasedNamingStore namingStore = namingStoreValue.getValue();
+        final AbstractServiceBasedNamingStore namingStore = namingStoreValue.getValue();
         namingStore.remove(controller.getName());
         ROOT_LOGGER.tracef("Unbound resource %s into naming store %s (service name %s)", name, namingStore, context.getController().getName());
     }
