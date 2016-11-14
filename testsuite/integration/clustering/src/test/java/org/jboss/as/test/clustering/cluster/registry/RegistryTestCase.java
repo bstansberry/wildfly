@@ -1,15 +1,11 @@
 package org.jboss.as.test.clustering.cluster.registry;
 
-import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
-import java.util.PropertyPermission;
 
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
@@ -19,37 +15,18 @@ import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RegistryTestCase extends ClusterAbstractTestCase {
-    private static final String MODULE_NAME = "registry";
+public abstract class RegistryTestCase extends ClusterAbstractTestCase {
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
 
-    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> createDeploymentForContainer1() {
-        return createDeployment();
-    }
+    private final String moduleName;
 
-    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> createDeploymentForContainer2() {
-        return createDeployment();
-    }
-
-    private static Archive<?> createDeployment() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
-        jar.addPackage(RegistryRetriever.class.getPackage());
-        jar.addAsManifestResource(createPermissionsXmlAsset(
-                new PropertyPermission(NODE_NAME_PROPERTY, "read")
-        ), "permissions.xml");
-        return jar;
+    protected RegistryTestCase(String moduleName) {
+        this.moduleName = moduleName;
     }
 
     @Test
@@ -57,7 +34,7 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
-        try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
+        try (EJBDirectory context = new RemoteEJBDirectory(this.moduleName)) {
             RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
             Collection<String> names = bean.getNodes();
             assertEquals(2, names.size());

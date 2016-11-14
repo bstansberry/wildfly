@@ -31,8 +31,11 @@ import org.jboss.as.naming.deployment.JndiName;
  * @author Paul Ferraro
  */
 public enum GroupJndiNameFactory implements Function<String, JndiName> {
+
     COMMAND_DISPATCHER_FACTORY("dispatcher"),
     GROUP("group"),
+    REGISTRY_FACTORY("registry"),
+    SERVICE_PROVIDER_REGISTRY("providers"),
     ;
     private final String component;
 

@@ -30,4 +30,6 @@ public interface SingletonContext<T> {
     void stop();
 
     Optional<T> getLocalValue();
+
+    boolean isPrimary();
 }

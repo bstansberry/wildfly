@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.server.provider;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.jboss.ClassTableContributor;
@@ -36,6 +36,6 @@ public class ServiceProviderRegistryClassTableContributor implements ClassTableC
 
     @Override
     public Collection<Class<?>> getKnownClasses() {
-        return Collections.<Class<?>>singleton(GetLocalServicesCommand.class);
+        return Arrays.asList(ServiceLocatorCommand.class, ServiceProviderNotificationCommand.class, ServiceQueryCommand.class);
     }
 }

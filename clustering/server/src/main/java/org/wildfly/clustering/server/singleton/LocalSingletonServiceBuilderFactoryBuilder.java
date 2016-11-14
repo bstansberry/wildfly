@@ -23,25 +23,36 @@
 package org.wildfly.clustering.server.singleton;
 
 import java.io.Serializable;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.Value;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.service.Builder;
+import org.wildfly.clustering.service.InjectedValueDependency;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
  * Builds a non-clustered {@link SingletonServiceBuilderFactory}.
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> implements CapabilityServiceBuilder<SingletonServiceBuilderFactory> {
+public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> implements CapabilityServiceBuilder<SingletonServiceBuilderFactory>, LocalSingletonServiceBuilderContext {
 
     private final ServiceName name;
+    private final Function<CapabilityServiceSupport, ServiceName> groupServiceNameProvider;
 
-    public LocalSingletonServiceBuilderFactoryBuilder(ServiceName name) {
+    private volatile Supplier<ValueDependency<Group>> groupDependency;
+
+    public LocalSingletonServiceBuilderFactoryBuilder(ServiceName name, Function<CapabilityServiceSupport, ServiceName> groupServiceNameProvider) {
         this.name = name;
+        this.groupServiceNameProvider = groupServiceNameProvider;
     }
 
     @Override
@@ -50,8 +61,19 @@ public class LocalSingletonServiceBuilderFactoryBuilder<T extends Serializable> 
     }
 
     @Override
+    public Builder<SingletonServiceBuilderFactory> configure(CapabilityServiceSupport support) {
+        this.groupDependency = () -> new InjectedValueDependency<>(this.groupServiceNameProvider.apply(support), Group.class);
+        return this;
+    }
+
+    @Override
     public ServiceBuilder<SingletonServiceBuilderFactory> build(ServiceTarget target) {
-        Value<SingletonServiceBuilderFactory> value = () -> new LocalSingletonServiceBuilderFactory();
+        Value<SingletonServiceBuilderFactory> value = () -> new LocalSingletonServiceBuilderFactory(this);
         return target.addService(this.name, new ValueService<>(value));
+    }
+
+    @Override
+    public ValueDependency<Group> getGroupDependency() {
+        return this.groupDependency.get();
     }
 }

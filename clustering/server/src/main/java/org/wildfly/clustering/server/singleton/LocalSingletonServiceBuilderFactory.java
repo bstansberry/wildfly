@@ -32,8 +32,14 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
  */
 public class LocalSingletonServiceBuilderFactory implements SingletonServiceBuilderFactory {
 
+    private LocalSingletonServiceBuilderContext context;
+
+    public LocalSingletonServiceBuilderFactory(LocalSingletonServiceBuilderContext context) {
+        this.context = context;
+    }
+
     @Override
-    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, final Service<T> service) {
-        return new LocalSingletonServiceBuilder<>(name, service);
+    public <T> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
+        return new LocalSingletonServiceBuilder<>(this.context, name, service);
     }
 }

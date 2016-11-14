@@ -21,16 +21,34 @@
  */
 package org.wildfly.clustering.server.registry;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.wildfly.clustering.registry.RegistryFactory;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
+import org.wildfly.clustering.server.CacheCapabilityServiceBuilderFactory;
+import org.wildfly.clustering.server.CacheJndiNameFactory;
+import org.wildfly.clustering.server.CacheRequirementBuilderProvider;
+import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
- * Provides the requisite builders for a clustered {@link RegistryFactory}.
+ * Provides the requisite builders for a clustered {@link RegistryFactory} created from the specified factory.
  * @author Paul Ferraro
  */
-public class CacheRegistryFactoryBuilderProvider extends RegistryFactoryBuilderProvider implements DistributedCacheBuilderProvider {
+public class CacheRegistryFactoryBuilderProvider extends CacheRequirementBuilderProvider<RegistryFactory<Object, Object>> {
 
-    public CacheRegistryFactoryBuilderProvider() {
-        super((name, containerName, cacheName) -> new CacheRegistryFactoryBuilder<>(name, containerName, cacheName));
+    protected CacheRegistryFactoryBuilderProvider(CacheCapabilityServiceBuilderFactory<RegistryFactory<Object, Object>> factory) {
+        super(ClusteringCacheRequirement.REGISTRY_FACTORY, factory, CacheJndiNameFactory.REGISTRY_FACTORY);
+    }
+
+    @Override
+    public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {
+        Collection<CapabilityServiceBuilder<?>> builders = super.getBuilders(registry, containerName, cacheName);
+        List<CapabilityServiceBuilder<?>> result = new ArrayList<>(builders.size() + 1);
+        result.addAll(builders);
+        result.add(new RegistryBuilder<>(registry.getServiceName(ClusteringCacheRequirement.REGISTRY), support -> ClusteringCacheRequirement.REGISTRY_FACTORY.getServiceName(support, containerName, cacheName), support -> ClusteringCacheRequirement.REGISTRY_ENTRY.getServiceName(support, containerName, cacheName)));
+        return result;
     }
 }

@@ -23,6 +23,7 @@
 package org.wildfly.clustering.singleton;
 
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.clustering.service.Builder;
 
 /**
@@ -35,4 +36,7 @@ public interface SingletonBuilder<T> extends Builder<T> {
      * @return this builder
      */
     SingletonBuilder<T> backupService(Service<T> service);
+
+    @Override
+    SingletonServiceInstaller<T> build(ServiceTarget target);
 }

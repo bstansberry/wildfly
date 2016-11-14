@@ -23,21 +23,27 @@
 package org.wildfly.clustering.server.singleton;
 
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.service.ValueDependency;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
+import org.wildfly.clustering.singleton.SingletonService;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
+import org.wildfly.clustering.singleton.SingletonServiceInstaller;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<T> {
+public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<T>, LocalSingletonServiceContext<T> {
 
     private final ServiceName name;
     private final Service<T> service;
+    private final ValueDependency<Group> groupDependency;
 
-    public LocalSingletonServiceBuilder(ServiceName name, Service<T> service) {
+    public LocalSingletonServiceBuilder(LocalSingletonServiceBuilderContext context, ServiceName name, Service<T> service) {
+        this.groupDependency = context.getGroupDependency();
         this.name = name;
         this.service = service;
     }
@@ -61,12 +67,25 @@ public class LocalSingletonServiceBuilder<T> implements SingletonServiceBuilder<
     }
 
     @Override
-    public ServiceBuilder<T> build(ServiceTarget target) {
-        return target.addService(this.name, this.service);
+    public SingletonServiceInstaller<T> build(ServiceTarget target) {
+        SingletonService<T> service = new LocalSingletonService<>(this);
+        SingletonServiceInstaller<T> installer =  new AsynchronousSingletonServiceBuilder<>(this.name, service).build(target);
+        this.groupDependency.register(installer);
+        return installer;
     }
 
     @Override
     public ServiceName getServiceName() {
         return this.name;
+    }
+
+    @Override
+    public Service<T> getService() {
+        return this.service;
+    }
+
+    @Override
+    public Value<Group> getGroup() {
+        return this.groupDependency;
     }
 }

@@ -22,6 +22,8 @@
 package org.wildfly.clustering.server.provider;
 
 
+import java.util.function.Function;
+
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.msc.service.ServiceBuilder;
@@ -35,7 +37,6 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 import org.wildfly.clustering.service.Builder;
 import org.wildfly.clustering.service.InjectedValueDependency;
 import org.wildfly.clustering.service.ValueDependency;
-import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 
 /**
  * Builds a non-clustered {@link ServiceProviderRegistrationFactory} service.
@@ -44,15 +45,13 @@ import org.wildfly.clustering.spi.ClusteringCacheRequirement;
 public class LocalServiceProviderRegistryBuilder<T> implements CapabilityServiceBuilder<ServiceProviderRegistry<T>> {
 
     private final ServiceName name;
-    private final String containerName;
-    private final String cacheName;
+    private final Function<CapabilityServiceSupport, ServiceName> groupServiceNameProvider;
 
     private volatile ValueDependency<Group> group;
 
-    public LocalServiceProviderRegistryBuilder(ServiceName name, String containerName, String cacheName) {
+    public LocalServiceProviderRegistryBuilder(ServiceName name, Function<CapabilityServiceSupport, ServiceName> groupServiceNameProvider) {
         this.name = name;
-        this.containerName = containerName;
-        this.cacheName = cacheName;
+        this.groupServiceNameProvider = groupServiceNameProvider;
     }
 
     @Override
@@ -62,7 +61,7 @@ public class LocalServiceProviderRegistryBuilder<T> implements CapabilityService
 
     @Override
     public Builder<ServiceProviderRegistry<T>> configure(CapabilityServiceSupport support) {
-        this.group = new InjectedValueDependency<>(ClusteringCacheRequirement.GROUP.getServiceName(support, this.containerName, this.cacheName), Group.class);
+        this.group = new InjectedValueDependency<>(this.groupServiceNameProvider.apply(support), Group.class);
         return this;
     }
 

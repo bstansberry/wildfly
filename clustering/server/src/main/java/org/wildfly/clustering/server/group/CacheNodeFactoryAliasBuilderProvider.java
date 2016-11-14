@@ -22,12 +22,15 @@
 
 package org.wildfly.clustering.server.group;
 
+import org.wildfly.clustering.spi.CacheAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.CacheRequirementAliasBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(CacheAliasBuilderProvider.class)
 public class CacheNodeFactoryAliasBuilderProvider extends CacheRequirementAliasBuilderProvider {
 
     public CacheNodeFactoryAliasBuilderProvider() {

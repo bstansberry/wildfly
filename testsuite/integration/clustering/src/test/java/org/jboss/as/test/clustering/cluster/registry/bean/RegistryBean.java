@@ -22,7 +22,7 @@ import org.wildfly.clustering.registry.RegistryFactory;
 @Local(Registry.class)
 public class RegistryBean implements Registry<String, String>, Registry.Listener<String, String> {
 
-    @Resource(lookup = "java:jboss/clustering/registry/server/default")
+    @Resource(name = "clustering/registry-factory")
     private RegistryFactory<String, String> factory;
     private Registry<String, String> registry;
 

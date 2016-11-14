@@ -25,16 +25,15 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.wildfly.clustering.spi.CacheBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringCacheRequirement;
-import org.wildfly.clustering.spi.DistributedCacheBuilderProvider;
-import org.wildfly.clustering.spi.LocalCacheBuilderProvider;
 import org.wildfly.clustering.spi.ServiceNameRegistry;
 
 /**
  * Provides the requisite builders for both local and clustered service implementations of a {@link org.wildfly.clustering.group.NodeFactory} for a cache.
  * @author Paul Ferraro
  */
-public class CacheNodeFactoryBuilderProvider implements LocalCacheBuilderProvider, DistributedCacheBuilderProvider {
+public class CacheNodeFactoryBuilderProvider implements CacheBuilderProvider {
 
     @Override
     public Collection<CapabilityServiceBuilder<?>> getBuilders(ServiceNameRegistry<ClusteringCacheRequirement> registry, String containerName, String cacheName) {

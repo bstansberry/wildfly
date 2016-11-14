@@ -22,12 +22,15 @@
 
 package org.wildfly.clustering.server.group;
 
+import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.server.GroupRequirementAliasBuilderProvider;
 import org.wildfly.clustering.spi.ClusteringRequirement;
+import org.wildfly.clustering.spi.GroupAliasBuilderProvider;
 
 /**
  * @author Paul Ferraro
  */
+@MetaInfServices(GroupAliasBuilderProvider.class)
 public class GroupNodeFactoryAliasBuilderProvider extends GroupRequirementAliasBuilderProvider {
 
     public GroupNodeFactoryAliasBuilderProvider() {

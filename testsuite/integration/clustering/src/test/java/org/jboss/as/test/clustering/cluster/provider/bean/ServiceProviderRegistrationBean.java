@@ -17,7 +17,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistry;
 @Startup
 @Local(ServiceProviderRegistration.class)
 public class ServiceProviderRegistrationBean implements ServiceProviderRegistration<String>, ServiceProviderRegistration.Listener {
-    @Resource(lookup = "java:jboss/clustering/providers/server/default")
+    @Resource(name = "clustering/service-provider-registry")
     private ServiceProviderRegistry<String> factory;
     private ServiceProviderRegistration<String> registration;
 
