@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -51,7 +52,7 @@ public class RouteRegistryEntryProviderBuilder implements CapabilityServiceBuild
 
     @Override
     public ServiceName getServiceName() {
-        return ServiceName.parse(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, this.serverName));
+        return ServiceNameFactory.parseServiceName(ClusteringCacheRequirement.REGISTRY_ENTRY.resolve(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, this.serverName));
     }
 
     @Override

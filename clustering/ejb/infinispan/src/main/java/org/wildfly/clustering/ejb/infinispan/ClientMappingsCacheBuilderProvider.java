@@ -29,7 +29,7 @@ import java.util.ServiceLoader;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
@@ -56,14 +56,14 @@ public class ClientMappingsCacheBuilderProvider implements CacheBuilderProvider,
         List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
         if (aliasCacheName == null) {
             String cacheName = BeanManagerFactoryBuilderConfiguration.CLIENT_MAPPINGS_CACHE_NAME;
-            builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, builder -> {
+            builders.add(new TemplateConfigurationBuilder(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, aliasCacheName, builder -> {
                 CacheMode mode = builder.clustering().cacheMode();
                 builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
                 builder.clustering().l1().disable();
                 builder.persistence().clearStores();
             }));
-            builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
-            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceName.parse(requirement.resolve(containerName, cacheName));
+            builders.add(new CacheBuilder<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName));
+            ServiceNameRegistry<ClusteringCacheRequirement> routingRegistry = requirement -> ServiceNameFactory.parseServiceName(requirement.resolve(containerName, cacheName));
             for (CacheBuilderProvider provider : ServiceLoader.load(this.providerClass, this.providerClass.getClassLoader())) {
                 builders.addAll(provider.getBuilders(routingRegistry, containerName, cacheName));
             }

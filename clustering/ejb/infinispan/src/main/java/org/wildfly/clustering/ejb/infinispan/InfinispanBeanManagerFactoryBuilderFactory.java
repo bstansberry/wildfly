@@ -36,6 +36,7 @@ import org.infinispan.configuration.cache.ExpirationConfiguration;
 import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.clustering.controller.BuilderAdapter;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.msc.service.ServiceBuilder;
@@ -117,8 +118,8 @@ public class InfinispanBeanManagerFactoryBuilderFactory<I> implements BeanManage
         };
 
         List<CapabilityServiceBuilder<?>> builders = new ArrayList<>(4);
-        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
-        builders.add(new CacheBuilder<Object, Object>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName) {
+        builders.add(new TemplateConfigurationBuilder(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, cacheName)), containerName, cacheName, templateCacheName, configurator));
+        builders.add(new CacheBuilder<Object, Object>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(containerName, cacheName)), containerName, cacheName) {
             @Override
             public ServiceBuilder<Cache<Object, Object>> build(ServiceTarget target) {
                 return super.build(target).addDependency(name.append("marshalling"));

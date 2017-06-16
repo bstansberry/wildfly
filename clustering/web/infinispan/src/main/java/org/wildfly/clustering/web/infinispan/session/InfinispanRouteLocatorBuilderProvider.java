@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.controller.CapabilityServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.service.CacheBuilder;
@@ -61,14 +61,14 @@ public class InfinispanRouteLocatorBuilderProvider implements RouteLocatorBuilde
         List<CapabilityServiceBuilder<?>> builders = new LinkedList<>();
 
         builders.add(new RouteRegistryEntryProviderBuilder(serverName, routeDependencyProvider.get()));
-        builders.add(new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, builder -> {
+        builders.add(new TemplateConfigurationBuilder(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(containerName, serverName)), containerName, serverName, null, builder -> {
             CacheMode mode = builder.clustering().cacheMode();
             builder.clustering().cacheMode(mode.isClustered() ? CacheMode.REPL_SYNC : CacheMode.LOCAL);
             builder.clustering().l1().disable();
             builder.persistence().clearStores();
         }));
-        builders.add(new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
-        ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceName.parse(requirement.resolve(containerName, serverName));
+        builders.add(new CacheBuilder<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(containerName, serverName)), containerName, serverName));
+        ServiceNameRegistry<ClusteringCacheRequirement> registry = requirement -> ServiceNameFactory.parseServiceName(requirement.resolve(containerName, serverName));
         for (CacheBuilderProvider provider : ServiceLoader.load(DistributedCacheBuilderProvider.class, DistributedCacheBuilderProvider.class.getClassLoader())) {
             builders.addAll(provider.getBuilders(registry, containerName, serverName));
         }

@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceBuilder;
@@ -84,7 +85,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         String cache_type = properties.getProperty(CACHE_TYPE);
         String container = properties.getProperty(CONTAINER);
         // TODO Figure out how to access CapabilityServiceSupport from here
-        ServiceName containerServiceName = ServiceName.parse(InfinispanRequirement.CONTAINER.resolve(container));
+        ServiceName containerServiceName = ServiceNameFactory.parseServiceName(InfinispanRequirement.CONTAINER.resolve(container));
         EmbeddedCacheManager embeddedCacheManager;
         ServiceName serviceName;
         if (CACHE_PRIVATE.equals(cache_type)) {

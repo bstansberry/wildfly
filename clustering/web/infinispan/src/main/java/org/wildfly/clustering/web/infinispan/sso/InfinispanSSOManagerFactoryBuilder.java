@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.infinispan.Cache;
+import org.jboss.as.controller.ServiceNameFactory;
 import org.wildfly.clustering.infinispan.spi.InfinispanCacheRequirement;
 import org.wildfly.clustering.infinispan.spi.InfinispanRequirement;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
@@ -57,8 +58,8 @@ public class InfinispanSSOManagerFactoryBuilder<A, D, S> implements CapabilitySe
     public InfinispanSSOManagerFactoryBuilder(String name) {
         this.name = name;
 
-        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceName.parse(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name, null);
-        this.cacheBuilder = new CacheBuilder<>(ServiceName.parse(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name);
+        this.configurationBuilder = new TemplateConfigurationBuilder(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CONFIGURATION.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name, null);
+        this.cacheBuilder = new CacheBuilder<>(ServiceNameFactory.parseServiceName(InfinispanCacheRequirement.CACHE.resolve(DEFAULT_CACHE_CONTAINER, name)), DEFAULT_CACHE_CONTAINER, name);
     }
 
     @Override
