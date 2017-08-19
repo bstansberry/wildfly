@@ -56,5 +56,12 @@ public class InfinispanExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         EnumSet.allOf(InfinispanSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new InfinispanSubsystemXMLReader(schema)));
         context.setProfileParsingCompletionHandler(new InfinispanProfileParsingCompletionHandler());
+
+        // Hack to ensure the Element and Attribute enums are loaded during this call which
+        // is part of concurrent boot. These enums trigger a lot of classloading and static
+        // initialization that we don't want deferred until the single-threaded parsing phase
+        if (XMLElement.forName("").equals(XMLAttribute.forName(""))) { // never true
+            throw new IllegalStateException();
+        }
     }
 }

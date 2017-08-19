@@ -62,5 +62,12 @@ public class JGroupsExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         EnumSet.allOf(JGroupsSchema.class).forEach(schema -> context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), () -> new JGroupsSubsystemXMLReader(schema)));
+
+        // Hack to ensure the Element and Attribute enums are loaded during this call which
+        // is part of concurrent boot. These enums trigger a lot of classloading and static
+        // initialization that we don't want deferred until the single-threaded parsing phase
+        if (XMLElement.forName("").equals(XMLAttribute.forName(""))) { // never true
+            throw new IllegalStateException();
+        }
     }
 }
