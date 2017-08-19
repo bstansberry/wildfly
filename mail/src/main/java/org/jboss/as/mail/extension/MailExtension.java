@@ -59,7 +59,9 @@ public class MailExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_1.getUriString(), MailSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_2.getUriString(), MailSubsystemParser::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_2_0.getUriString(), MailSubsystemParser2_0::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_3_0.getUriString(), MailSubsystemParser3_0::new);
+        // For the current version we don't use a Supplier as we want its description initialized
+        // TODO if any new xsd versions are added, use a Supplier for the old version
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_3_0.getUriString(), new MailSubsystemParser3_0());
     }
 
     static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(3, 0, 0);

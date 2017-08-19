@@ -25,10 +25,12 @@ package org.jboss.as.jsr77.subsystem;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.PersistentResourceXMLParser;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -71,19 +73,18 @@ public class JSR77ManagementExtension  implements Extension {
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, () -> parser);
+        // For the current version we don't use a Supplier as we want its description initialized
+        // TODO if any new xsd versions are added, use a Supplier for the old version
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE, parser);
     }
 
     static class J2EEManagementSubsystemParser extends PersistentResourceXMLParser {
 
-        private static PersistentResourceXMLDescription xmlDescription;
-        static {
-            xmlDescription = PersistentResourceXMLDescription.builder(new JSR77ManagementRootResource(false), JSR77ManagementExtension.NAMESPACE)
-                    .build();
-        }
         @Override
         public PersistentResourceXMLDescription getParserDescription() {
-            return xmlDescription;
+            return PersistentResourceXMLDescription.builder(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JSR77ManagementExtension.SUBSYSTEM_NAME),
+                    JSR77ManagementExtension.NAMESPACE)
+                    .build();
         }
     }
 

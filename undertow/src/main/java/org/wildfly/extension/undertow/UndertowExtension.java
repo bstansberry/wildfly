@@ -96,7 +96,9 @@ public class UndertowExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_2_0.getUriString(), UndertowSubsystemParser_2_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_0.getUriString(), UndertowSubsystemParser_3_0::new);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_3_1.getUriString(), UndertowSubsystemParser_3_1::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_4_0.getUriString(), UndertowSubsystemParser_4_0::new);
+        // For the current version we don't use a Supplier as we want its description initialized
+        // TODO if any new xsd versions are added, use a Supplier for the old version
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.UNDERTOW_4_0.getUriString(), new UndertowSubsystemParser_4_0());
     }
 
     @Override
