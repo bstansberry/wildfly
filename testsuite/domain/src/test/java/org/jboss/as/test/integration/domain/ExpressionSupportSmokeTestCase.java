@@ -157,11 +157,16 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
     public void setUp() throws IOException {
         final WildFlyManagedConfiguration config = createConfiguration("domain.xml", "host.xml", getClass().getSimpleName());
         config.setAdminOnly(true);
+        config.setReadOnlyDomain(true);
+        config.setReadOnlyHost(true);
 
         // Trigger the servers to fail on boot if there are runtime errors
         String hostProps = config.getHostCommandLineProperties();
         hostProps = hostProps == null ? "" : hostProps;
-        config.setHostCommandLineProperties(hostProps + "\n-Djboss.unsupported.fail-boot-on-runtime-failure=true");
+        config.setHostCommandLineProperties(hostProps
+                        + "\n-Djboss.unsupported.fail-boot-on-runtime-failure=true"
+                        + "\n-Dwildfly.unsupported.disable.config.history.backup=true" // Since this test makes so many modifications, turn off preserving a history backup
+        );
 
         domainMasterLifecycleUtil = new DomainLifecycleUtil(config);
 //        domainMasterLifecycleUtil.getConfiguration().addHostCommandLineProperty("-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y");
