@@ -31,7 +31,7 @@
 
     <groupId>org.jboss.eap</groupId>
     <artifactId>jboss-eap-parent</artifactId>
-    <version>7.2.0.EL1-redhat-SNAPSHOT</version>
+    <version>7.2.0.EL1.1-redhat-SNAPSHOTT</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
@@ -54,9 +54,9 @@
 
     <properties>
         <!-- Release Info -->
-        <jboss.as.release.version>7.2.0.EL1-redhat-SNAPSHOT</jboss.as.release.version>
+        <jboss.as.release.version>7.2.0.EL1.1-redhat-SNAPSHOTT</jboss.as.release.version>
         <!-- The version used in dependency-management used for feature packs, their component modules, and the testsuite -->
-        <feature.pack.version>12.0.0.Alpha1-redhat-SNAPSHOT</feature.pack.version>
+        <feature.pack.version>12.0.1.Final-redhat-SNAPSHOT</feature.pack.version>
         <jboss.as.release.codename>N/A</jboss.as.release.codename>
         <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
         <jboss.as.scm.connection>git@github.com:wildfly/wildfly.git</jboss.as.scm.connection>

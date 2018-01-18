@@ -30,14 +30,14 @@
     <parent>
         <groupId>org.jboss.eap</groupId>
         <artifactId>jboss-eap-parent</artifactId>
-        <version>7.2.0.EL1-redhat-SNAPSHOT</version>
+        <version>7.2.0.EL1.1-redhat-SNAPSHOTT</version>
     </parent>
 
     <!-- DO NOT REMOVE THIS groupId ELEMENT.
          Even if you think or your tool tells you it is redundant -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-feature-pack-parent</artifactId>
-    <version>12.0.0.Alpha1-redhat-SNAPSHOT</version>
+    <version>12.0.1.Final-redhat-SNAPSHOT</version>
 
     <name>Parent POM for Feature Packs</name>
     <packaging>pom</packaging>
