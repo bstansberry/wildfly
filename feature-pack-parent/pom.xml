@@ -30,14 +30,14 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>12.0.0.Alpha1-SNAPSHOT</version>
+        <version>12.0.0.Alpha1-redhat-SNAPSHOT</version>
     </parent>
 
     <!-- DO NOT REMOVE THIS groupId ELEMENT.
          Even if you think or your tool tells you it is redundant -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-feature-pack-parent</artifactId>
-    <version>12.0.0.Alpha1-SNAPSHOT</version>
+    <version>12.0.0.Alpha1-redhat-SNAPSHOT</version>
 
     <name>Parent POM for Feature Packs</name>
     <packaging>pom</packaging>
