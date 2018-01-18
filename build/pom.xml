@@ -28,9 +28,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
-        <version>12.0.0.Alpha1-redhat-SNAPSHOT</version>
+        <groupId>org.jboss.eap</groupId>
+        <artifactId>jboss-eap-parent</artifactId>
+        <version>7.2.0.EL1-redhat-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-build</artifactId>
