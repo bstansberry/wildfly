@@ -30,9 +30,9 @@ vi:ts=4:sw=4:expandtab
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-feature-pack-parent</artifactId>
         <version>12.0.0.Alpha1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../feature-pack-parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-ejb3</artifactId>
@@ -84,7 +84,7 @@ vi:ts=4:sw=4:expandtab
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
- 
+
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-iiop-openjdk</artifactId>
@@ -198,7 +198,7 @@ projects that depend on this project.-->
             <groupId>org.jboss.spec.javax.xml.rpc</groupId>
             <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.wildfly.discovery</groupId>
             <artifactId>wildfly-discovery-client</artifactId>
