@@ -28,6 +28,10 @@ the value of the final key/value pair in the address of the described
 resource. If this value is '*', the default value is Integer.MAX_VALUE,
 i.e. there is no limit. If this value is some other string, the default
 value is 1.
+* `capabilities` - List of complex structures each of which describes a
+capability that will be provided by a resource of this type. See the
+<<description-of-a-capability,Description of a Capability>> section
+for the representation of each capability.
 * `attributes` – Map of String (the attribute name) to complex structure
 – the configuration attributes available in this portion of the model.
 See the <<description-of-an-attribute,Description of an Attribute>> section 
@@ -70,6 +74,32 @@ For example:
       }
 }
 ----
+
+[[description-of-a-capability]]
+=== Description of a Capability
+
+A capability is a piece of functionality used in a WildFly Core based 
+process that is exposed via the WildFly Core management layer. Capabilities 
+may depend on other capabilities, and this interaction between capabilities 
+is mediated by the WildFly Core management layer. If a resource provides
+capabilities, the `capabilities` section of its description will include
+the following information about each capability:
+
+* `name` - String - the static portion of the name of the capability. If
+the capability has a static name, then this will be the complete name
+of the capability. If the capability has a dynamic name, then the 
+dynamic portion of the name will be dot appended to the static portion.
+* `dynamic` - Boolean - true if the capability is dynamically named
+* `dynamic-pattern` - String - Only present if the capability is
+dynamically named. If present it describes the pattern used to
+calculate the dynamic portion of the capability name. The pattern is
+of the form `$segment[.$segment]` where each segment represents one of 
+the keys in the resource's address. In the actual name the key will be
+replaced by the value associated with that key. If not present for a
+dynamic capability, the default is the last key in the resource's
+address. That is, the full capability name will be the static part of
+the name with the value of the last element of the resource's address
+dot appended.
 
 [[description-of-an-attribute]]
 === Description of an Attribute
@@ -167,11 +197,25 @@ alternatives to each other; "c" and "d" are optional. But "b" requires
 "c" and "d", so if "b" is used, "c" and "d" must also be defined.
 Default is undefined; i.e. this does not apply to most attributes.
 * `capability-reference` – string – if defined indicates that this
-attribute's value specifies the dynamic portion of the name of the
-specified capability provided by another resource. This indicates the
-attribute is a reference to another area of the management model. (Note
-that at present some attributes that reference other areas of the model
-may not provide this information.)
+attribute's value specifies part or all of the dynamic portion of the 
+name of the specified capability provided by another resource. The
+presence of this descriptor indicates the attribute is a reference to 
+another area of the management model. (Note that at present some attributes 
+that reference other areas of the model may not provide this information.)
+The value of the descriptor is the static portion of the referenced
+capability.
+* `capability-reference-pattern` – string – Only present if 
+`capability-reference` is defined. If present it describes the pattern 
+used to calculate the dynamic portion of the required capability's name. 
+The pattern is of the form `$segment[.$segment]` where each segment 
+represents either the name of one of the resource's attributes or one of 
+the keys in the resource's address. In the actual name the attribute name
+or address key will be replaced by the value associated with that attribute
+or key. If the resource exposes an attribute that has the same name as
+one of the keys in its address, and the address key is what is used for the
+requirement name, then the segment will be of the form `key_addr` 
+(e.g. `$host_addr`.) If not present and `capability-reference` is defined, 
+the default is the name of this attribute.
 * `head-comment-allowed` – boolean – This description key is for 
 possible future use.
 * `tail-comment-allowed` – boolean – This description key is for 
