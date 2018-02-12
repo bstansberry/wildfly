@@ -26,6 +26,13 @@
     <description>Provides an artifact whose MANIFEST.MF includes entries that provide installation name and version information.</description>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -72,6 +79,19 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <configuration>
                   <includePom>true</includePom>
+                    <!-- This archive only has the manifest we generate. Turn off WARNs about that -->
+                    <skipIfEmpty>false</skipIfEmpty>
+                    <archive>
+                        <manifestEntries>
+                            <JBoss-Product-Release-Name>${ee.dist.product.release.name}</JBoss-Product-Release-Name>
+                            <JBoss-Product-Release-Version>${ee.dist.product.release.version}</JBoss-Product-Release-Version>
+                            <JBoss-Product-Stability>community</JBoss-Product-Stability>
+                            <JBoss-Product-Minimum-Stability>experimental</JBoss-Product-Minimum-Stability>
+                        </manifestEntries>
+                    </archive>
+                    <excludes>
+                        <exclude>version.txt</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -79,6 +99,39 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>parse-versions</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>parse-version</goal>
+                        </goals>
+                        <configuration>
+                            <propertyPrefix>release</propertyPrefix>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>attach-version-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/classes/version.txt</file>
+                                    <type>txt</type>
+                                    <classifier>version</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
