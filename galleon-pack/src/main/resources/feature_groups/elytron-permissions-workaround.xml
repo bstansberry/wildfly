@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="elytron-permissions-workaround" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.elytron">
+        <feature spec="subsystem.elytron.simple-permission-mapper">
+            <param name="mapping-mode" value="first"/>
+            <param name="simple-permission-mapper" value="default-permission-mapper"/>
+            <param name="permission-mappings" value="[{principals=[anonymous],permissions=[
+{class-name=org.wildfly.extension.batch.jberet.deployment.BatchPermission,module=org.wildfly.extension.batch.jberet,target-name=*},
+{class-name=org.wildfly.transaction.client.RemoteTransactionPermission,module=org.wildfly.transaction.client},
+{class-name=org.jboss.ejb.client.RemoteEJBPermission,module=org.jboss.ejb-client}
+]},
+{match-all=true,permissions=[{class-name=org.wildfly.security.auth.permission.LoginPermission},
+{class-name=org.wildfly.extension.batch.jberet.deployment.BatchPermission,module=org.wildfly.extension.batch.jberet,target-name=*},
+{class-name=org.wildfly.transaction.client.RemoteTransactionPermission,module=org.wildfly.transaction.client},
+{class-name=org.jboss.ejb.client.RemoteEJBPermission,module=org.jboss.ejb-client}
+]}]"/>
+
+<!--
+            <feature spec="subsystem.elytron.simple-permission-mapper_permission-mappings">
+                <param name="permission-mapping"
+                       value="{match-all=true,permissions=[{class-name=org.wildfly.security.auth.permission.LoginPermission},
+{class-name=org.wildfly.extension.batch.jberet.deployment.BatchPermission,module=org.wildfly.extension.batch.jberet,target-name=*},
+{class-name=org.jboss.ejb.client.RemoteEJBPermission,module=org.jboss.ejb-client},
+{class-name=org.wildfly.transaction.client.RemoteTransactionPermission,module=org.wildfly.transaction.client}
+]}"/>
+            </feature>
+            <feature spec="subsystem.elytron.simple-permission-mapper_permission-mappings">
+                <param name="permission-mapping"
+                       value="{principals=[anonymous],permissions=[
+{class-name=org.wildfly.extension.batch.jberet.deployment.BatchPermission,module=org.wildfly.extension.batch.jberet,target-name=*},
+{class-name=org.jboss.ejb.client.RemoteEJBPermission,module=org.jboss.ejb-client},
+{class-name=org.wildfly.transaction.client.RemoteTransactionPermission,module=org.wildfly.transaction.client}
+]}"/>
+            </feature>
+-->
+        </feature>
+    </feature>
+</feature-group-spec>

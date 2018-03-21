@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-group-spec name="transactions" xmlns="urn:jboss:galleon:feature-group:1.0">
+    <feature spec="subsystem.transactions">
+        <param name="status-socket-binding" value="txn-status-manager"/>
+        <param name="socket-binding" value="txn-recovery-environment"/>
+        <param name="process-id-uuid" value="true"/>
+        <param name="object-store-path" value="tx-object-store"/>
+        <feature spec="subsystem.transactions.log-store.log-store"/>
+    </feature>
+<!--    <origin name="org.wildfly.core:wildfly-core-galleon-pack">
+        <feature spec="subsystem.elytron">
+            <feature spec="subsystem.elytron.simple-permission-mapper">
+                <param name="simple-permission-mapper" value="default-permission-mapper" />
+                <feature spec="subsystem.elytron.simple-permission-mapper_permission-mappings">
+                    <param name="permission-mapping" value="{class-name=org.wildfly.transaction.client.RemoteTransactionPermission,module=org.wildfly.transaction.client}"/>
+                </feature>
+            </feature>
+        </feature>
+    </origin>-->
+</feature-group-spec>
