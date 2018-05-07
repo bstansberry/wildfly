@@ -7,8 +7,10 @@
 							<xsl:for-each select="list/item">
 								<xsl:variable name="name" select="text()"/>
 								<xsl:for-each select="document($name)/licenseSummary/dependencies/*">
-								<xsl:copy>
-										<xsl:apply-templates select="@* | node()"/><xsl:text disable-output-escaping="no">  </xsl:text><source><xsl:value-of select="$name"/></source><xsl:text disable-output-escaping="no">
+									<xsl:text disable-output-escaping="no">
+    </xsl:text>
+									<xsl:copy>
+									    <xsl:apply-templates select="@* | node()"/><xsl:text disable-output-escaping="no">  </xsl:text><source><xsl:value-of select="$name"/></source><xsl:text disable-output-escaping="no">
     </xsl:text>
 									</xsl:copy>
 								</xsl:for-each>
