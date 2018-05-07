@@ -243,7 +243,8 @@
                                 <phase>prepare-package</phase>
                                 <configuration>
                                     <tasks>
-                                        <fileset id="licenses.xml.list" dir="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses" includes="*licenses.xml"/>
+                                        <filelist id="licenses.xml.list" dir="${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses" 
+	                                        files="full-feature-pack-licenses.xml,servlet-feature-pack-licenses.xml,core-feature-pack-licenses.xml"/>
                                         <!--
                                         <property name="prop.licenses.xml.list" refid="licenses.xml.list"/>
                                         <echo>List of licenses.xml in ${basedir}/target/${server.output.dir.prefix}-${server.output.dir.version}/docs/licenses</echo>
