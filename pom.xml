@@ -67,6 +67,7 @@
         <module>ejb3</module>
         <module>feature-pack</module>
         <module>galleon-pack</module>
+        <module>health</module>
         <module>iiop-openjdk</module>
         <module>jaxrs</module>
         <module>jdr</module>
@@ -162,13 +163,13 @@
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
-        
+
         <!-- Surefire args -->
         <surefire.extra.args></surefire.extra.args>
         <surefire.jpda.args></surefire.jpda.args>
         <surefire.system.args>${modular.jdk.args} ${modular.jdk.props} -ea -Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args} ${surefire.jacoco.args}</surefire.system.args>
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
-        
+
         <!-- use older version of checkstyle as otherwise lots of checks fail -->
         <version.checkstyle>8.5</version.checkstyle>
         <version.help.plugin>2.2</version.help.plugin>
@@ -468,7 +469,7 @@
                 <artifactId>jipijapa-hibernate5-legacy</artifactId>
                 <version>${project.version}</version>
             </dependency>
- 
+
            <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>jipijapa-hibernate5-3-legacy</artifactId>
@@ -757,6 +758,12 @@
                 <artifactId>wildfly-galleon-pack</artifactId>
                 <version>${project.version}</version>
                 <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-health</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>

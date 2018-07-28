@@ -20,6 +20,7 @@
     <feature-group name="access-control"/>
 
     <feature-group name="standalone-profile"/>
+    <feature-group name="health"/>
 
     <feature-group name="infinispan-local"/>
 </feature-group-spec>
