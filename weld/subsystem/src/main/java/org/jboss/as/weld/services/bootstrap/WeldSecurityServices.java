@@ -91,6 +91,14 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
 
     @Override
     public org.jboss.weld.security.spi.SecurityContext getSecurityContext() {
+        // If we don't have a SimpleSecurityManager injected, then we don't have picketbox security
+        // So fail now and eliminate any loading of picketbox classes, which may not be present.
+        final Object securityManager = securityManagerValue.getOptionalValue();
+        if (securityManager == null) {
+            // TODO this isn't the best error message.  OTOH AFAICT this getSecurityContext method is never called!
+            throw WeldLogger.ROOT_LOGGER.securityNotEnabled();
+        }
+
         SecurityContext ctx;
         if (WildFlySecurityManager.isChecking()) {
             ctx = AccessController.doPrivileged((PrivilegedAction<SecurityContext>) () -> SecurityContextAssociation.getSecurityContext());
@@ -120,7 +128,7 @@ public class WeldSecurityServices implements Service<WeldSecurityServices>, Secu
         }
     }
 
-    static class WeldSecurityContext implements org.jboss.weld.security.spi.SecurityContext, PrivilegedAction<Void> {
+    private static class WeldSecurityContext implements org.jboss.weld.security.spi.SecurityContext, PrivilegedAction<Void> {
 
         private final SecurityContext ctx;
 
