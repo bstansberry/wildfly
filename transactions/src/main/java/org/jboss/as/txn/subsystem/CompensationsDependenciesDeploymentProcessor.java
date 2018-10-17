@@ -29,16 +29,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
-import org.jboss.narayana.compensations.api.CancelOnFailure;
-import org.jboss.narayana.compensations.api.Compensatable;
-import org.jboss.narayana.compensations.api.CompensationScoped;
-import org.jboss.narayana.compensations.api.TxCompensate;
-import org.jboss.narayana.compensations.api.TxConfirm;
-import org.jboss.narayana.compensations.api.TxLogged;
 
 
 /**
@@ -46,16 +41,29 @@ import org.jboss.narayana.compensations.api.TxLogged;
  */
 public class CompensationsDependenciesDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final ModuleIdentifier COMPENSATIONS_MODULE = ModuleIdentifier.create("org.jboss.narayana.compensations");
+    private static final String COMPENSATIONS_MODULE = "org.jboss.narayana.compensations";
 
-    private static final Class<?>[] COMPENSATABLE_ANNOTATIONS = {
-            Compensatable.class,
-            CancelOnFailure.class,
-            CompensationScoped.class,
-            TxCompensate.class,
-            TxConfirm.class,
-            TxLogged.class
+    private static final String[] COMPENSATABLE_ANNOTATIONS = {
+            "org.jboss.narayana.compensations.api.Compensatable",
+            "org.jboss.narayana.compensations.api.CancelOnFailure",
+            "org.jboss.narayana.compensations.api.CompensationScoped",
+            "org.jboss.narayana.compensations.api.TxCompensate",
+            "org.jboss.narayana.compensations.api.TxConfirm",
+            "org.jboss.narayana.compensations.api.TxLogged"
     };
+
+    private final boolean compensationsInstalled;
+
+    CompensationsDependenciesDeploymentProcessor() {
+        ModuleLoader ml = ModuleLoader.forClass(getClass());
+        Module loaded = null;
+        try {
+            loaded = ml.loadModule(COMPENSATIONS_MODULE);
+        } catch (ModuleLoadException e) {
+            TransactionLogger.ROOT_LOGGER.debugf(e, "Cannot load module %s; compensation annotation support will not be available", COMPENSATIONS_MODULE);
+        }
+        compensationsInstalled = loaded != null;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -67,7 +75,11 @@ public class CompensationsDependenciesDeploymentProcessor implements DeploymentU
         }
 
         if (isCompensationAnnotationPresent(compositeIndex)) {
-            addCompensationsModuleDependency(unit);
+            if (compensationsInstalled) {
+                addCompensationsModuleDependency(unit);
+            } else {
+                throw TransactionLogger.ROOT_LOGGER.compensatingTransactionsNotSupported(unit.getName(), COMPENSATIONS_MODULE);
+            }
         }
     }
 
@@ -77,8 +89,8 @@ public class CompensationsDependenciesDeploymentProcessor implements DeploymentU
     }
 
     private boolean isCompensationAnnotationPresent(final CompositeIndex compositeIndex) {
-        for (Class<?> annotation : COMPENSATABLE_ANNOTATIONS) {
-            if (compositeIndex.getAnnotations(DotName.createSimple(annotation.getName())).size() > 0) {
+        for (String annotation : COMPENSATABLE_ANNOTATIONS) {
+            if (compositeIndex.getAnnotations(DotName.createSimple(annotation)).size() > 0) {
                 return true;
             }
         }

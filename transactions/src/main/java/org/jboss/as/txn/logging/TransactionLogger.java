@@ -38,6 +38,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -253,4 +254,8 @@ public interface TransactionLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 39, value = "A value of zero is not permitted for the maximum timeout, as such the timeout has been set to %s")
     void timeoutValueIsSetToMaximum(int maximum_timeout);
+
+    @Message(id = 40, value = "Deployment unit %s contains Narayana compensations annotations but module %s is not installed. " +
+            "Compensating transactions cannot be supported.")
+    DeploymentUnitProcessingException compensatingTransactionsNotSupported(String deploymentName, String module);
 }

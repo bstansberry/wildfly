@@ -197,6 +197,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         if (controllerVersion == ModelTestControllerVersion.EAP_6_4_0) {
             initializer.addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
                     .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE);
+        } else {
+            initializer.configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
         }
 
         KernelServices mainServices = builder.build();
