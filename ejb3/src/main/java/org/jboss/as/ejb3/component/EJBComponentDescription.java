@@ -43,7 +43,6 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
-import javax.transaction.UserTransaction;
 
 import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.core.security.ServerSecurityManager;
@@ -566,8 +565,6 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                         CapabilityServiceSupport support = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
                         // add dependency on the local transaction provider
                         serviceBuilder.addDependency(support.getCapabilityServiceName("org.wildfly.transactions.global-default-local-provider"));
-                        // add dependency on UserTransaction
-                        serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, ejbComponentCreateService.getUserTransactionInjector());
                     }
                 });
 
