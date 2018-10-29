@@ -24,9 +24,9 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.txn.subsystem.CommonAttributes.CM_RESOURCE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JDBC_STORE_DATASOURCE;
-import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
-import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JOURNAL_STORE;
+import static org.jboss.as.txn.subsystem.JTSHandlers.addJTSAddStep;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.XA_RESOURCE_RECOVERY_REGISTRY_CAPABILITY;
 
 import java.util.LinkedList;
@@ -36,6 +36,10 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
+import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
+import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+import com.arjuna.ats.jta.common.JTAEnvironmentBean;
+import com.arjuna.ats.jts.common.jtsPropertyManager;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -70,9 +74,9 @@ import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
 import org.jboss.as.txn.service.ArjunaTransactionManagerService;
-import org.jboss.as.txn.service.JBossContextXATerminatorService;
 import org.jboss.as.txn.service.CoreEnvironmentService;
 import org.jboss.as.txn.service.ExtendedJBossXATerminatorService;
+import org.jboss.as.txn.service.JBossContextXATerminatorService;
 import org.jboss.as.txn.service.JTAEnvironmentBeanService;
 import org.jboss.as.txn.service.LocalTransactionContextService;
 import org.jboss.as.txn.service.RemotingTransactionServiceService;
@@ -99,12 +103,7 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.XAResourceRecoveryRegistry;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
-import org.wildfly.iiop.openjdk.service.CorbaNamingService;
-
-import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
-import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import com.arjuna.ats.jta.common.JTAEnvironmentBean;
-import com.arjuna.ats.jts.common.jtsPropertyManager;
+import org.omg.CosNaming.NamingContextExt;
 import org.wildfly.transaction.client.ContextTransactionManager;
 import org.wildfly.transaction.client.LocalTransactionContext;
 
@@ -123,6 +122,17 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private static final String REMOTING_ENDPOINT_CAPABILITY_NAME = "org.wildfly.remoting.endpoint";
 
     private TransactionSubsystemAdd() {
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.execute(context, operation);
+
+        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+        boolean jts = TransactionSubsystemRootResourceDefinition.JTS.resolveModelAttribute(context, model).asBoolean();
+        if (jts) {
+            addJTSAddStep(context);
+        }
     }
 
     @Override
@@ -231,11 +241,12 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
 
+        ModelNode model = resource.getModel();
         checkIfNodeIdentifierIsDefault(context, model);
 
-        boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
+        boolean jts = resource.hasChild(TransactionExtension.JTS_PATH);
 
         final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(TransactionExtension.SUBSYSTEM_PATH), false);
         final List<ServiceName> deps = new LinkedList<>();
@@ -529,8 +540,9 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         //if jts is enabled we need the ORB
         if (jts) {
-            transactionManagerServiceServiceBuilder.addDependency(ServiceName.JBOSS.append("iiop-openjdk", "orb-service"), ORB.class, transactionManagerService.getOrbInjector());
-            transactionManagerServiceServiceBuilder.requires(CorbaNamingService.SERVICE_NAME);
+            transactionManagerServiceServiceBuilder.addDependency(context.getCapabilityServiceName("org.wildfly.iiop.orb", ORB.class),
+                    ORB.class, transactionManagerService.getOrbInjector());
+            transactionManagerServiceServiceBuilder.requires(context.getCapabilityServiceName("org.wildfly.iiop.corba-naming", NamingContextExt.class));
         }
 
         transactionManagerServiceServiceBuilder.addDependency(TxnServices.JBOSS_TXN_XA_TERMINATOR, JBossXATerminator.class, transactionManagerService.getXaTerminatorInjector());

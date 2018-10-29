@@ -32,6 +32,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -47,7 +48,8 @@ class TransactionSubsystem15Parser extends TransactionSubsystem14Parser {
     }
 
     @Override
-    protected void readElement(final XMLExtendedStreamReader reader, final Element element, final List<ModelNode> operations, final ModelNode subsystemOperation, final ModelNode logStoreOperation) throws XMLStreamException {
+    protected void readElement(final XMLExtendedStreamReader reader, final Element element, final List<ModelNode> operations,
+                               final PathAddress subsystemAddress, final ModelNode subsystemOperation, final ModelNode logStoreOperation) throws XMLStreamException {
         switch (element) {
             case RECOVERY_ENVIRONMENT: {
                 parseRecoveryEnvironmentElement(reader, subsystemOperation);
@@ -66,7 +68,7 @@ class TransactionSubsystem15Parser extends TransactionSubsystem14Parser {
                 break;
             }
             case JTS: {
-                parseJts(reader, subsystemOperation);
+                JTSHandlers.parseJTS(reader, subsystemAddress, operations);
                 break;
             }
             case USE_HORNETQ_STORE: {

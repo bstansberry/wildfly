@@ -51,6 +51,8 @@ import org.wildfly.iiop.openjdk.naming.CorbaNamingContext;
  */
 public class CorbaNamingService implements Service<NamingContextExt> {
 
+    /** @deprecated Use the 'org.wildfly.iiop.corba-naming' capability */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(IIOPExtension.SUBSYSTEM_NAME, "naming-service");
 
     private static final Properties properties = new Properties();

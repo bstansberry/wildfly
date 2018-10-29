@@ -62,6 +62,8 @@ import com.sun.corba.se.impl.orbutil.ORBConstants;
  */
 public class CorbaORBService implements Service<ORB> {
 
+    /** @deprecated Use the 'org.wildfly.iiop.orb' capability */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(IIOPExtension.SUBSYSTEM_NAME, "orb-service");
 
     private static final Properties properties = new Properties();

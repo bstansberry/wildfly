@@ -97,7 +97,8 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
 
-        if(node.hasDefined(CommonAttributes.JTS) && node.get(CommonAttributes.JTS).asBoolean()) {
+        ModelNode jts = JTSHandlers.getJTSValue(node);
+        if (jts.isDefined() && jts.asBoolean()) {
             writer.writeStartElement(Element.JTS.getLocalName());
             writer.writeEndElement();
         }

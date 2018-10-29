@@ -32,6 +32,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
@@ -40,9 +41,10 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
 
 /**
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
@@ -50,6 +52,12 @@ import org.jboss.dmr.ModelType;
 class IIOPRootDefinition extends PersistentResourceDefinition {
 
     static final RuntimeCapability<Void> IIOP_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.IIOP_CAPABILITY, false).build();
+    static final RuntimeCapability<Void> ORB_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.ORB_CAPABILITY, ORB.class)
+            .setAllowMultipleRegistrations(true) // workaround to support jacorb and iiop-openjdk subsystems in the same process to allow migration
+            .build();
+    static final RuntimeCapability<Void> CORBA_NAMING_CAPABILITY = RuntimeCapability.Builder.of(Capabilities.CORBA_NAMING_CAPABILITY, NamingContextExt.class)
+            .setAllowMultipleRegistrations(true) // workaround to support jacorb and iiop-openjdk subsystems in the same process to allow migration
+            .build();
 
     static final ModelNode NONE = new ModelNode("none");
 
@@ -433,19 +441,16 @@ class IIOPRootDefinition extends PersistentResourceDefinition {
     public static final IIOPRootDefinition INSTANCE = new IIOPRootDefinition();
 
     private IIOPRootDefinition() {
-        super(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver(), new IIOPSubsystemAdd(ALL_ATTRIBUTES),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new SimpleResourceDefinition.Parameters(IIOPExtension.PATH_SUBSYSTEM, IIOPExtension.getResourceDescriptionResolver())
+                .setAddHandler(new IIOPSubsystemAdd(ALL_ATTRIBUTES))
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(IIOP_CAPABILITY, ORB_CAPABILITY, CORBA_NAMING_CAPABILITY)
+        );
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return ALL_ATTRIBUTES;
-    }
-
-    @Override
-    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
-        super.registerCapabilities(resourceRegistration);
-        resourceRegistration.registerCapability(IIOP_CAPABILITY);
     }
 
     private enum AuthMethodValues {

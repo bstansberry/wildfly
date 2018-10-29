@@ -36,6 +36,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.orb.api"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>

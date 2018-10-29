@@ -16,14 +16,22 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.ExtensionTransformerRegistration;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.SubsystemTransformerRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.ChainedTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.txn.subsystem.TransactionExtension.CURRENT_MODEL_VERSION;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.MAXIMUM_TIMEOUT;
@@ -38,6 +46,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     static final ModelVersion MODEL_VERSION_EAP64 = ModelVersion.create(1, 5);
     static final ModelVersion MODEL_VERSION_EAP70 = ModelVersion.create(3, 0);
     static final ModelVersion MODEL_VERSION_EAP71 = ModelVersion.create(4, 0);
+    static final ModelVersion MODEL_VERSION_EAP72 = ModelVersion.create(5, 0);
 
 
     @Override
@@ -48,8 +57,31 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
     @Override
     public void registerTransformers(SubsystemTransformerRegistration subsystemRegistration) {
         ChainedTransformationDescriptionBuilder chainedBuilder = TransformationDescriptionBuilder.Factory.createChainedSubystemInstance(CURRENT_MODEL_VERSION);
+        // 6.0.0 --> 5.0.0
+        ResourceTransformationDescriptionBuilder builderEap72 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP72);
+        builderEap72.addChildResource(TransactionExtension.JTS_PATH)
+                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .setCustomOperationTransformer(new OperationTransformer() {
+                        @Override
+                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)  {
+                            ModelNode replacement = Util.getWriteAttributeOperation(address.getParent(), TransactionSubsystemRootResourceDefinition.JTS.getName(), true);
+                            return new TransformedOperation(replacement, OperationResultTransformer.ORIGINAL_RESULT);
+                        }
+                    })
+                    .end()
+                .addOperationTransformationOverride(ModelDescriptionConstants.REMOVE)
+                    .setCustomOperationTransformer(new OperationTransformer() {
+                        @Override
+                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)  {
+                            ModelNode replacement = Util.getWriteAttributeOperation(address.getParent(), TransactionSubsystemRootResourceDefinition.JTS.getName(), new ModelNode());
+                            return new TransformedOperation(replacement, OperationResultTransformer.ORIGINAL_RESULT);
+                        }
+                    })
+                    .end()
+                .setCustomResourceTransformer(ResourceTransformer.DISCARD);
+
         // 5.0.0 --> 4.0.0
-        ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(CURRENT_MODEL_VERSION, MODEL_VERSION_EAP71);
+        ResourceTransformationDescriptionBuilder builderEap71 = chainedBuilder.createBuilder(MODEL_VERSION_EAP72, MODEL_VERSION_EAP71);
         builderEap71.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(MAXIMUM_TIMEOUT.getDefaultValue()), MAXIMUM_TIMEOUT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, MAXIMUM_TIMEOUT)
@@ -95,6 +127,7 @@ public class TransactionTransformers implements ExtensionTransformerRegistration
                 MODEL_VERSION_EAP64,
                 MODEL_VERSION_EAP70,
                 MODEL_VERSION_EAP71,
+                MODEL_VERSION_EAP72
                 // v4_1_0
         });
     }

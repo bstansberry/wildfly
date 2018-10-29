@@ -21,8 +21,10 @@
  */
 package org.jboss.as.txn.subsystem;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -34,9 +36,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -83,23 +82,13 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
             throw unexpectedAttribute(reader, 0);
         }
 
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
-        address.protect();
+        PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
 
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
+        final ModelNode subsystem = Util.createAddOperation(subsystemAddress);
 
         list.add(subsystem);
-        final ModelNode logStoreAddress = address.clone();
-        final ModelNode logStoreOperation = new ModelNode();
-        logStoreOperation.get(OP).set(ADD);
-        logStoreAddress.add(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
 
-        logStoreAddress.protect();
-
-        logStoreOperation.get(OP_ADDR).set(logStoreAddress);
+        ModelNode logStoreOperation = Util.createAddOperation(subsystemAddress.append(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE));
         list.add(logStoreOperation);
 
         // elements
@@ -116,7 +105,7 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
             if (!encountered.add(element)) {
                 throw unexpectedElement(reader);
             }
-            readElement(reader, element, list, subsystem, logStoreOperation);
+            readElement(reader, element, list, subsystemAddress, subsystem, logStoreOperation);
         }
 
         if(needsDefaultRelativeTo && relativeToHasDefaultValue) {
@@ -128,7 +117,8 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
         }
     }
 
-    protected void readElement(final XMLExtendedStreamReader reader, final Element element, final List<ModelNode> operations, final ModelNode subsystemOperation, final ModelNode logStoreOperation) throws XMLStreamException {
+    protected void readElement(final XMLExtendedStreamReader reader, final Element element, final List<ModelNode> operations,
+                               final PathAddress subsystemAddress, final ModelNode subsystemOperation, final ModelNode logStoreOperation) throws XMLStreamException {
         switch (element) {
             case RECOVERY_ENVIRONMENT: {
                 parseRecoveryEnvironmentElement(reader, subsystemOperation);
@@ -147,7 +137,7 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
                 break;
             }
             case JTS: {
-                parseJts(reader, subsystemOperation);
+                JTSHandlers.parseJTS(reader, subsystemAddress, operations);
                 break;
             }
             case USE_HORNETQ_STORE: {
@@ -174,15 +164,6 @@ class TransactionSubsystem14Parser implements XMLStreamConstants, XMLElementRead
                 throw unexpectedElement(reader);
             }
         }
-    }
-
-    protected void parseJts(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-        // no attributes
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
-        }
-        operation.get(CommonAttributes.JTS).set(true);
-        requireNoContent(reader);
     }
 
     protected void parseUseJournalstore(final XMLExtendedStreamReader reader, final ModelNode logStoreOperation, final ModelNode operation) throws XMLStreamException {

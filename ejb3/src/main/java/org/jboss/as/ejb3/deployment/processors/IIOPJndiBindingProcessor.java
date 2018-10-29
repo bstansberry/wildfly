@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.deployment.processors;
 
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
@@ -43,7 +44,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.omg.CORBA.ORB;
 import org.wildfly.iiop.openjdk.deployment.IIOPDeploymentMarker;
-import org.wildfly.iiop.openjdk.service.CorbaORBService;
 
 /**
  * Processor responsible for binding IIOP related resources to JNDI.
@@ -72,15 +72,16 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         //if this is a war we need to bind to the modules comp namespace
 
+        CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) {
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-            bindService(serviceTarget, moduleContextServiceName, module);
+            bindService(serviceTarget, moduleContextServiceName, module, capabilityServiceSupport);
         }
 
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if (component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
-                bindService(serviceTarget, compContextServiceName, module);
+                bindService(serviceTarget, compContextServiceName, module, capabilityServiceSupport);
             }
         }
 
@@ -88,16 +89,16 @@ public class IIOPJndiBindingProcessor implements DeploymentUnitProcessor {
 
     /**
      * Binds java:comp/ORB
-     *
      * @param serviceTarget      The service target
      * @param contextServiceName The service name of the context to bind to
+     * @param capabilityServiceSupport support object for obtaining service names from capability names
      */
-    private void bindService(final ServiceTarget serviceTarget, final ServiceName contextServiceName, final Module module) {
+    private void bindService(final ServiceTarget serviceTarget, final ServiceName contextServiceName, final Module module, CapabilityServiceSupport capabilityServiceSupport) {
 
         final ServiceName orbServiceName = contextServiceName.append("ORB");
         final BinderService orbService = new BinderService("ORB");
         serviceTarget.addService(orbServiceName, orbService)
-                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class,
+                .addDependency(capabilityServiceSupport.getCapabilityServiceName("org.wildfly.iiop.orb"), ORB.class,
                         new ManagedReferenceInjector<ORB>(orbService.getManagedObjectInjector()))
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, orbService.getNamingStoreInjector())
                 .install();

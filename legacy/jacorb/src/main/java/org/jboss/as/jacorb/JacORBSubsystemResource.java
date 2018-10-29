@@ -35,23 +35,37 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
 
 /**
  * @author Tomaz Cerar
  * @author <a href=mailto:tadamski@redhat.com>Tomasz Adamski</a>
  */
 public class JacORBSubsystemResource extends SimpleResourceDefinition {
+    private static final RuntimeCapability<Void> ORB_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.orb", ORB.class)
+            .setAllowMultipleRegistrations(true) // workaround to support jacorb and iiop-openjdk subsystems in the same process to allow migration
+            .build();
+    private static final RuntimeCapability<Void> CORBA_NAMING_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.iiop.corba-naming", NamingContextExt.class)
+            .setAllowMultipleRegistrations(true) // workaround to support jacorb and iiop-openjdk subsystems in the same process to allow migration
+            .build();
+
     public static final JacORBSubsystemResource INSTANCE = new JacORBSubsystemResource();
 
     private JacORBSubsystemResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME), JacORBExtension
-                .getResourceDescriptionResolver(), JacORBSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE, null,
-                null, new DeprecationData((JacORBExtension.DEPRECATED_SINCE)));
+        super(new Parameters(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME),
+                        JacORBExtension.getResourceDescriptionResolver())
+                .setAddHandler(JacORBSubsystemAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setDeprecationData(new DeprecationData((JacORBExtension.DEPRECATED_SINCE)))
+                .setCapabilities(ORB_CAPABILITY, CORBA_NAMING_CAPABILITY)
+        );
     }
 
     @Override

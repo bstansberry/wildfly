@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature-group-spec name="standalone-jts" xmlns="urn:jboss:galleon:feature-group:1.0">
 
+
+    <feature-group name="iiop-openjdk"/>
+
     <feature-group name="standalone">
         <feature spec="subsystem.ee">
             <feature spec="subsystem.ee.service.default-bindings">
@@ -23,6 +26,4 @@
         <param name="default-interface" value="public"/>
         <feature-group name="iiop-sockets"/>
     </feature>
-
-    <feature-group name="iiop-openjdk"/>
 </feature-group-spec>

@@ -22,9 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -41,7 +38,9 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -65,13 +64,9 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
             throw unexpectedAttribute(reader, 0);
         }
 
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
-        address.protect();
+        PathAddress subsystemAddress = PathAddress.pathAddress(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
 
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
+        final ModelNode subsystem = Util.createAddOperation(subsystemAddress);
 
         list.add(subsystem);
 
@@ -104,7 +99,7 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
                             break;
                         }
                         case JTS: {
-                            parseJts(reader, subsystem);
+                            JTSHandlers.parseJTS(reader, subsystemAddress, list);
                             break;
                         }
                         default: {
@@ -121,25 +116,9 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
         if (!required.isEmpty()) {
             throw missingRequiredElement(reader, required);
         }
-        final ModelNode logStoreAddress = address.clone();
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        logStoreAddress.add(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
 
-        logStoreAddress.protect();
+        list.add(Util.createAddOperation(subsystemAddress.append(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE)));
 
-        operation.get(OP_ADDR).set(logStoreAddress);
-        list.add(operation);
-
-    }
-
-    private void parseJts(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-        // no attributes
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
-        }
-        operation.get(CommonAttributes.JTS).set(true);
-        requireNoContent(reader);
     }
 
     static void parseObjectStoreEnvironmentElementAndEnrichOperation(final XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {

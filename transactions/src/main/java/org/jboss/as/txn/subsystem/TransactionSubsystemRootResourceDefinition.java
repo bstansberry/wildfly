@@ -32,6 +32,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -288,7 +289,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT, MAXIMUM_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, USE_JOURNAL_STORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
             JOURNAL_STORE_ENABLE_ASYNC_IO
@@ -321,6 +322,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         for(final AttributeDefinition def : attributesWithoutMutuals) {
             resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
+
+        resourceRegistration.registerReadWriteAttribute(JTS, JTSHandlers.READ, JTSHandlers.WRITE);
 
         // Register mutual object store attributes
         OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USE_JOURNAL_STORE, USE_JDBC_STORE);
@@ -506,6 +509,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new ModelOnlyResourceDefinition(
+                new Parameters(TransactionExtension.JTS_PATH, TransactionExtension.getResourceDescriptionResolver("jts-resource"))
+                .setAddHandler(JTSHandlers.ADD)
+                .setRemoveHandler(JTSHandlers.REMOVE)
+                .setCapabilities(RuntimeCapability.Builder.of("org.wildfly.transactions.jts")
+                        .addRequirements("org.wildfly.iiop.orb", "org.wildfly.iiop.corba-naming")
+                        .build()))
+        );
         resourceRegistration.registerSubModel(new CMResourceResourceDefinition());
     }
 

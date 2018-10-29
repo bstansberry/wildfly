@@ -334,11 +334,16 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         final List<ModelNode> list = new ArrayList<>();
         //iiop-openjdk does not exist it used to be called jacorb
 
-        //Remove the iiop-openjdk subsystem and extension
-        list.add(createRemoveOperation(subsystem));
-        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.iiop-openjdk")));
         //Add the jacorb extension
         list.add(createAddOperation(PathAddress.pathAddress(EXTENSION, "org.jboss.as.jacorb")));
+
+        // Need to do the subsystem replacement in a composite so the required iiop capabilities
+        // are always present
+        ModelNode composite = Util.createEmptyOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
+        ModelNode steps = composite.get(STEPS);
+
+        //Remove the iiop-openjdk subsystem and extension
+        steps.add(createRemoveOperation(subsystem));
 
         //This should be the same as in the iiop-openjdk.xml subsystem template
         ModelNode add = createAddOperation(subsystem.getParent().append(SUBSYSTEM, "jacorb"));
@@ -346,7 +351,12 @@ public class DomainAdjuster640 extends DomainAdjuster700 {
         add.get("ssl-socket-binding").set("iiop-ssl");
         add.get("transactions").set("spec");
         add.get("security").set("identity");
-        list.add(add);
+        steps.add(add);
+
+        list.add(composite);
+
+        // Now we can drop the iiop-openjdk extension
+        list.add(createRemoveOperation(PathAddress.pathAddress(EXTENSION, "org.wildfly.iiop-openjdk")));
 
         return list;
     }

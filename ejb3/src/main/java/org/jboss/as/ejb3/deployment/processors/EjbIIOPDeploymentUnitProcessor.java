@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.ejb.TransactionManagementType;
 
 import com.arjuna.ats.jbossatx.jta.TransactionManagerService;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -72,8 +73,6 @@ import org.wildfly.iiop.openjdk.rmi.InterfaceAnalysis;
 import org.wildfly.iiop.openjdk.rmi.OperationAnalysis;
 import org.wildfly.iiop.openjdk.rmi.RMIIIOPViolationException;
 import org.wildfly.iiop.openjdk.rmi.marshal.strategy.SkeletonStrategy;
-import org.wildfly.iiop.openjdk.service.CorbaNamingService;
-import org.wildfly.iiop.openjdk.service.CorbaORBService;
 import org.wildfly.iiop.openjdk.service.CorbaPOAService;
 import org.wildfly.iiop.openjdk.service.IORSecConfigMetaDataService;
 
@@ -118,6 +117,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         if (moduleDescription != null) {
+            CapabilityServiceSupport capabilityServiceSupport = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CAPABILITY_SERVICE_SUPPORT);
             for (final ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if (componentDescription instanceof EJBComponentDescription) {
                     final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentDescription;
@@ -131,7 +131,8 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
                         // has been enabled by default in the EJB3 subsystem.
                         if (iiopMetaData != null || settingsService.isEnabledByDefault()) {
                             processEjb(ejbComponentDescription, deploymentReflectionIndex, module,
-                                    phaseContext.getServiceTarget(), iiopMetaData);
+                                    phaseContext.getServiceTarget(), iiopMetaData,
+                                    capabilityServiceSupport);
                         }
                     }
                 }
@@ -146,7 +147,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     private void processEjb(final EJBComponentDescription componentDescription,
                             final DeploymentReflectionIndex deploymentReflectionIndex, final Module module,
-                            final ServiceTarget serviceTarget, final IIOPMetaData iiopMetaData) {
+                            final ServiceTarget serviceTarget, final IIOPMetaData iiopMetaData, CapabilityServiceSupport capabilityServiceSupport) {
         componentDescription.setExposedViaIiop(true);
 
 
@@ -254,10 +255,10 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         builder.addDependency(componentDescription.getCreateServiceName(), EJBComponent.class, service.getEjbComponentInjectedValue());
         builder.addDependency(homeView.getServiceName(), ComponentView.class, service.getHomeView());
         builder.addDependency(remoteView.getServiceName(), ComponentView.class, service.getRemoteView());
-        builder.addDependency(CorbaORBService.SERVICE_NAME, ORB.class, service.getOrb());
+        builder.addDependency(capabilityServiceSupport.getCapabilityServiceName("org.wildfly.iiop.orb"), ORB.class, service.getOrb());
         builder.addDependency(POARegistry.SERVICE_NAME, POARegistry.class, service.getPoaRegistry());
         builder.addDependency(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
-        builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
+        builder.addDependency(capabilityServiceSupport.getCapabilityServiceName("org.wildfly.iiop.corba-naming"), NamingContextExt.class, service.getCorbaNamingContext());
         builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME, IORSecurityConfigMetaData.class, service.getIORSecConfigMetaDataInjectedValue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
         builder.addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER, TransactionManagerService.class, service.getTransactionManagerInjectedValue());

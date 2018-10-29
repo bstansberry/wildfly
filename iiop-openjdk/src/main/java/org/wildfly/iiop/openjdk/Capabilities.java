@@ -30,7 +30,8 @@ final class Capabilities {
    Capabilities in this subsystem
     */
     public static final String IIOP_CAPABILITY = "org.wildfly.iiop";
-
+    static final String ORB_CAPABILITY = "org.wildfly.iiop.orb";
+    static final String CORBA_NAMING_CAPABILITY = "org.wildfly.iiop.corba-naming";
     /*
     References to capabilities outside of the subsystem
      */

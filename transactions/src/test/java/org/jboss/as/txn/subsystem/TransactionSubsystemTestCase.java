@@ -48,6 +48,7 @@ import java.util.List;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP64;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP70;
 import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP71;
+import static org.jboss.as.txn.subsystem.TransactionTransformers.MODEL_VERSION_EAP72;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -83,6 +84,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     public void testSchemaOfSubsystemTemplates() throws Exception {
         super.testSchemaOfSubsystemTemplates();
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return AdditionalInitialization.withCapabilities("org.wildfly.iiop.orb", "org.wildfly.iiop.corba-naming");
     }
 
     @Override
@@ -179,11 +185,16 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformersFull(ModelTestControllerVersion.EAP_7_1_0, MODEL_VERSION_EAP71);
     }
 
+    @Test
+    public void testTransformersFullEAP720() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_7_2_0_TEMP, MODEL_VERSION_EAP72);
+    }
+
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         String subsystemXml = readResource(String.format("full-%s.xml", modelVersion));
 
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
@@ -193,10 +204,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL(String.format("%s:%s:%s",
                         controllerVersion.getMavenGroupId(), artifactId, controllerVersion.getMavenGavVersion()))
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
-
+        
         if (controllerVersion == ModelTestControllerVersion.EAP_6_4_0) {
             initializer.addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
-                    .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE);
+                    .configureReverseControllerCheck(createAdditionalInitialization(), ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE);
+        } else {
+            initializer.configureReverseControllerCheck(createAdditionalInitialization(), null);
         }
 
         KernelServices mainServices = builder.build();
@@ -218,14 +231,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 break;
             case EAP_7_0_0:
             case EAP_7_1_0:
+            case EAP_7_2_0_TEMP:
                 modelFixer = new ModelFixer() {
                     @Override
                     public ModelNode fixModel(ModelNode modelNode) {
-                        if (modelNode.has("log-store", "log-store")) {
-                            ModelNode logStore = modelNode.get("log-store", "log-store");
-                            if (!logStore.get("expose-all-logs").asBoolean()) {
-                                logStore.remove("expose-all-logs");
-                            }
+                        if (modelNode.has("log-store", "log-store", "expose-all-logs")) {
+                            modelNode.get("log-store", "log-store").remove("expose-all-logs");
                         }
                         return modelNode;
                     }

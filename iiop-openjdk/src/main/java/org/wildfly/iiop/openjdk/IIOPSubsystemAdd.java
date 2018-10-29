@@ -22,6 +22,10 @@
 
 package org.wildfly.iiop.openjdk;
 
+import static org.wildfly.iiop.openjdk.IIOPRootDefinition.CORBA_NAMING_CAPABILITY;
+import static org.wildfly.iiop.openjdk.IIOPRootDefinition.ORB_CAPABILITY;
+import static org.wildfly.iiop.openjdk.IIOPRootDefinition.TRANSACTIONS;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -121,6 +125,23 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ConfigValidator.validateConfig(context, model);
     }
 
+    @Override
+    protected void recordCapabilitiesAndRequirements(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.recordCapabilitiesAndRequirements(context, operation, resource);
+
+        try {
+            String tx = TRANSACTIONS.resolveModelAttribute(context, resource.getModel()).asString();
+            if (Constants.FULL.equalsIgnoreCase(tx)) {
+                context.registerAdditionalCapabilityRequirement("org.wildfly.transactions.jts", ORB_CAPABILITY.getName(), TRANSACTIONS.getName());
+            }
+        } catch (OperationFailedException ignore) {
+            // Perhaps an unresolvable expression was used, which might be resolvable in Stage.RUNTIME
+            // In any case, not something to fail over; recording the JTS requirement is just an aid
+            // in helping better explain a misconfiguration
+            IIOPLogger.ROOT_LOGGER.debugf("Cannot determine whether JTS capability is required from 'transactions' attribute value %s", resource.getModel().get(TRANSACTIONS.getName()));
+        }
+    }
+
     protected void launchServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
 
         IIOPLogger.ROOT_LOGGER.activatingSubsystem();
@@ -163,7 +184,8 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // create the service that initializes and starts the CORBA ORB.
         CorbaORBService orbService = new CorbaORBService(props);
-        final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
+        final ServiceBuilder<ORB> builder = context.getCapabilityServiceTarget().addCapability(ORB_CAPABILITY, orbService)
+                .addAliases(CorbaORBService.SERVICE_NAME);
         org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector());
 
         // if a security domain has been specified, add a dependency to the domain service.
@@ -228,7 +250,7 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // create the service the initializes the Root POA.
         CorbaPOAService rootPOAService = new CorbaPOAService("RootPOA", "poa", serverRequiresSsl);
         context.getServiceTarget().addService(CorbaPOAService.ROOT_SERVICE_NAME, rootPOAService)
-                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, rootPOAService.getORBInjector())
+                .addDependency(ORB_CAPABILITY.getCapabilityServiceName(), ORB.class, rootPOAService.getORBInjector())
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         // create the service the initializes the interface repository POA.
@@ -250,12 +272,13 @@ public class IIOPSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // create the CORBA naming service.
         final CorbaNamingService namingService = new CorbaNamingService(props);
         context
-                .getServiceTarget()
-                .addService(CorbaNamingService.SERVICE_NAME, namingService)
-                .addDependency(CorbaORBService.SERVICE_NAME, ORB.class, namingService.getORBInjector())
+                .getCapabilityServiceTarget()
+                .addCapability(CORBA_NAMING_CAPABILITY, namingService)
+                .addCapabilityRequirement(ORB_CAPABILITY.getName(), ORB.class, namingService.getORBInjector())
                 .addDependency(CorbaPOAService.ROOT_SERVICE_NAME, POA.class, namingService.getRootPOAInjector())
                 .addDependency(CorbaPOAService.SERVICE_NAME.append("namingpoa"), POA.class,
                         namingService.getNamingPOAInjector())
+                .addAliases(CorbaNamingService.SERVICE_NAME)
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         configureClientSecurity(props);

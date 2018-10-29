@@ -22,10 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +31,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +46,10 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author Stuart Douglas
  */
 public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
+
+    private static final RuntimeCapability<Void> EJB_IIOP_CAPABILITY = RuntimeCapability.Builder.of("org.wildfly.ejb3.iiop")
+            .addRequirements("org.wildfly.iiop.orb", "org.wildfly.iiop.corba-naming")
+            .build();
 
     public static final EJB3IIOPResourceDefinition INSTANCE = new EJB3IIOPResourceDefinition();
 
@@ -65,21 +66,14 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
-    private static final Map<String, AttributeDefinition> ATTRIBUTES;
-
-    static {
-        final Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(ENABLE_BY_DEFAULT.getName(), ENABLE_BY_DEFAULT);
-        map.put(USE_QUALIFIED_NAME.getName(), USE_QUALIFIED_NAME);
-
-        ATTRIBUTES = Collections.unmodifiableMap(map);
-    }
-
 
     private EJB3IIOPResourceDefinition() {
-        super(EJB3SubsystemModel.IIOP_PATH,
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IIOP),
-                EJB3IIOPAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(new Parameters(EJB3SubsystemModel.IIOP_PATH,
+                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.IIOP))
+                .setAddHandler(EJB3IIOPAdd.INSTANCE)
+                .setRemoveHandler(ReloadRequiredRemoveStepHandler.INSTANCE)
+                .setCapabilities(EJB_IIOP_CAPABILITY)
+        );
     }
 
     @Override

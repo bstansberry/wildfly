@@ -59,7 +59,7 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(5, 0, 0);
+    static final ModelVersion CURRENT_MODEL_VERSION = ModelVersion.create(6, 0, 0);
 
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
@@ -67,6 +67,7 @@ public class TransactionExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
     static final PathElement PARTICIPANT_PATH = PathElement.pathElement(LogStoreConstants.PARTICIPANTS);
     static final PathElement TRANSACTION_PATH = PathElement.pathElement(LogStoreConstants.TRANSACTIONS);
+    static final PathElement JTS_PATH = PathElement.pathElement(ModelDescriptionConstants.SERVICE, CommonAttributes.JTS);
 
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {

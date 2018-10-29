@@ -119,7 +119,7 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
     private void testTransformation(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem-ejb3-transform.xml");
 
         // initialize the legacy services and add required jars
@@ -179,7 +179,8 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider", buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"));
+        return AdditionalInitialization.withCapabilities("org.wildfly.transactions.global-default-local-provider", buildDynamicCapabilityName("org.wildfly.security.security-domain", "ApplicationDomain"),
+                "org.wildfly.iiop.orb", "org.wildfly.iiop.corba-naming");
     }
 
     private void testRejections(ModelVersion model, ModelTestControllerVersion controller, String ... mavenResourceURLs) throws Exception {
