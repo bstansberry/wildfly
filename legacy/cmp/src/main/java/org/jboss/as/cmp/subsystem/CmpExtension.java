@@ -26,7 +26,10 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DeprecatedResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -48,6 +51,8 @@ public class CmpExtension extends AbstractLegacyExtension {
 
     private static final String extensionName = "org.jboss.as.cmp";
 
+    static final String LATEST_NAMESPACE = "urn:jboss:domain:cmp:1.1";
+
     public CmpExtension() {
         super(extensionName, SUBSYSTEM_NAME);
     }
@@ -60,19 +65,25 @@ public class CmpExtension extends AbstractLegacyExtension {
         subsystemRegistration.registerXMLElementWriter(new CmpSubsystem11Parser());
 
         final ManagementResourceRegistration subsystem =
-                subsystemRegistration.registerSubsystemModel(CMPSubsystemRootResourceDefinition.INSTANCE);
+                subsystemRegistration.registerSubsystemModel(
+                    new SimpleResourceDefinition(
+                        new SimpleResourceDefinition.Parameters(CmpSubsystemModel.SUBSYSTEM_PATH, CmpExtension.getResolver(CmpExtension.SUBSYSTEM_NAME))
+                            .setAddHandler(new ModelOnlyAddStepHandler())
+                            .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE)
+                            .setDeprecatedSince(CmpExtension.DEPRECATED_SINCE)
+                    )
+                );
 
-        subsystem.registerSubModel(UUIDKeyGeneratorResourceDefinition.INSTANCE);
+        subsystem.registerSubModel(new UUIDKeyGeneratorResourceDefinition());
 
-        subsystem.registerSubModel(HiLoKeyGeneratorResourceDefinition.INSTANCE);
+        subsystem.registerSubModel(new HiLoKeyGeneratorResourceDefinition());
         return Collections.singleton(subsystem);
     }
 
     @Override
     protected void initializeLegacyParsers(final ExtensionParsingContext context) {
 
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_0.getUriString(), CmpSubsystem10Parser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CMP_1_1.getUriString(), CmpSubsystem11Parser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, LATEST_NAMESPACE, CmpSubsystem11Parser::new);
     }
 
 

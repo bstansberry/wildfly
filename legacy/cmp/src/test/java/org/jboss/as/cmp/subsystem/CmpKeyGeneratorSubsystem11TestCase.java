@@ -49,6 +49,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
@@ -57,7 +58,11 @@ import org.junit.Test;
 /**
  * @author Manuel Fehlhammer
  */
-public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem10TestCase {
+public class CmpKeyGeneratorSubsystem11TestCase extends AbstractSubsystemBaseTest {
+
+    public CmpKeyGeneratorSubsystem11TestCase() {
+        super(CmpExtension.SUBSYSTEM_NAME, new CmpExtension());
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {

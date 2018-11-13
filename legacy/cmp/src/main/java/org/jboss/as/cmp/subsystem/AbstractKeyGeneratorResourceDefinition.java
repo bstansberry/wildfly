@@ -25,9 +25,9 @@
 package org.jboss.as.cmp.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -36,8 +36,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
-import java.util.Map;
-
 /**
  * Class packages attribute definitions common to all key generator variants.
  *
@@ -45,8 +43,8 @@ import java.util.Map;
  */
 abstract class AbstractKeyGeneratorResourceDefinition extends SimpleResourceDefinition {
 
-    protected AbstractKeyGeneratorResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver,
-                                                     OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    AbstractKeyGeneratorResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver,
+                                           OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
     }
 
@@ -56,13 +54,14 @@ abstract class AbstractKeyGeneratorResourceDefinition extends SimpleResourceDefi
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    public static final SimpleAttributeDefinition[] COMMON_ATTRIBUTES = {JNDI_NAME};
-    public abstract Map<String, SimpleAttributeDefinition> getAttributeMap();
+    abstract AttributeDefinition[] getAttributes();
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : getAttributeMap().values()) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+        AttributeDefinition[] attrs = getAttributes();
+        ModelOnlyWriteAttributeHandler writeHandler = new ModelOnlyWriteAttributeHandler(attrs);
+        for (AttributeDefinition attr : attrs) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 }

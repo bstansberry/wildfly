@@ -25,54 +25,25 @@
 package org.jboss.as.cmp.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 
 /**
  * @author Stuart Douglas
  */
-class UUIDKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDefinition {
+final class UUIDKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDefinition {
 
-    public static final UUIDKeyGeneratorResourceDefinition INSTANCE = new UUIDKeyGeneratorResourceDefinition();
+    private static final AttributeDefinition[] ATTRIBUTES = { JNDI_NAME };
 
-    public static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
-    public static final SimpleAttributeDefinition[] ATTRIBUTES;
-
-    static {
-        List<SimpleAttributeDefinition> list = new ArrayList<SimpleAttributeDefinition>(COMMON_ATTRIBUTES.length + 10);
-        Collections.addAll(list, COMMON_ATTRIBUTES);
-        ATTRIBUTES = list.toArray(new SimpleAttributeDefinition[list.size()]);
-
-        Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<String, SimpleAttributeDefinition>();
-        for(SimpleAttributeDefinition ad : ATTRIBUTES) {
-            map.put(ad.getName(), ad);
-        }
-        ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
-    }
-
-    private UUIDKeyGeneratorResourceDefinition() {
+    UUIDKeyGeneratorResourceDefinition() {
         super(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH,
                 CmpExtension.getResolver(CmpSubsystemModel.UUID_KEY_GENERATOR),
-                UUIDKeyGeneratorAdd.INSTANCE, UUIDKeyGeneratorRemove.INSTANCE);
+                new ModelOnlyAddStepHandler(JNDI_NAME), ModelOnlyRemoveStepHandler.INSTANCE);
         setDeprecated(CmpExtension.DEPRECATED_SINCE);
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTE_MAP.values()) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
-        }
-    }
-
-    @Override
-    public Map<String, SimpleAttributeDefinition> getAttributeMap() {
-        return ATTRIBUTE_MAP;
+    AttributeDefinition[] getAttributes() {
+        return ATTRIBUTES;
     }
 }

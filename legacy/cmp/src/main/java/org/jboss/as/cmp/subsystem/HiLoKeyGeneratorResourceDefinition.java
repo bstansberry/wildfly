@@ -24,12 +24,13 @@
 
 package org.jboss.as.cmp.subsystem;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -38,94 +39,82 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Stuart Douglas
  */
-class HiLoKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDefinition {
+final class HiLoKeyGeneratorResourceDefinition extends AbstractKeyGeneratorResourceDefinition {
 
-    static final HiLoKeyGeneratorResourceDefinition INSTANCE = new HiLoKeyGeneratorResourceDefinition();
-
-    static final SimpleAttributeDefinition BLOCK_SIZE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.BLOCK_SIZE, ModelType.LONG, true)
+    private static final SimpleAttributeDefinition BLOCK_SIZE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.BLOCK_SIZE, ModelType.LONG, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition CREATE_TABLE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.CREATE_TABLE, ModelType.BOOLEAN, true)
+    private static final SimpleAttributeDefinition CREATE_TABLE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.CREATE_TABLE, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition CREATE_TABLE_DDL = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.CREATE_TABLE_DDL, ModelType.STRING, true)
+    private static final SimpleAttributeDefinition CREATE_TABLE_DDL = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.CREATE_TABLE_DDL, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.DATA_SOURCE, ModelType.STRING, false)
+    private static final SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.DATA_SOURCE, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition DROP_TABLE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.DROP_TABLE, ModelType.BOOLEAN, true)
+    private static final SimpleAttributeDefinition DROP_TABLE = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.DROP_TABLE, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition ID_COLUMN = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.ID_COLUMN, ModelType.STRING, false)
+    private static final SimpleAttributeDefinition ID_COLUMN = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.ID_COLUMN, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition SELECT_HI_DDL = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.SELECT_HI_DDL, ModelType.STRING, true)
+    private static final SimpleAttributeDefinition SELECT_HI_DDL = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.SELECT_HI_DDL, ModelType.STRING, true)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition SEQUENCE_COLUMN = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.SEQUENCE_COLUMN, ModelType.STRING, false)
+    private static final SimpleAttributeDefinition SEQUENCE_COLUMN = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.SEQUENCE_COLUMN, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition SEQUENCE_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.SEQUENCE_NAME, ModelType.STRING, false)
+    private static final SimpleAttributeDefinition SEQUENCE_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.SEQUENCE_NAME, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition TABLE_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.TABLE_NAME, ModelType.STRING, false)
+    private static final SimpleAttributeDefinition TABLE_NAME = new SimpleAttributeDefinitionBuilder(CmpSubsystemModel.TABLE_NAME, ModelType.STRING, false)
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES;
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME, BLOCK_SIZE, CREATE_TABLE, CREATE_TABLE_DDL,
+                                                            DATA_SOURCE, DROP_TABLE, ID_COLUMN, SELECT_HI_DDL,
+                                                            SEQUENCE_COLUMN, SEQUENCE_NAME, TABLE_NAME};
+
     static final Map<String, SimpleAttributeDefinition> ATTRIBUTE_MAP;
 
     static {
-        List<SimpleAttributeDefinition> list = new ArrayList<SimpleAttributeDefinition>(COMMON_ATTRIBUTES.length + 10);
-        Collections.addAll(list, COMMON_ATTRIBUTES);
-        list.add(BLOCK_SIZE);
-        list.add(CREATE_TABLE);
-        list.add(CREATE_TABLE_DDL);
-        list.add(DATA_SOURCE);
-        list.add(DROP_TABLE);
-        list.add(ID_COLUMN);
-        list.add(SELECT_HI_DDL);
-        list.add(SEQUENCE_COLUMN);
-        list.add(SEQUENCE_NAME);
-        list.add(TABLE_NAME);
-        ATTRIBUTES = list.toArray(new SimpleAttributeDefinition[list.size()]);
-
-        Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<String, SimpleAttributeDefinition>();
+        Map<String, SimpleAttributeDefinition> map = new LinkedHashMap<>();
         for(SimpleAttributeDefinition ad : ATTRIBUTES) {
             map.put(ad.getName(), ad);
         }
         ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
+
     }
 
-    private HiLoKeyGeneratorResourceDefinition() {
+    HiLoKeyGeneratorResourceDefinition() {
         super(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH,
                 CmpExtension.getResolver(CmpSubsystemModel.HILO_KEY_GENERATOR),
-                HiLoKeyGeneratorAdd.INSTANCE, HiLoKeyGeneratorRemove.INSTANCE);
+                new ModelOnlyAddStepHandler(ATTRIBUTES), ModelOnlyRemoveStepHandler.INSTANCE);
         setDeprecated(CmpExtension.DEPRECATED_SINCE);
     }
 
     @Override
-    public Map<String, SimpleAttributeDefinition> getAttributeMap() {
-        return ATTRIBUTE_MAP;
+    AttributeDefinition[] getAttributes() {
+        return ATTRIBUTES;
     }
 }
