@@ -92,7 +92,7 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testReadWriteEmptySubsystem() throws Exception {
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + ConfigAdminExtension.LATEST_NAMESPACE + "\">" +
                         "</subsystem>";
 
         ModelNode testModel = new ModelNode();

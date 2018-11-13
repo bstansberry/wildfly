@@ -27,8 +27,11 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
+import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -51,7 +54,9 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
     private static final ModelVersion MANAGEMENT_API_VERSION = ModelVersion.create(1, 1, 0);
 
     private static final String RESOURCE_NAME = ConfigAdminExtension.class.getPackage().getName() + ".LocalDescriptions";
-    public static final String EXTENSION_NAME = "org.jboss.as.configadmin";
+    private static final String EXTENSION_NAME = "org.jboss.as.configadmin";
+
+    static final String LATEST_NAMESPACE = "urn:jboss:domain:configadmin:1.0";
 
     public ConfigAdminExtension() {
         super(EXTENSION_NAME, SUBSYSTEM_NAME);
@@ -63,14 +68,21 @@ public class ConfigAdminExtension extends AbstractLegacyExtension {
 
     @Override
     public void initializeLegacyParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.VERSION_1_0.getUriString(), () -> ConfigAdminParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, LATEST_NAMESPACE, ConfigAdminParser.INSTANCE);
     }
 
     @Override
     public Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_VERSION);
-        ManagementResourceRegistration subsystemRoot = subsystem.registerSubsystemModel(new ConfigAdminRootResource());
+        ManagementResourceRegistration subsystemRoot = subsystem.registerSubsystemModel(
+                new SimpleResourceDefinition(
+                    new SimpleResourceDefinition.Parameters(ConfigAdminExtension.SUBSYSTEM_PATH, getResourceDescriptionResolver(SUBSYSTEM))
+                        .setAddHandler(new ModelOnlyAddStepHandler())
+                        .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE)
+                )
+        );
+        subsystemRoot.registerSubModel(new ConfigurationResource());
 
         //no need to register transformers as whole extension was deprecated in EAP 6.1 and hasn't changed since, so 1.1.0 in 6.2+ is same as current
 

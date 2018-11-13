@@ -33,5 +33,7 @@ public interface ModelConstants {
 
     String CONFIGURATION = "configuration";
     String ENTRIES = "entries";
+    String PID = "pid";
+    String PROPERTY = "property";
     String UPDATE = "update";
 }

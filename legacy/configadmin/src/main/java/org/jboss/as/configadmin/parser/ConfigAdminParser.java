@@ -21,6 +21,7 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import static org.jboss.as.configadmin.parser.ConfigAdminExtension.LATEST_NAMESPACE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -41,11 +42,11 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * Parse subsystem configuration for namespace {@link Namespace#VERSION_1_0}.
+ * Parse subsystem configuration for namespace {@link ConfigAdminExtension#LATEST_NAMESPACE}.
  *
  * @author Thomas.Diesler@jboss.com
  */
-class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class ConfigAdminParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
     static ConfigAdminParser INSTANCE = new ConfigAdminParser();
 
@@ -55,14 +56,14 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+        context.startSubsystemElement(LATEST_NAMESPACE, false);
         ModelNode model = context.getModelNode();
 
         if (model.hasDefined(ModelConstants.CONFIGURATION)) {
             ModelNode configuration = model.get(ModelConstants.CONFIGURATION);
-            for (String pid : new TreeSet<String>(configuration.keys())) {
-                writer.writeStartElement(Element.CONFIGURATION.getLocalName());
-                writer.writeAttribute(Attribute.PID.getLocalName(), pid);
+            for (String pid : new TreeSet<>(configuration.keys())) {
+                writer.writeStartElement(ModelConstants.CONFIGURATION);
+                writer.writeAttribute(ModelConstants.PID, pid);
                 ConfigurationResource.ENTRIES.marshallAsElement(configuration.get(pid), writer);
                 writer.writeEndElement();
             }
@@ -79,17 +80,13 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
 
         requireNoAttributes(reader);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case VERSION_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case CONFIGURATION: {
-                            parseConfigurations(reader, address, operations);
-                            break;
-                        }
-                        default:
-                            throw unexpectedElement(reader);
-                    }
+            if (LATEST_NAMESPACE.equals(reader.getNamespaceURI())) {
+
+                if (ModelConstants.CONFIGURATION.equals(reader.getLocalName())) {
+                    parseConfigurations(reader, address, operations);
+                }
+                else {
+                    throw unexpectedElement(reader);
                 }
             }
         }
@@ -98,26 +95,23 @@ class ConfigAdminParser implements Namespace10, XMLStreamConstants, XMLElementRe
     private void parseConfigurations(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> operations) throws XMLStreamException {
 
         // Handle attributes
-        String pid = ParseUtils.requireAttributes(reader, Attribute.PID.getLocalName())[0];
+        String pid = ParseUtils.requireAttributes(reader, ModelConstants.PID)[0];
 
         ModelNode operation = Util.createAddOperation(parent.append(ModelConstants.CONFIGURATION, pid));
         operations.add(operation);
         // Handle elements
         while (reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case VERSION_1_0: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (element == Element.PROPERTY) {
-                        final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
-                        ConfigurationResource.ENTRIES.parseAndAddParameterElement(array[0], array[1], operation, reader);
-                        ParseUtils.requireNoContent(reader);
-                        break;
-                    } else {
-                        throw unexpectedElement(reader);
-                    }
-                }
-                default:
+            if (LATEST_NAMESPACE.equals(reader.getNamespaceURI())) {
+
+                if (ModelConstants.PROPERTY.equals(reader.getLocalName())) {
+                    final String[] array = requireAttributes(reader, org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName());
+                    ConfigurationResource.ENTRIES.parseAndAddParameterElement(array[0], array[1], operation, reader);
+                    ParseUtils.requireNoContent(reader);
+                } else {
                     throw unexpectedElement(reader);
+                }
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }

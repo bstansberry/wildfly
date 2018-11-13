@@ -21,6 +21,7 @@
 */
 package org.jboss.as.configadmin.parser;
 
+import org.jboss.as.controller.ModelOnlyAddStepHandler;
 import org.jboss.as.controller.ModelOnlyRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -39,9 +40,9 @@ import static org.jboss.as.configadmin.parser.ModelConstants.UPDATE;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ConfigurationResource extends SimpleResourceDefinition {
+final class ConfigurationResource extends SimpleResourceDefinition {
 
-    static final PathElement PATH_ELEMENT = PathElement.pathElement(ModelConstants.CONFIGURATION);
+    private static final PathElement PATH_ELEMENT = PathElement.pathElement(ModelConstants.CONFIGURATION);
 
     static final PropertiesAttributeDefinition ENTRIES = new PropertiesAttributeDefinition.Builder(ModelConstants.ENTRIES, false)
             .setAllowExpression(true)
@@ -52,13 +53,14 @@ public class ConfigurationResource extends SimpleResourceDefinition {
         .setParameters(ENTRIES)
         .build();
 
-    public ConfigurationResource() {
-        super(PATH_ELEMENT, ConfigAdminExtension.getResourceDescriptionResolver(ModelConstants.CONFIGURATION), ConfigurationAdd.INSTANCE, ModelOnlyRemoveStepHandler.INSTANCE);
+    ConfigurationResource() {
+        super(new Parameters(PATH_ELEMENT, ConfigAdminExtension.getResourceDescriptionResolver(ModelConstants.CONFIGURATION))
+                .setAddHandler(new ModelOnlyAddStepHandler(ENTRIES))
+                .setRemoveHandler(ModelOnlyRemoveStepHandler.INSTANCE));
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadOnlyAttribute(ENTRIES, null);
     }
 
