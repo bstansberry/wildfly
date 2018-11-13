@@ -46,7 +46,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.ValueExpression;
-import org.wildfly.extension.io.IOExtension;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.filters.CustomFilterDefinition;
@@ -126,6 +125,7 @@ public class WebMigrateOperation implements OperationStepHandler {
 
     private static final String UNDERTOW_EXTENSION = "org.wildfly.extension.undertow";
     private static final String IO_EXTENSION = "org.wildfly.extension.io";
+    private static final String IO_SUBSYSTEM = "io";
 
     private static final String REALM_NAME = "jbossweb-migration-security-realm";
 
@@ -461,17 +461,17 @@ public class WebMigrateOperation implements OperationStepHandler {
      */
     private void createIoSubsystem(OperationContext context, Map<PathAddress, ModelNode> migrationOperations, PathAddress baseAddress) {
         Resource root = context.readResourceFromRoot(baseAddress, false);
-        if (root.getChildrenNames(SUBSYSTEM).contains(IOExtension.SUBSYSTEM_NAME)) {
+        if (root.getChildrenNames(SUBSYSTEM).contains(IO_SUBSYSTEM)) {
             // subsystem is already added, do nothing
             return;
         }
 
         //these addresses will be fixed later, no need to use the base address
-        PathAddress address = pathAddress(pathElement(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME));
+        PathAddress address = pathAddress(pathElement(SUBSYSTEM, IO_SUBSYSTEM));
         migrationOperations.put(address, createAddOperation(address));
-        address = pathAddress(pathElement(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME), pathElement("worker", "default"));
+        address = pathAddress(pathElement(SUBSYSTEM, IO_SUBSYSTEM), pathElement("worker", "default"));
         migrationOperations.put(address, createAddOperation(address));
-        address = pathAddress(pathElement(SUBSYSTEM, IOExtension.SUBSYSTEM_NAME), pathElement("buffer-pool", "default"));
+        address = pathAddress(pathElement(SUBSYSTEM, IO_SUBSYSTEM), pathElement("buffer-pool", "default"));
         migrationOperations.put(address, createAddOperation(address));
 
     }

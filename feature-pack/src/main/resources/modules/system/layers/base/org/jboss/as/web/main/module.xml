@@ -32,12 +32,11 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.modules"/>
+        <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.staxmapper"/>
+        <!-- Provides some path elements for use by the 'migrate' operation -->
         <module name="org.wildfly.extension.undertow"/>
     </dependencies>
 </module>
