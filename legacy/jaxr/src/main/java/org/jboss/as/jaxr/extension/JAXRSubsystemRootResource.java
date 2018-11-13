@@ -54,7 +54,6 @@ class JAXRSubsystemRootResource extends ModelOnlyResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration subsystemRoot) {
-        super.registerChildren(subsystemRoot);
         // JAXR Properties
         subsystemRoot.registerSubModel(new JAXRPropertyDefinition());
     }

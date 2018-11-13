@@ -21,6 +21,8 @@
  */
 package org.jboss.as.jaxr.extension;
 
+import static org.jboss.as.jaxr.extension.JAXRConstants.LATEST_NAMESPACE;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -34,8 +36,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
-
 
 /**
  * @author Thomas.Diesler@jboss.com
@@ -75,7 +75,6 @@ public class JAXRExtension extends AbstractLegacyExtension {
 
     @Override
     protected void initializeLegacyParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JAXR_1_1.getUriString(), JAXRSubsystemParser::new);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JAXR_1_0.getUriString(), JAXRSubsystemParser::new);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, LATEST_NAMESPACE, JAXRSubsystemParser::new);
     }
 }

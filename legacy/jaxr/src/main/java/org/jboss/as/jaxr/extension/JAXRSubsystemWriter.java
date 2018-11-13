@@ -21,10 +21,11 @@
  */
 package org.jboss.as.jaxr.extension;
 
-
-import static org.jboss.as.jaxr.extension.JAXRConstants.Attribute;
-import static org.jboss.as.jaxr.extension.JAXRConstants.Element;
-import static org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
+import static org.jboss.as.jaxr.extension.JAXRConstants.CONNECTION_FACTORY;
+import static org.jboss.as.jaxr.extension.JAXRConstants.LATEST_NAMESPACE;
+import static org.jboss.as.jaxr.extension.JAXRConstants.NAME;
+import static org.jboss.as.jaxr.extension.JAXRConstants.PROPERTIES;
+import static org.jboss.as.jaxr.extension.JAXRConstants.PROPERTY;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -52,11 +53,11 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+        context.startSubsystemElement(LATEST_NAMESPACE, false);
         ModelNode node = context.getModelNode();
 
         // write connection-factory
-        writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
+        writer.writeStartElement(CONNECTION_FACTORY);
         JAXRSubsystemRootResource.CONNECTION_FACTORY_ATTRIBUTE.marshallAsAttribute(node, writer);
         JAXRSubsystemRootResource.CONNECTION_FACTORY_IMPL_ATTRIBUTE.marshallAsAttribute(node, writer);
         writer.writeEndElement();
@@ -64,10 +65,10 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
 
         ModelNode properties = node.get(ModelDescriptionConstants.PROPERTY);
         if (properties.isDefined()) {
-            writer.writeStartElement(Element.PROPERTIES.getLocalName());
+            writer.writeStartElement(PROPERTIES);
             for (String key : properties.keys()) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), key);
+                writer.writeStartElement(PROPERTY);
+                writer.writeAttribute(NAME, key);
                 JAXRPropertyDefinition.VALUE.marshallAsAttribute(properties.get(key), writer);
                 writer.writeEndElement();
             }
