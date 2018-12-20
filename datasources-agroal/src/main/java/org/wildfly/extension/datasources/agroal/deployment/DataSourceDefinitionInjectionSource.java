@@ -21,6 +21,16 @@
  */
 package org.wildfly.extension.datasources.agroal.deployment;
 
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+
+import java.sql.Driver;
+import java.time.Duration;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import javax.sql.DataSource;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import io.agroal.api.configuration.AgroalConnectionFactoryConfiguration;
 import io.agroal.api.configuration.supplier.AgroalConnectionFactoryConfigurationSupplier;
 import io.agroal.api.configuration.supplier.AgroalConnectionPoolConfigurationSupplier;
@@ -34,18 +44,12 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.txn.service.TxnServices;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.datasources.agroal.AgroalExtension;
 import org.wildfly.extension.datasources.agroal.logging.AgroalLogger;
-
-import javax.sql.DataSource;
-import java.sql.Driver;
-import java.time.Duration;
-import java.util.Map;
-
-import static org.jboss.as.server.deployment.Attachments.MODULE;
 
 /**
  * Injection source for a DataSource
@@ -228,8 +232,15 @@ class DataSourceDefinitionInjectionSource extends ResourceDefinitionInjectionSou
                     .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                     .install();
 
-        DataSourceDefinitionService dataSourceService = new DataSourceDefinitionService(bindInfo, transactional, dataSourceConfiguration);
-        phaseContext.getServiceTarget().addService(dataSourceServiceName).setInstance(dataSourceService).install();
+        ServiceBuilder svcBuilder = phaseContext.getServiceTarget().addService(dataSourceServiceName);
+        Supplier<TransactionSynchronizationRegistry> tsrSupplier = null;
+        if (transactional) {
+            // TODO replace with capability injection
+            //noinspection unchecked
+            tsrSupplier = (Supplier<TransactionSynchronizationRegistry>) svcBuilder.requires(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY);
+        }
+        DataSourceDefinitionService dataSourceService = new DataSourceDefinitionService(bindInfo, transactional, dataSourceConfiguration, tsrSupplier);
+        svcBuilder.setInstance(dataSourceService).install();
 
         serviceBuilder.requires(bindInfo.getBinderServiceName());
         serviceBuilder.addDependency(dataSourceServiceName, ManagedReferenceFactory.class, injector);
