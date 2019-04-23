@@ -20,26 +20,18 @@
  */
 package org.jboss.as.test.integration.management.deploy.runtime.jaxrs;
 
-import java.util.HashSet;
-import java.util.Set;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
-/**
- *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2014
- * Red Hat, inc.
- */
-@ApplicationPath("/hello")
-public class HelloApplication extends Application {
+@Path("/bad")
+public class HelloBadResource {
 
-    @Override
-    public Set<Class<?>> getClasses() {
-        final Set<Class<?>> classes = new HashSet<>();
-        classes.add(HelloResource.class);
-        classes.add(PureProxyEndPoint.class);
-        classes.add(HelloBadResource.class);
-        classes.add(HelloSometimesBadResource.class);
-        return classes;
+    @GET
+    @Path("/call")
+    @Produces({"text/plain"})
+    public String getHelloWorld() {
+        throw new RuntimeException("HelloBadResource force exception");
     }
+
 }

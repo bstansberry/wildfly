@@ -22,23 +22,13 @@
 
 package org.jboss.as.jaxrs.deployment;
 
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
+import org.jboss.as.jaxrs.Jackson2Annotations;
+import org.jboss.as.jaxrs.JacksonAnnotations;
+import org.jboss.as.jaxrs.JaxrsExtension;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentResourceSupport;
@@ -62,12 +52,20 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.jboss.as.jaxrs.DeploymentRestResourcesDefintion;
-import org.jboss.as.jaxrs.Jackson2Annotations;
-import org.jboss.as.jaxrs.JacksonAnnotations;
-import org.jboss.as.jaxrs.JaxrsExtension;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 
 /**
@@ -80,6 +78,11 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
     public static final String RESTEASY_SCAN = "resteasy.scan";
     public static final String RESTEASY_SCAN_RESOURCES = "resteasy.scan.resources";
     public static final String RESTEASY_SCAN_PROVIDERS = "resteasy.scan.providers";
+    private final boolean isStatisticsEnabled;
+
+    public JaxrsIntegrationProcessor(boolean isStatisticsEnabled) {
+        this.isStatisticsEnabled = isStatisticsEnabled;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -101,6 +104,9 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
 
         if (resteasy == null)
             return;
+
+        setContextParameter(webdata, ResteasyContextParameters.RESTEASY_STATISTICS_ENABLED,
+                    String.valueOf(isStatisticsEnabled));
 
         deploymentUnit.getDeploymentSubsystemModel(JaxrsExtension.SUBSYSTEM_NAME);
         final List<ParamValueMetaData> params = webdata.getContextParams();
@@ -279,6 +285,7 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         if (deploymentUnit.getParent() == null && (webdata.getServletMappings() == null || webdata.getServletMappings().isEmpty())) {
             JAXRS_LOGGER.noServletDeclaration(deploymentUnit.getName());
         }
+
     }
 
 
@@ -457,6 +464,4 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
         }
         params.add(param);
     }
-
-
 }

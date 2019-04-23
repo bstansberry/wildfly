@@ -108,8 +108,8 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                 // When BootStrap classes are present and no Application subclass declared
                 // must check context param for Application subclass declaration
                 if (resteasyDeploymentData.getScannedResourceClasses().isEmpty() &&
-                    !resteasyDeploymentData.isDispatcherCreated() &&
-                    hasBootClasses(warMetaData.getMergedJBossWebMetaData())) {
+                        !resteasyDeploymentData.isDispatcherCreated() &&
+                        hasBootClasses(warMetaData.getMergedJBossWebMetaData())) {
                     checkOtherParams(deploymentUnit, warMetaData.getMergedJBossWebMetaData(), module.getClassLoader(), resteasyDeploymentData);
                 }
             }
@@ -123,7 +123,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                                   final JBossWebMetaData webdata,
                                   final ClassLoader classLoader,
                                   final ResteasyDeploymentData resteasyDeploymentData)
-        throws DeploymentUnitProcessingException{
+            throws DeploymentUnitProcessingException{
 
         HashSet<String> appClazzList = new HashSet<>();
         List<ParamValueMetaData> contextParamList = webdata.getContextParams();
@@ -153,21 +153,21 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     private void processDeclaredApplicationClasses(final DeploymentUnit du,
                                                    final Set<String> appClazzList,
-                                                 final JBossWebMetaData webdata,
-                                                 final ClassLoader classLoader,
-                                                 final ResteasyDeploymentData resteasyDeploymentData)
-        throws DeploymentUnitProcessingException {
+                                                   final JBossWebMetaData webdata,
+                                                   final ClassLoader classLoader,
+                                                   final ResteasyDeploymentData resteasyDeploymentData)
+            throws DeploymentUnitProcessingException {
 
         final CompositeIndex index = du.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         List<AnnotationInstance> resources = index.getAnnotations(JaxrsAnnotations.PATH.getDotName());
         Map<String, ClassInfo> resourceMap = new HashMap<>(resources.size());
         if (resources != null) {
-           for (AnnotationInstance a: resources) {
-               if (a.target() instanceof ClassInfo) {
-                   resourceMap.put(((ClassInfo)a.target()).name().toString(),
-                       (ClassInfo)a.target());
-               }
-           }
+            for (AnnotationInstance a: resources) {
+                if (a.target() instanceof ClassInfo) {
+                    resourceMap.put(((ClassInfo)a.target()).name().toString(),
+                            (ClassInfo)a.target());
+                }
+            }
         }
 
         for (String clazzName: appClazzList) {
