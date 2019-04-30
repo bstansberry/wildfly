@@ -73,17 +73,25 @@ public class DefaultConcurrencyCDITestCase {
     @OperateOnDeployment(DEPLOYMENT_1)
     @Test
     public void testTcclDep1() throws Exception {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        final ClassLoader bean = defaultConcurrencyTestCDIBean.getClass().getClassLoader();
         final ClassLoader tccl = defaultConcurrencyTestCDIBean.getTccl().get();
         Assert.assertNotNull(tccl);
-        Assert.assertTrue(String.format("Expected the TCCL (%s) to contain %s", tccl, DEPLOYMENT_1), tccl.toString().contains(DEPLOYMENT_1));
+        Assert.assertTrue(String.format("Expected the bean CL (%s) to contain %s", tccl, DEPLOYMENT_1), bean.toString().contains(DEPLOYMENT_1));
+        Assert.assertTrue(String.format("Expected the current TCCL (%s) to contain %s", tccl, DEPLOYMENT_1), current.toString().contains(DEPLOYMENT_1));
+        Assert.assertTrue(String.format("Expected the executor TCCL (%s) to contain %s", tccl, DEPLOYMENT_1), tccl.toString().contains(DEPLOYMENT_1));
     }
 
     @OperateOnDeployment(DEPLOYMENT_2)
     @Test
     public void testTcclDep2() throws Exception {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        final ClassLoader bean = defaultConcurrencyTestCDIBean.getClass().getClassLoader();
         final ClassLoader tccl = defaultConcurrencyTestCDIBean.getTccl().get();
         Assert.assertNotNull(tccl);
-        Assert.assertTrue(String.format("Expected the TCCL (%s) to contain %s", tccl, DEPLOYMENT_2), tccl.toString().contains(DEPLOYMENT_2));
+        Assert.assertTrue(String.format("Expected the bean CL (%s) to contain %s", tccl, DEPLOYMENT_2), bean.toString().contains(DEPLOYMENT_2));
+        Assert.assertTrue(String.format("Expected the current TCCL (%s) to contain %s", tccl, DEPLOYMENT_2), current.toString().contains(DEPLOYMENT_2));
+        Assert.assertTrue(String.format("Expected the executor TCCL (%s) to contain %s", tccl, DEPLOYMENT_2), tccl.toString().contains(DEPLOYMENT_2));
     }
 
 }
