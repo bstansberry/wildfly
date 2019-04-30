@@ -22,11 +22,13 @@
 package org.jboss.as.test.integration.ee.naming.defaultbindings.concurrency;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,10 +42,20 @@ import javax.inject.Inject;
  */
 @RunWith(Arquillian.class)
 public class DefaultConcurrencyCDITestCase {
+    private static final String DEPLOYMENT_1 = "ee-concurrency-cdi-1";
+    private static final String DEPLOYMENT_2 = "ee-concurrency-cdi-2";
 
-    @Deployment
+    @Deployment(name = DEPLOYMENT_1)
     public static Archive<?> deploy() {
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT_1 + ".jar");
+        jar.addClasses(DefaultConcurrencyCDITestCase.class, DefaultConcurrencyTestCDIBean.class);
+        jar.addAsManifestResource(new StringAsset(""), "beans.xml");
+        return jar;
+    }
+
+    @Deployment(name = DEPLOYMENT_2)
+    public static Archive<?> deploy2() {
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT_2 + ".jar");
         jar.addClasses(DefaultConcurrencyCDITestCase.class, DefaultConcurrencyTestCDIBean.class);
         jar.addAsManifestResource(new StringAsset(""), "beans.xml");
         return jar;
@@ -52,9 +64,26 @@ public class DefaultConcurrencyCDITestCase {
     @Inject
     private DefaultConcurrencyTestCDIBean defaultConcurrencyTestCDIBean;
 
+    @OperateOnDeployment(DEPLOYMENT_1)
     @Test
     public void testCDI() throws Throwable {
         defaultConcurrencyTestCDIBean.test();
+    }
+
+    @OperateOnDeployment(DEPLOYMENT_1)
+    @Test
+    public void testTcclDep1() throws Exception {
+        final ClassLoader tccl = defaultConcurrencyTestCDIBean.getTccl().get();
+        Assert.assertNotNull(tccl);
+        Assert.assertTrue(String.format("Expected the TCCL (%s) to contain %s", tccl, DEPLOYMENT_1), tccl.toString().contains(DEPLOYMENT_1));
+    }
+
+    @OperateOnDeployment(DEPLOYMENT_2)
+    @Test
+    public void testTcclDep2() throws Exception {
+        final ClassLoader tccl = defaultConcurrencyTestCDIBean.getTccl().get();
+        Assert.assertNotNull(tccl);
+        Assert.assertTrue(String.format("Expected the TCCL (%s) to contain %s", tccl, DEPLOYMENT_2), tccl.toString().contains(DEPLOYMENT_2));
     }
 
 }
