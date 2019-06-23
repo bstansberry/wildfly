@@ -513,7 +513,7 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly.core</groupId>
+      <groupId>${core-feature-pack-groupId}</groupId>
       <artifactId>wildfly-core-feature-pack</artifactId>
       <licenses>
         <license>

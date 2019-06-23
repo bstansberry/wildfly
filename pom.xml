@@ -141,6 +141,9 @@
         <!-- A short variant of product.release.version used in 'startsWith' tests done by dist verification logic -->
         <verifier.product.release.version>18.0</verifier.product.release.version>
 
+        <!-- Maven groupId of the core-feature-pack artifact -->
+        <core-feature-pack-groupId>org.wildfly.core</core-feature-pack-groupId>
+
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
