@@ -3,5 +3,7 @@
     <dependencies>
         <layer name="web-server"/>
     </dependencies>
-    <feature spec="subsystem.jaxrs"/>
+    <feature spec="subsystem.jaxrs">
+        <param name="statistics-enabled" value="${wildfly.jaxrs.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+    </feature>
 </layer-spec>

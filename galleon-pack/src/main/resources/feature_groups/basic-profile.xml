@@ -102,7 +102,9 @@
     <feature-group name="jca"/>
     <feature-group name="jpa"/>
     <feature spec="subsystem.jsf"/>
-    <feature spec="subsystem.jaxrs"/>
+    <feature spec="subsystem.jaxrs">
+        <param name="statistics-enabled" value="${wildfly.jaxrs.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+    </feature>
     <feature spec="subsystem.jdr"/>
     <feature spec="subsystem.weld"/>
     <feature spec="subsystem.microprofile-config-smallrye"/>
