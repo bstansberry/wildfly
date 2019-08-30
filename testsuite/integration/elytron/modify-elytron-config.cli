@@ -58,12 +58,12 @@ embed-server --admin-only=true --server-config=standalone-full.xml
 
 # datasources and ejb3 still has dependency on legacy security subsystem, so we can't remove it completely now
 
-# /subsystem=security:remove
-# /extension=org.jboss.as.security:remove
+/subsystem=security:remove
+/extension=org.jboss.as.security:remove
 
-/subsystem=security/security-domain=other:remove
-/subsystem=security/security-domain=jaspitest:remove
-/subsystem=security/security-domain=jboss-ejb-policy:remove
-/subsystem=security/security-domain=jboss-web-policy:remove
+# /subsystem=security/security-domain=other:remove
+# /subsystem=security/security-domain=jaspitest:remove
+# /subsystem=security/security-domain=jboss-ejb-policy:remove
+# /subsystem=security/security-domain=jboss-web-policy:remove
 
 stop-embedded-server
