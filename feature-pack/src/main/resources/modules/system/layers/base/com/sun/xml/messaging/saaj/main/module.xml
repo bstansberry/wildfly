@@ -22,14 +22,28 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.5" name="com.sun.xml.messaging.saaj">
+<module xmlns="urn:jboss:module:1.9" name="com.sun.xml.messaging.saaj">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>
 
     <resources>
-        <artifact name="${com.sun.xml.messaging.saaj:saaj-impl}"/>
-        <artifact name="${org.jvnet.staxex:stax-ex}"/>
+        <artifact name="${com.sun.xml.messaging.saaj:saaj-impl}">
+            <!-- Do not use this resource if property jboss.saaj.api.1_3
+                 is set to 'true'; instead the optional com.sun.messaging.saaj.1_3
+                 module should be provided and this module will export its resources -->
+            <conditions>
+                <property-not-equal name="jboss.saaj.api.1_3" value="true"/>
+            </conditions>
+        </artifact>
+        <artifact name="${org.jvnet.staxex:stax-ex}">
+            <!-- Do not use this resource if property jboss.saaj.api.1_3
+                 is set to 'true'; instead the optional com.sun.messaging.saaj.1_3
+                 module should be provided and this module will export its resources -->
+            <conditions>
+                <property-not-equal name="jboss.saaj.api.1_3" value="true"/>
+            </conditions>
+        </artifact>
     </resources>
 
     <dependencies>
@@ -38,6 +52,10 @@
         <module name="javax.xml.stream.api"/>
         <module name="javax.activation.api"/>
         <module name="org.apache.xerces" services="import" />
+        <!-- This module does not exist by default but if system property
+             jboss.saaj.api.1_3 is going to be set to true a module with this name that provides
+             the SAAJ 1.3 compatible impl must be installed, and this module will export its resource -->
+        <module name="com.sun.messaging.saaj.1_3" optional="true" export="true"/>
     </dependencies>
 
 </module>
