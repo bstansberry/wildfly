@@ -24,6 +24,8 @@ package org.wildfly.extension.microprofile.faulttolerance.deployment;
 
 import static org.jboss.as.weld.Capabilities.WELD_CAPABILITY_NAME;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.netflix.config.ConfigurationManager;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.eclipse.microprofile.config.Config;
@@ -36,7 +38,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.weld.Capabilities;
 import org.jboss.as.weld.WeldCapability;
-import org.wildfly.extension.microprofile.faulttolerance.MicroProfileFaultToleranceExtension;
+import org.jboss.modules.Module;
 import org.wildfly.extension.microprofile.faulttolerance.MicroProfileFaultToleranceLogger;
 
 /**
@@ -44,30 +46,34 @@ import org.wildfly.extension.microprofile.faulttolerance.MicroProfileFaultTolera
  */
 public class MicroProfileFaultToleranceDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static boolean hystrixConfigured;
+    private static AtomicBoolean hystrixConfigured = new AtomicBoolean();
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        synchronized (this) {
-            if (!hystrixConfigured) {
-                ClassLoader extensionClassLoader = MicroProfileFaultToleranceExtension.class.getClassLoader();
-                Config mpConfig = ConfigProvider.getConfig(extensionClassLoader);
-                AbstractConfiguration configInstance = ConfigurationManager.getConfigInstance();
+        if (!hystrixConfigured.getAndSet(true)) {
+            // TODO Alternative solution to support hystrix configuration only from the "globally scoped config"
+            // as opposed to deployments providing their configuration.
+            //ClassLoader extensionClassLoader = MicroProfileFaultToleranceExtension.class.getClassLoader();
+            //Config mpConfig = ConfigProvider.getConfig(extensionClassLoader);
 
-                // We need to iterate over all keys since the key names are dynamic and not known in advance
-                for (String key : mpConfig.getPropertyNames()) {
-                    if (key.startsWith("hystrix.")) {
-                        String value = mpConfig.getValue(key, String.class);
-                        MicroProfileFaultToleranceLogger.ROOT_LOGGER.debugf("Configuring Hystrix: %s=%s", key, value);
-                        configInstance.setProperty(key, value);
-                    }
+            Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+            Config mpConfig = ConfigProvider.getConfig(module.getClassLoader());
+            AbstractConfiguration configInstance = ConfigurationManager.getConfigInstance();
+
+            // We need to iterate over all keys since the key names are dynamic and not known in advance
+            for (String key : mpConfig.getPropertyNames()) {
+                if (key.startsWith("hystrix.")) {
+                    String value = mpConfig.getValue(key, String.class);
+                    MicroProfileFaultToleranceLogger.ROOT_LOGGER.debugf("Configuring Hystrix: %s=%s", key, value);
+                    configInstance.setProperty(key, value);
                 }
-
-                hystrixConfigured = true;
             }
+        } else {
+            MicroProfileFaultToleranceLogger.ROOT_LOGGER.hystrixAlreadyConfigured(deploymentUnit.getName());
         }
+
 
         // Weld Extension
         CapabilityServiceSupport support = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT);

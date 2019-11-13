@@ -44,13 +44,13 @@ public class MicroProfileFaultToleranceExtension implements Extension {
         SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MicroProfileFaultToleranceModel.CURRENT.getVersion());
 
         new MicroProfileFaultToleranceResourceDefinition().register(new ContextualSubsystemRegistration(registration, context));
-        registration.registerXMLElementWriter(new MicroProfileFaultToleranceXMLWriter());
+        registration.registerXMLElementWriter(new MicroProfileFaultToleranceParser(MicroProfileFaultToleranceSchema.CURRENT));
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         for (MicroProfileFaultToleranceSchema schema : EnumSet.allOf(MicroProfileFaultToleranceSchema.class)) {
-            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new MicroProfileFaultToleranceXMLReader(schema));
+            context.setSubsystemXmlMapping(SUBSYSTEM_NAME, schema.getNamespaceUri(), new MicroProfileFaultToleranceParser(schema));
         }
     }
 }
