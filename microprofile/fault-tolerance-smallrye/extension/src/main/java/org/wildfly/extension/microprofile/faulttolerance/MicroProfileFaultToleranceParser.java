@@ -19,26 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.extension.microprofile.faulttolerance;
 
-import javax.xml.stream.XMLStreamException;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.as.controller.PersistentResourceXMLDescription;
+import org.jboss.as.controller.PersistentResourceXMLParser;
 
 /**
- * Marshals subsystem configuration to XML.
+ * MicroProfile Fault Tolerance subsystem XML parser.
  *
  * @author Radoslav Husar
  */
-public class MicroProfileFaultToleranceXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
+public class MicroProfileFaultToleranceParser extends PersistentResourceXMLParser {
 
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(MicroProfileFaultToleranceSchema.CURRENT.getNamespaceUri(), false);
-        writer.writeEndElement();
+    private final MicroProfileFaultToleranceSchema schema;
+
+    MicroProfileFaultToleranceParser(MicroProfileFaultToleranceSchema schema) {
+        this.schema = schema;
     }
 
+    @Override
+    public PersistentResourceXMLDescription getParserDescription() {
+        return builder(MicroProfileFaultToleranceResourceDefinition.PATH, this.schema.getNamespaceUri()).build();
+    }
 }

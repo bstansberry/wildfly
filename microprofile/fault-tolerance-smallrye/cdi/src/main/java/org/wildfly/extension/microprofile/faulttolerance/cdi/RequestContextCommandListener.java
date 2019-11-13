@@ -39,13 +39,12 @@ public class RequestContextCommandListener implements CommandListener {
 
     private final RequestContext requestContext;
 
-    private final ThreadLocal<Boolean> isActivator;
+    private static final ThreadLocal<Boolean> isActivator = new ThreadLocal<>();
 
     @Inject
     public RequestContextCommandListener(@Unbound RequestContext requestContext, BeanManagerImpl beanManager) {
         this.requestContext = requestContext;
         this.beanManager = beanManager;
-        this.isActivator = new ThreadLocal<>();
     }
 
     @Override
