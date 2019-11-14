@@ -21,9 +21,11 @@
  */
 package org.wildfly.test.integration.microprofile.faulttolerance.async.requestcontext;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.PropertyPermission;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -47,7 +49,13 @@ public class AsynchronousRequestContextTest {
     public static WebArchive createTestArchive() {
         return ShrinkWrap.create(WebArchive.class, AsynchronousRequestContextTest.class.getSimpleName() + ".war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addPackage(AsynchronousRequestContextTest.class.getPackage());
+                .addPackage(AsynchronousRequestContextTest.class.getPackage())
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission("*", "read,write"),
+                        new RuntimePermission("getenv.*"),
+                        new RuntimePermission("modifyThread")
+                ), "permissions.xml")
+                ;
     }
 
     @Test
