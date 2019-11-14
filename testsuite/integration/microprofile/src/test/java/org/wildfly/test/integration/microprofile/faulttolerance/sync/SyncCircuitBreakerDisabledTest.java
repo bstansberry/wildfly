@@ -21,6 +21,7 @@
  */
 package org.wildfly.test.integration.microprofile.faulttolerance.sync;
 
+import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,6 +30,7 @@ import static org.junit.Assert.fail;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.PropertyPermission;
 import java.util.concurrent.TimeUnit;
 
 import com.netflix.config.DynamicLongProperty;
@@ -62,7 +64,13 @@ public class SyncCircuitBreakerDisabledTest {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: com.netflix.archaius.core\n"), "MANIFEST.MF")
                 .addAsManifestResource(new FileAsset(new File("src/test/resources/faulttolerance/microprofile-config.properties")), "microprofile-config.properties")
-                .addPackage(SyncCircuitBreakerDisabledTest.class.getPackage());
+                .addPackage(SyncCircuitBreakerDisabledTest.class.getPackage())
+                .addAsManifestResource(createPermissionsXmlAsset(
+                        new PropertyPermission("*", "read,write"),
+                        new RuntimePermission("getenv.*"),
+                        new RuntimePermission("modifyThread")
+                ), "permissions.xml")
+                ;
     }
 
     @Inject
