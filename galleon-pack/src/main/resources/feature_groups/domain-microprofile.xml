@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright $year Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *     http://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<feature-group-spec name="domain-microprofile" xmlns="urn:jboss:galleon:feature-group:1.0">
+
+    <feature-group name="domain-interfaces"/>
+
+    <feature spec="domain.interface">
+        <param name="interface" value="unsecure"/>
+        <param name="inet-address" value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+    </feature>
+
+    <feature spec="profile">
+        <param name="profile" value="microprofile"/>
+        <!-- layer=cloud-server -->
+        <feature-group name="undertow-elytron-security"/>
+        <!-- layer=cloud-server/cloud-profile -->
+        <!-- layer=cloud-server/cloud-profile/web-server -->
+        <feature-group name="undertow-servlet"/>
+        <!-- layer=cloud-server/cloud-profile/web-server/naming -->
+        <feature spec="subsystem.naming"/>
+        <!-- layer=cloud-server/cloud-profile/web-server/ee -->
+        <feature-group name="ee"/>
+        <!-- layer=cloud-server/cloud-profile/web-server/deployment-scanner IGNORE in domain -->
+        <!-- layer=cloud-server/cloud-profile/web-server/undertow -->
+        <feature-group name="undertow-base"/>
+        <!-- layer=cloud-server/cloud-profile/web-server/undertow/io -->
+        <feature-group name="io"/>
+        <!-- layer=cloud-server/cloud-profile/cdi -->
+        <feature spec="subsystem.bean-validation"/>
+        <feature spec="subsystem.weld"/>
+        <!-- layer=cloud-server/cloud-profile/ee-security -->
+        <feature spec="subsystem.ee-security"/>
+        <!-- layer=cloud-server/cloud-profile/jaxrs -->
+        <feature spec="subsystem.jaxrs"/>
+        <!-- layer=cloud-server/cloud-profile/jms-activemq -->
+        <feature-group name="jca"/>
+        <feature spec="subsystem.messaging-activemq"/>
+        <!-- layer=cloud-server/cloud-profile/jms-activemq/transactions -->
+        <feature-group name="transactions"/>
+        <feature spec="subsystem.ee">
+            <feature spec="subsystem.ee.context-service">
+                <param name="context-service" value="default"/>
+                <param name="use-transaction-setup-provider" value="true"/>
+            </feature>
+        </feature>
+        <!-- layer=cloud-server/cloud-profile/jms-activemq/transactions/elytron -->
+        <feature spec="subsystem.elytron">
+            <feature-group name="elytron-common"/>
+            <feature-group name="elytron-app"/>
+        </feature>
+        <feature-group name="standalone-elytron"/>
+        <!-- layer=cloud-server/cloud-profile/jpa -->
+        <feature-group name="jpa"/>
+        <feature-group name="infinispan-local-hibernate"/>
+        <!-- layer=cloud-server/cloud-profile/jpa/datasources -->
+        <feature-group name="jca"/>
+        <feature spec="subsystem.datasources"/>
+        <!-- layer=cloud-server/cloud-profile/observability -->
+        <feature spec="subsystem.microprofile-config-smallrye"/>
+        <!-- No access to server management interface, so don't use metrics
+        <feature-group name="metrics"/>
+        -->
+        <feature spec="subsystem.microprofile-opentracing-smallrye"/>
+        <!-- No access to server management interface, so don't use health
+        <feature-group name="health"/>
+        -->
+        <!-- layer=cloud-server/cloud-profile/resource-adapters -->
+        <feature spec="subsystem.resource-adapters"/>
+        <!-- layer=cloud-server/core-server -->
+        <!-- layer=cloud-server/core-server/jmx-remoting -->
+        <feature-group name="jmx-base"/>
+        <feature-group name="jmx-connector"/>
+        <!-- layer=cloud-server/core-server/logging -->
+        <feature-group name="logging"/>
+        <!-- layer=cloud-server/core-server/core-management -->
+        <feature spec="subsystem.core-management"/>
+        <!-- layer=cloud-server/core-server/request-controller -->
+        <feature spec="subsystem.request-controller"/>
+        <!-- layer=cloud-server/core-server/security-manager -->
+        <feature-group name="security-manager"/>
+        <!-- layer=cloud-server/core-tools N/A -->
+
+        <!-- layer=microprofile -->
+        <feature spec="subsystem.microprofile-fault-tolerance-smallrye"/>
+    </feature>
+
+    <feature spec="domain.system-property">
+        <param name="system-property" value="java.net.preferIPv4Stack"/>
+        <param name="value" value="true"/>
+    </feature>
+    <feature-group name="access-control"/>
+    <feature-group name="domain-host-excludes"/>
+
+</feature-group-spec>
