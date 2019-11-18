@@ -23,6 +23,9 @@
     <feature-group name="domain-load-balancer">
         <exclude spec="domain.server-group"/>
     </feature-group>
+    <feature-group name="domain-microprofile">
+        <exclude spec="domain.server-group"/>
+    </feature-group>
 
     <feature spec="domain.server-group">
         <param name="server-group" value="main-server-group"/>
