@@ -55,6 +55,7 @@
         <module>batch-jberet</module>
         <module>bean-validation</module>
         <module>build</module>
+        <module>build-ee</module>
         <module>build-legacy</module>
         <module>client/properties</module>
         <module>client/shade</module>
@@ -63,6 +64,7 @@
         <module>connector</module>
         <module>datasources-agroal</module>
         <module>dist</module>
+        <module>dist-ee</module>
         <module>dist-legacy</module>
         <module>ee</module>
         <module>ee-galleon-pack</module>
@@ -595,6 +597,13 @@
 
             <dependency>
                 <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-build-ee</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-client-all</artifactId>
                 <version>${project.version}</version>
                 <exclusions>
@@ -821,6 +830,13 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>wildfly-dist</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>wildfly-dist-ee</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
             </dependency>
