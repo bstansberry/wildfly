@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.domain.mixed.eap720;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.operations.common.Util.createRemoveOperation;
 
@@ -48,10 +50,15 @@ public class DomainAdjuster720 extends DomainAdjuster {
     protected List<ModelNode> adjustForVersion(final DomainClient client, PathAddress profileAddress, boolean withMasterServers) throws Exception {
         final List<ModelNode> list = new ArrayList<>();
 
+        adjustMicroProfile(list);
         adjustUndertow(profileAddress.append(SUBSYSTEM, "undertow"), list);
         list.addAll(removeDistributableWeb(profileAddress.append(SUBSYSTEM, "distributable-web")));
 
         return list;
+    }
+
+    private void adjustMicroProfile(List<ModelNode> ops) {
+        ops.add(Util.getEmptyOperation(REMOVE, PathAddress.pathAddress(PROFILE, "microprofile").toModelNode()));
     }
 
     private void adjustUndertow(PathAddress undertow, List<ModelNode> ops) {
@@ -62,7 +69,7 @@ public class DomainAdjuster720 extends DomainAdjuster {
         final PathAddress httpsListener = undertow
                 .append("server", "default-server")
                 .append("https-listener", "https");
-        ops.add(Util.getEmptyOperation(ModelDescriptionConstants.REMOVE, httpsListener.toModelNode()));
+        ops.add(Util.getEmptyOperation(REMOVE, httpsListener.toModelNode()));
     }
 
     private static Collection<? extends ModelNode> removeDistributableWeb(final PathAddress subsystem) {
