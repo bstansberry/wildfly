@@ -148,16 +148,6 @@
             <artifactId>stax-ex</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.picketlink</groupId>
-            <artifactId>picketlink-federation</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.picketlink.distribution</groupId>
-            <artifactId>picketlink-wildfly8</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <profiles>
@@ -210,17 +200,6 @@
                                 </goals>
                                 <configuration>
                                     <mainClass>org.jboss.as.test.integration.ws.wsse.GenerateJKSAndPropertiesFiles</mainClass>
-                                    <classpathScope>test</classpathScope>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-sts_keystore-file</id>
-                                <phase>test-compile</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <configuration>
-                                    <mainClass>org.jboss.as.test.integration.ws.authentication.policy.GenerateSTSKeystore</mainClass>
                                     <classpathScope>test</classpathScope>
                                 </configuration>
                             </execution>
