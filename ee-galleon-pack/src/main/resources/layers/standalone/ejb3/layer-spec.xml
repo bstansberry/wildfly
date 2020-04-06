@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb3">
+    <!-- Aggregates EJB3 functionality, excluding ejb-iiop. -->
+    <dependencies>
+        <layer name="ejb3-lite"/>
+        <!-- The various dependencies beyond ejb3-lite are optional so users can exclude
+             the layers for bits they don't want. The ejb-lite layer also allows excluding its bits -->
+        <layer name="ejb-mdb" optional="true"/>
+        <layer name="ejb-remote" optional="true"/>
+        <layer name="ejb-remote-client" optional="true"/>
+    </dependencies>
+</layer-spec>

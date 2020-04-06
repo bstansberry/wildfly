@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-async">
+    <!-- Asynchronous EJB invocation support -->
+    <dependencies>
+        <layer name="ejb-thread-pool"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3.service.async">
+        <param name="thread-pool-name" value="default"/>
+    </feature>
+</layer-spec>

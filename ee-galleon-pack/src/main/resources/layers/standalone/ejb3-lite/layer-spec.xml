@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb3-lite">
+    <!-- Aggregates the functionality roughly associated with the EJB Lite concept.
+         Note that the ejb-timers layer provides persistent timers which goes beyond EJB Lite requirements. -->
+    <dependencies>
+        <!-- The various dependencies are optional so users can exclude the layers for bits they don't want. -->
+        <layer name="ejb-stateless" optional="true"/>
+        <layer name="ejb-stateful" optional="true"/>
+        <layer name="ejb-timers" optional="true"/>
+    </dependencies>
+</layer-spec>

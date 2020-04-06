@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-remote-client">
+    <!-- Provides sufficient EJB3 integration to allow an application to function
+         as a client to a remote EJB application.
+         TODO Is this a valid concept? -->
+    <dependencies>
+        <layer name="ejb-base"/>
+    </dependencies>
+    <feature spec="subsystem.elytron.permission-set.permissions">
+        <param name="subsystem" value="elytron"/>
+        <param name="permission-set" value="default-permissions"/>
+        <param name="module" value="org.jboss.ejb-client"/>
+        <param name="class-name" value="org.jboss.ejb.client.RemoteEJBPermission"/>
+    </feature>
+    <!-- TODO some packages (i.e. JBoss Modules modules) that are optional
+         for the subsystem in general but which the subsystem can expose to apps if present
+         thus letting them act as a client? -->
+</layer-spec>

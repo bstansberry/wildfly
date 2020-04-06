@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-remote">
+    <dependencies>
+        <layer name="ejb-thread-pool"/>
+        <layer name="remoting"/>
+        <!-- TODO add optional deps on ejb-stateless and ejb-stateful so users can just use this
+             by itself? The downside is to get remote SLSB only you'd have to exclude ejb-stateful. -->
+    </dependencies>
+    <feature spec="subsystem.discovery"/>
+    <feature spec="subsystem.ejb3.service.remote">
+        <param name="connector-ref" value="http-remoting-connector"/>
+        <param name="thread-pool-name" value="default"/>
+        <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
+            <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>
+            <param name="value" value="1234"/>
+            <param name="type" value="remoting"/>
+        </feature>
+    </feature>
+</layer-spec>

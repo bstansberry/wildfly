@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-thread-pool">
+    <!-- Provides the standard EJB subsystem thread pool used by async and remote EJB -->
+    <dependencies>
+        <layer name="ejb-base"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3.thread-pool">
+        <param name="thread-pool" value="default"/>
+        <param name="max-threads" value="10"/>
+        <feature spec="subsystem.ejb3.thread-pool.keepalive-time">
+            <param name="time" value="60"/>
+            <param name="unit" value="SECONDS"/>
+        </feature>
+    </feature>
+</layer-spec>

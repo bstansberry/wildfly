@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-stateful">
+    <!-- Support for local Stateful EJBs -->
+    <dependencies>
+        <layer name="ejb-base"/>
+        <!-- For ease of OOTB use, provide async but let users disable by excluding the layer -->
+        <layer name="ejb-async" optional="true"/>
+        <!-- SFSB requires a cache, so we depend on a layer for local infinispan caching.
+             Users can exclude this layer and include ejb-stateful-dist-cache to get
+             a distributed cache.  But some cache must be configured. -->
+        <layer name="ejb-stateful-local-cache" optional="true"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3">
+        <param name="default-sfsb-cache" value="simple"/>
+        <param name="default-sfsb-passivation-disabled-cache" value="simple"/>
+        <param name="default-stateful-bean-access-timeout" value="5000"/>
+        <feature spec="subsystem.ejb3.cache">
+            <param name="cache" value="simple"/>
+        </feature>
+        <feature spec="subsystem.ejb3.cache">
+            <param name="cache" value="distributable"/>
+            <param name="passivation-store" value="infinispan"/>
+            <param name="aliases" value="[passivating,clustered]"/>
+        </feature>
+        <feature spec="subsystem.ejb3.passivation-store">
+            <param name="passivation-store" value="infinispan"/>
+            <param name="cache-container" value="ejb"/>
+            <param name="max-size" value="10000"/>
+        </feature>
+    </feature>
+</layer-spec>

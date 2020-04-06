@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-stateless">
+    <!-- Allows local Stateless and Singleton EJBs -->
+    <dependencies>
+        <layer name="ejb-base"/>
+        <!-- For ease of OOTB use, provide async but let users disable by excluding the layer -->
+        <layer name="ejb-async" optional="true"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3">
+        <param name="default-slsb-instance-pool" value="slsb-strict-max-pool"/>
+        <param name="default-singleton-bean-access-timeout" value="5000"/>
+        <param name="default-missing-method-permissions-deny-access" value="true"/>
+        <feature spec="subsystem.ejb3.strict-max-bean-instance-pool">
+            <param name="strict-max-bean-instance-pool" value="slsb-strict-max-pool"/>
+            <param name="derive-size" value="from-worker-pools"/>
+            <param name="timeout" value="5"/>
+            <param name="timeout-unit" value="MINUTES"/>
+        </feature>
+    </feature>
+</layer-spec>

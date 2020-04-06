@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-base">
+    <!-- Foundational layer for EJB support. -->
+    <dependencies>
+        <layer name="transactions"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3">
+        <param name="default-security-domain" value="other"/>
+        <param name="log-system-exceptions" value="true"/>
+        <param name="statistics-enabled" value="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+    </feature>
+</layer-spec>

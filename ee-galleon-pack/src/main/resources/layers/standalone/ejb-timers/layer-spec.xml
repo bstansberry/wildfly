@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-timers">
+    <dependencies>
+        <layer name="ejb-thread-pool"/>
+    </dependencies>
+    <feature spec="subsystem.ejb3.service.timer-service">
+        <param name="default-data-store" value="default-file-store"/>
+        <param name="thread-pool-name" value="default"/>
+        <feature spec="subsystem.ejb3.service.timer-service.file-data-store">
+            <param name="file-data-store" value="default-file-store"/>
+            <param name="path" value="timer-service-data" />
+            <param name="relative-to" value="jboss.server.data.dir" />
+        </feature>
+    </feature>
+</layer-spec>

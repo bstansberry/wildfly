@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-iiop">
+    <!-- Allows EJB interoperability using IIOP -->
+    <dependencies>
+        <layer name="ejb-base"/>
+        <layer name="iiop-openjdk"/>
+    </dependencies>
+
+    <feature spec="subsystem.ejb3.service.iiop">
+        <param name="enable-by-default" value="false"/>
+        <param name="use-qualified-name" value="false"/>
+    </feature>
+</layer-spec>
