@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="iiop-openjdk">
+    <dependencies>
+        <layer name="naming"/>
+    </dependencies>
+    <feature-group name="iiop-openjdk"/>
+    <!-- IIOP doesn't need the public interface but the socket-binding group
+         must declare a default-interface and we want to specify 'public' so
+         there is no conflict when this layer is combined with others.
+         So declare the 'public' interface here -->
+    <feature-group name="public-interface"/>
+    <feature spec="interface">
+        <param name="interface" value="unsecure"/>
+        <param name="inet-address" value="${jboss.bind.address.unsecure:127.0.0.1}"/>
+    </feature>
+    <feature spec="socket-binding-group">
+        <param name="socket-binding-group" value="standard-sockets" />
+        <param name="default-interface" value="public"/>
+        <feature-group name="iiop-sockets"/>
+    </feature>
+</layer-spec>
