@@ -122,8 +122,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     static final SimpleAttributeDefinition ENABLE_STATISTICS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setDeprecated(ModelVersion.create(5))
                     .setFlags(AttributeAccess.Flag.ALIAS)
+                    .setDeprecated(ModelVersion.create(5))
                     .build();
 
     static final SimpleAttributeDefinition STATISTICS_ENABLED =

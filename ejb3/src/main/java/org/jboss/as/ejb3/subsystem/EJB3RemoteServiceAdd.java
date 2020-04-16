@@ -78,6 +78,14 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         installRuntimeServices(context, model);
     }
 
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.validateAndSet(operation, model);
+        EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
+        EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
+        EJB3RemoteResourceDefinition.EXECUTE_IN_WORKER.validateAndSet(operation, model);
+    }
+
     void installRuntimeServices(final OperationContext context, final ModelNode model) throws OperationFailedException {
         final String clientMappingsClusterName = EJB3RemoteResourceDefinition.CLIENT_MAPPINGS_CLUSTER_NAME.resolveModelAttribute(context, model).asString();
         final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
