@@ -12,6 +12,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_1_3_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_4_0_0;
 import static org.jboss.as.ejb3.subsystem.EJB3Model.VERSION_5_0_0;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STATISTICS_ENABLED;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
 
 import java.io.IOException;
@@ -464,6 +466,13 @@ public class Ejb3TransformersTestCase extends AbstractSubsystemBaseTest {
             }
             if (modelNode.hasDefined(STRICT_MAX_BEAN_INSTANCE_POOL) && modelNode.get(STRICT_MAX_BEAN_INSTANCE_POOL).hasDefined(SLSB_STRICT_MAX_POOL)) {
                 modelNode.get(STRICT_MAX_BEAN_INSTANCE_POOL, SLSB_STRICT_MAX_POOL, StrictMaxPoolResourceDefinition.DERIVE_SIZE.getName()).set(new ModelNode());
+            }
+
+            if (modelNode.hasDefined(STATISTICS_ENABLED) && modelNode.hasDefined(ENABLE_STATISTICS)
+                    && modelNode.get(STATISTICS_ENABLED).equals(modelNode.get(ENABLE_STATISTICS))) {
+                // In a legacy kernel before WFCORE-4183 a read-resource result incorrectly includes
+                // a value for both an attribute and its alias. Correct that
+                modelNode.get(ENABLE_STATISTICS).set(new ModelNode());
             }
             return modelNode;
 

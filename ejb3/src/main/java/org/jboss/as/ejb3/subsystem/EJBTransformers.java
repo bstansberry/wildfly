@@ -40,7 +40,6 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.EXECUTE_IN_WORKER;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REFRESH_INTERVAL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STATISTICS_ENABLED;
 import static org.jboss.as.ejb3.subsystem.StrictMaxPoolResourceDefinition.DERIVE_SIZE;
 
 import java.util.Arrays;
@@ -264,11 +263,6 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
                 .addRejectCheck(RejectAttributeChecker.DEFINED, PoolAttributeDefinitions.CORE_THREADS)
                 .end();
 
-        // enable-statistics is an alias but needs help initializing itself in the initial model transfer
-        subsystemBuilder.getAttributeBuilder()
-                .setValueConverter(ENABLE_STATISTICS_CONVERTER, EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS)
-                .end();
-
     }
 
     /*
@@ -409,21 +403,6 @@ public class EJBTransformers implements ExtensionTransformerRegistration {
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
-
-    private static AttributeConverter ENABLE_STATISTICS_CONVERTER = new AttributeConverter.DefaultAttributeConverter() {
-        @Override
-        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-
-            if (model.hasDefined(STATISTICS_ENABLED)) {
-                ModelNode statisticsEnabled = model.get(STATISTICS_ENABLED);
-
-                if (statisticsEnabled.isDefined()) {
-                    attributeValue.set(statisticsEnabled);
-                }
-            }
-        }
-    };
 }
 
 
