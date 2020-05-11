@@ -32,6 +32,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -90,10 +91,26 @@ public class LocationService implements Service<LocationService>, FilterLocation
     }
 
     protected static HttpHandler configureHandlerChain(HttpHandler rootHandler, List<UndertowFilter> filters) {
-        filters.sort((o1, o2) -> o1.getPriority() >= o2.getPriority() ? 1 : -1);
-        Collections.reverse(filters); //handler chain goes last first
+
+        int size = filters.size();
+        // Do the simple thing for the simple cases where there's no ordering involved
+        if (size == 0) {
+            return rootHandler;
+        } else if (size == 1) {
+            return filters.get(0).wrap(rootHandler);
+        }
+
+        // Order the filters by priority but for any with equal priority the one
+        // that came first in the 'filters' input list gets executed first
+        List<UndertowFilter> wrappers = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            wrappers.add(new FilterRefWrapper(filters.get(i), size, i));
+        }
+        wrappers.sort((o1, o2) -> Integer.compare(o1.getPriority(), o2.getPriority()));
+        Collections.reverse(wrappers); //handler chain goes last first
+
         HttpHandler handler = rootHandler;
-        for (UndertowFilter filter : filters) {
+        for (UndertowFilter filter : wrappers) {
             handler = filter.wrap(handler);
         }
 
@@ -126,6 +143,28 @@ public class LocationService implements Service<LocationService>, FilterLocation
                 }
             }
             root.handleRequest(exchange);
+        }
+    }
+
+    private static class FilterRefWrapper implements UndertowFilter {
+        private final UndertowFilter wrapped;
+        private final int spacer;
+        private final int ordinal;
+
+        private FilterRefWrapper(UndertowFilter wrapped, int spacer, int ordinal) {
+            this.wrapped = wrapped;
+            this.spacer = spacer;
+            this.ordinal = ordinal;
+        }
+
+        @Override
+        public int getPriority() {
+            return (wrapped.getPriority() * spacer) + ordinal;
+        }
+
+        @Override
+        public HttpHandler wrap(HttpHandler handler) {
+            return wrapped.wrap(handler);
         }
     }
 }
