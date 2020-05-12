@@ -228,7 +228,7 @@
         <version.asciidoctor.plugin>1.5.6</version.asciidoctor.plugin>
         <version.help.plugin>2.2</version.help.plugin>
         <version.jacoco.plugin>0.8.2</version.jacoco.plugin><!-- TODO property does not follow verion.groupId format -->
-        <version.org.jboss.galleon>4.2.4.Final</version.org.jboss.galleon>
+        <version.org.jboss.galleon>4.2.5.Final</version.org.jboss.galleon>
         <version.org.wildfly.build-tools>1.2.12.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.common>1.5.2.Final</version.org.wildfly.common>
@@ -271,7 +271,7 @@
         <version.com.squareup.okhttp3>3.9.0</version.com.squareup.okhttp3>
         <version.com.squareup.okio>1.13.0</version.com.squareup.okio>
         <version.com.sun.activation.jakarta.activation>1.2.1</version.com.sun.activation.jakarta.activation>
-        <version.com.sun.faces>2.3.9.SP08</version.com.sun.faces>
+        <version.com.sun.faces>2.3.9.SP09</version.com.sun.faces>
         <version.com.sun.istack>3.0.10</version.com.sun.istack>
         <version.com.sun.xml.fastinfoset>1.2.13</version.com.sun.xml.fastinfoset>
         <version.commons-beanutils>1.9.4</version.commons-beanutils>
@@ -300,7 +300,7 @@
         <version.io.smallrye.smallrye-health>2.2.0</version.io.smallrye.smallrye-health>
         <version.io.smallrye.smallrye-jwt>2.0.13</version.io.smallrye.smallrye-jwt>
         <version.io.smallrye.smallrye-metrics>2.4.0</version.io.smallrye.smallrye-metrics>
-        <version.io.smallrye.open-api>1.2.1</version.io.smallrye.open-api>
+        <version.io.smallrye.open-api>1.2.3</version.io.smallrye.open-api>
         <version.io.smallrye.opentracing>1.3.4</version.io.smallrye.opentracing>
         <version.io.undertow.jastow>2.0.8.Final</version.io.undertow.jastow>
         <version.io.undertow.js>1.0.2.Final</version.io.undertow.js>
@@ -345,7 +345,7 @@
         <version.org.cryptacular>1.2.4</version.org.cryptacular>
         <version.org.eclipse.jdt.core.compiler>4.6.1</version.org.eclipse.jdt.core.compiler>
         <version.org.eclipse.microprofile.config.api>1.4</version.org.eclipse.microprofile.config.api>
-        <version.org.eclipse.microprofile.fault-tolerance.api>2.1</version.org.eclipse.microprofile.fault-tolerance.api>
+        <version.org.eclipse.microprofile.fault-tolerance.api>2.1.1-RC1</version.org.eclipse.microprofile.fault-tolerance.api>
         <version.org.eclipse.microprofile.health.api>2.2</version.org.eclipse.microprofile.health.api>
         <version.org.eclipse.microprofile.jwt.api>1.1.1</version.org.eclipse.microprofile.jwt.api>
         <version.org.eclipse.microprofile.metrics.api>2.3</version.org.eclipse.microprofile.metrics.api>
@@ -357,17 +357,17 @@
         <version.org.glassfish.jakarta.el>3.0.3.jbossorg-2</version.org.glassfish.jakarta.el>
         <version.org.glassfish.jakarta.enterprise.concurrent>1.1.1</version.org.glassfish.jakarta.enterprise.concurrent>
         <version.org.glassfish.soteria>1.0.1-jbossorg-1</version.org.glassfish.soteria>
-        <version.org.harmcrest>1.3</version.org.harmcrest>
+        <version.org.hamcrest>1.3</version.org.hamcrest>
         <version.org.hamcrest.java-hamcrest>2.0.0.0</version.org.hamcrest.java-hamcrest>
-        <version.org.hibernate>5.3.16.Final</version.org.hibernate>
+        <version.org.hibernate>5.3.17.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>5.0.5.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.search>5.10.7.Final</version.org.hibernate.search>
-        <version.org.hibernate.validator>6.0.19.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>6.0.20.Final</version.org.hibernate.validator>
         <version.org.hornetq>2.4.7.Final</version.org.hornetq>
-        <version.org.infinispan>9.4.18.Final</version.org.infinispan>
+        <version.org.infinispan>9.4.19.Final</version.org.infinispan>
         <version.org.jasypt>1.9.3</version.org.jasypt>
         <version.org.javassist>3.23.2-GA</version.org.javassist>
-        <version.org.jberet>1.3.5.Final</version.org.jberet>
+        <version.org.jberet>1.3.6.Final</version.org.jberet>
         <version.org.jboss.activemq.artemis.integration>1.0.2</version.org.jboss.activemq.artemis.integration>
         <version.org.jboss.arquillian.core>1.4.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.common.jboss-common-beans>2.0.1.Final</version.org.jboss.common.jboss-common-beans>
@@ -429,6 +429,8 @@
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
         <version.org.opensaml.opensaml>3.3.1</version.org.opensaml.opensaml>
         <version.org.ow2.asm>7.1</version.org.ow2.asm>
+		<!-- WildFly overrides the picketbox version from core to use MRRC variants -->
+		<version.org.picketbox>5.0.3.Final-redhat-00005</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.5.SP12-redhat-00009</version.org.picketlink>
         <version.org.picketlink.bindings>2.5.5.SP12-redhat-00012</version.org.picketlink.bindings>
@@ -436,11 +438,11 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testng>6.14.3</version.org.testng>
         <version.org.wildfly.arquillian>2.2.0.Final</version.org.wildfly.arquillian>
-        <version.org.wildfly.core>12.0.0.Beta2-SNAPSHOT</version.org.wildfly.core>
+        <version.org.wildfly.core>12.0.0.Beta3-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.extras.creaper>1.6.1</version.org.wildfly.extras.creaper>
         <version.org.wildfly.http-client>1.0.20.Final</version.org.wildfly.http-client>
         <version.org.wildfly.naming-client>1.0.12.Final</version.org.wildfly.naming-client>
-        <version.org.wildfly.transaction.client>1.1.10.Final</version.org.wildfly.transaction.client>
+        <version.org.wildfly.transaction.client>1.1.11.Final</version.org.wildfly.transaction.client>
         <version.org.yaml.snakeyaml>1.26</version.org.yaml.snakeyaml>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.sun.jaxb>2.3.3-b02</version.sun.jaxb>
@@ -462,6 +464,50 @@
                 <version>${version.org.wildfly.core}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+			
+			<!-- Override WildFly Core's picketbox version -->
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox</artifactId>
+                <version>${version.org.picketbox}</version>
+                <exclusions>
+                    <exclusion>
+                         <groupId>org.picketbox</groupId>
+                         <artifactId>jboss-security-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.picketbox</groupId>
+                         <artifactId>jbosssx</artifactId>
+                    </exclusion>
+                    <exclusion>
+                         <groupId>org.picketbox</groupId>
+                         <artifactId>picketbox-bare</artifactId>
+                    </exclusion>
+                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-infinispan</artifactId>
+                <version>${version.org.picketbox}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>picketbox-spi-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.picketbox</groupId>
+                        <artifactId>jbosssx-bare</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-spi</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -2045,6 +2091,12 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-amqp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -2359,6 +2411,12 @@
                 <groupId>org.apache.activemq</groupId>
                 <artifactId>artemis-stomp-protocol</artifactId>
                 <version>${version.org.apache.activemq.artemis}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5670,7 +5728,7 @@
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-all</artifactId>
-                <version>${version.org.harmcrest}</version>
+                <version>${version.org.hamcrest}</version>
                 <scope>test</scope>
             </dependency>
 
