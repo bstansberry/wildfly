@@ -8,7 +8,7 @@ PROGNAME=`basename $0`
 DIRNAME=`dirname $0`
 
 TARGET=$DIRNAME/target
-PROJECT_ROOT_DIR="$DIRNAME/../..";
+PROJECT_ROOT_DIR="$DIRNAME/../../..";
 
 AS_BUILT_DIR=`ls -1 -d $PROJECT_ROOT_DIR/build/target/jboss-as-* | tail -1`  # Latest built AS in target/
 

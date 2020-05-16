@@ -45,6 +45,7 @@
     <properties>
         <project.version>${project.version}</project.version>
         <license.directory>${project.build.directory}/${project.build.finalName}/content/docs/licenses</license.directory>
+        <feature-pack.resources.directory>${basedir}/../common/src/main/resources</feature-pack.resources.directory>
     </properties>
 
     <build>
@@ -53,7 +54,42 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <executions></executions>
+                <executions>
+                    <execution>
+                        <id>copy-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${feature-pack.resources.directory}</directory>
+                                    <includes>
+                                        <include>content/**</include>
+                                        <include>modules/**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.wildfly.build</groupId>
@@ -67,6 +103,7 @@
                         <phase>compile</phase>
                         <configuration>
                             <config-file>feature-pack-build.xml</config-file>
+                            <resources-dir>target/resources</resources-dir>
                         </configuration>
                     </execution>
                 </executions>
@@ -3584,7 +3621,7 @@
                                 <phase>prepare-package</phase><!-- TODO why not generate-resources phase?-->
                                 <configuration>
                                     <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                                    <licensesConfigFile>${project.basedir}/src/license/full-feature-pack-licenses.xml</licensesConfigFile>
+                                    <licensesConfigFile>../common/src/license/full-feature-pack-licenses.xml</licensesConfigFile>
                                     <licensesOutputFile>${license.directory}/full-feature-pack-licenses.xml</licensesOutputFile>
                                     <excludedArtifacts>infinispan-hibernate-cache-v51|jboss-ejb-client-legacy</excludedArtifacts>
                                 </configuration>
@@ -3622,7 +3659,7 @@
                                             <includes>
                                                 <include>*licenses.xml</include>
                                             </includes>
-                                            <stylesheet>src/main/resources/content/docs/licenses/licenses.xsl</stylesheet>
+                                            <stylesheet>${project.build.directory}/resources/content/docs/licenses/licenses.xsl</stylesheet>
                                             <outputDir>${license.directory}</outputDir>
                                             <fileMappers>
                                                 <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">

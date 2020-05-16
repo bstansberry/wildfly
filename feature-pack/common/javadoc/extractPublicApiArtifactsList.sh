@@ -4,7 +4,7 @@
 PROGNAME=`basename $0`
 DIRNAME=`dirname $0`
 TARGET=$DIRNAME/target
-PROJECT_ROOT_DIR="$DIRNAME/../..";
+PROJECT_ROOT_DIR="$DIRNAME/../../..";
 function error()  { echo    "$@" 1>&2; }
 function errore() { echo -e "$@" 1>&2; }
 
