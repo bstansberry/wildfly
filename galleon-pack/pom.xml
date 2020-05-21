@@ -38,9 +38,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-galleon-pack</artifactId>
+    <artifactId>wildfly-galleon-pack-src</artifactId>
 
-    <name>WildFly: Galleon Pack</name>
+    <name>WildFly: Galleon Pack Source Artifact</name>
+    <description>Provides source content for production of the wildfly Galleon feature pack</description>
     <packaging>pom</packaging>
 
     <properties>
@@ -48,12 +49,18 @@
         <feature-pack.license.directory>${basedir}/src/license</feature-pack.license.directory>
     </properties>
 
+    <modules>
+        <module>feature-pack</module>
+    </modules>
+
     <build>
         <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
+                <inherited>false</inherited>
                 <executions>
                     <execution>
                         <id>copy-resources</id>
@@ -75,6 +82,7 @@
             <plugin>
                 <groupId>org.wildfly.maven.plugins</groupId>
                 <artifactId>licenses-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
                 <inherited>false</inherited>
                 <executions>
                     <execution>
@@ -93,21 +101,27 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
+                <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>feature-pack-build</id>
+                        <id>assemble</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>build-feature-pack</goal>
+                            <goal>single</goal>
                         </goals>
-                        <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>${full.dist.product.release.name}</release-name>
-                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
-                            <task-properties>
-                                <product.release.version>${full.dist.product.release.version}</product.release.version>
-                            </task-properties>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                            <recompressZippedFiles>true</recompressZippedFiles>
+                            <finalName>${project.build.finalName}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <workDirectory>${project.build.directory}/assembly/work</workDirectory>
+                            <tarLongFileMode>gnu</tarLongFileMode>
                         </configuration>
                     </execution>
                 </executions>
@@ -166,7 +180,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -178,7 +192,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -190,7 +204,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -202,7 +216,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -214,7 +228,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -226,7 +240,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -238,7 +252,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -250,7 +264,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -262,7 +276,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -274,7 +288,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -286,7 +300,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -298,7 +312,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -310,7 +324,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -322,7 +336,7 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
 
@@ -447,6 +461,8 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${version.javadoc.plugin}</version>
+                        <!-- Don't execute in child 'feature-pack' module!-->
+                        <inherited>false</inherited>
                         <executions>
                             <execution>
                                 <id>javadocs-dist</id>

@@ -37,9 +37,10 @@
         <version>20.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-servlet-galleon-pack</artifactId>
+    <artifactId>wildfly-servlet-galleon-pack-src</artifactId>
 
-    <name>WildFly: Servlet Galleon Pack</name>
+    <name>WildFly: Servlet Galleon Pack Source Artifact</name>
+    <description>Provides source content for production of the wildfly-servlet Galleon feature pack</description>
     <packaging>pom</packaging>
 
     <properties>
@@ -47,6 +48,10 @@
         <feature-pack.resources.directory>${basedir}/../servlet-feature-pack/src/main/resources</feature-pack.resources.directory>
         <feature-pack.license.directory>${basedir}/../servlet-feature-pack/src/license</feature-pack.license.directory>
     </properties>
+
+    <modules>
+        <module>feature-pack</module>
+    </modules>
 
     <dependencies>
 
@@ -75,7 +80,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -98,7 +103,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -110,7 +115,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -122,61 +127,61 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.sun.activation</groupId>
             <artifactId>jakarta.activation</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>jakarta.enterprise</groupId>
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jdt.core.compiler</groupId>
             <artifactId>ecj</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.enterprise.concurrent</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -188,7 +193,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -200,7 +205,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -212,73 +217,73 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-impl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-compat</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.common</groupId>
             <artifactId>jboss-common-beans</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.annotation</groupId>
             <artifactId>jboss-annotations-api_1.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
             <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.el</groupId>
             <artifactId>jboss-el-api_3.0_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_4.0_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
             <artifactId>jboss-jsp-api_2.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.websocket</groupId>
             <artifactId>jboss-websocket-api_1.1_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -290,7 +295,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -302,7 +307,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -314,7 +319,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -326,7 +331,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -338,7 +343,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -350,7 +355,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -362,7 +367,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -374,7 +379,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -386,7 +391,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -398,7 +403,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -410,7 +415,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -422,7 +427,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -434,7 +439,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -446,7 +451,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -458,7 +463,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -470,7 +475,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -482,7 +487,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -494,7 +499,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -506,19 +511,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>serializer</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
     </dependencies>
@@ -529,6 +534,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
+                <inherited>false</inherited>
                 <executions>
                      <execution>
                         <id>copy-resources</id>
@@ -569,6 +576,7 @@
             <plugin>
                 <groupId>org.wildfly.maven.plugins</groupId>
                 <artifactId>licenses-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
                 <inherited>false</inherited>
                 <executions>
                     <execution>
@@ -586,23 +594,28 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
+                <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>feature-pack-build</id>
+                        <id>assemble</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>build-feature-pack</goal>
+                            <goal>single</goal>
                         </goals>
-                        <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>${servlet.dist.product.release.name}</release-name>
-                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
-                            <task-properties>
-                                <product.release.version>${ee.dist.product.release.version}</product.release.version>
-                            </task-properties>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                            <recompressZippedFiles>true</recompressZippedFiles>
+                            <finalName>${project.build.finalName}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <workDirectory>${project.build.directory}/assembly/work</workDirectory>
+                            <tarLongFileMode>gnu</tarLongFileMode>
                         </configuration>
                     </execution>
                 </executions>
@@ -696,6 +709,8 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${version.javadoc.plugin}</version>
+                        <!-- Don't execute in child 'feature-pack' module!-->
+                        <inherited>false</inherited>
                         <executions>
                             <execution>
                                 <id>javadocs-dist</id>

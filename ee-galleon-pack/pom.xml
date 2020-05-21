@@ -37,9 +37,10 @@
         <version>20.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-galleon-pack</artifactId>
+    <artifactId>wildfly-ee-galleon-pack-src</artifactId>
 
-    <name>WildFly: EE Full Galleon Pack</name>
+    <name>WildFly: EE Full Galleon Pack Source Artifact</name>
+    <description>Provides source content for production of the wildfly-ee Galleon feature pack</description>
     <packaging>pom</packaging>
 
     <properties>
@@ -48,12 +49,18 @@
         <feature-pack.license.directory>${basedir}/../feature-pack/src/license</feature-pack.license.directory>
     </properties>
 
+    <modules>
+        <module>feature-pack</module>
+    </modules>
+
     <build>
         <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
+                <inherited>false</inherited>
                 <executions>
                     <execution>
                         <id>copy-resources</id>
@@ -94,6 +101,7 @@
             <plugin>
                 <groupId>org.wildfly.maven.plugins</groupId>
                 <artifactId>licenses-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
                 <inherited>false</inherited>
                 <executions>
                     <execution>
@@ -112,21 +120,27 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.wildfly.galleon-plugins</groupId>
-                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <!-- Don't execute in child 'feature-pack' module!-->
+                <inherited>false</inherited>
                 <executions>
                     <execution>
-                        <id>feature-pack-build</id>
+                        <id>assemble</id>
+                        <phase>package</phase>
                         <goals>
-                            <goal>build-feature-pack</goal>
+                            <goal>single</goal>
                         </goals>
-                        <phase>prepare-package</phase>
                         <configuration>
-                            <release-name>${ee.dist.product.release.name}</release-name>
-                            <fork-embedded>${galleon.fork.embedded}</fork-embedded>
-                            <task-properties>
-                                <product.release.version>${ee.dist.product.release.version}</product.release.version>
-                            </task-properties>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                            <recompressZippedFiles>true</recompressZippedFiles>
+                            <finalName>${project.build.finalName}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <workDirectory>${project.build.directory}/assembly/work</workDirectory>
+                            <tarLongFileMode>gnu</tarLongFileMode>
                         </configuration>
                     </execution>
                 </executions>
@@ -173,7 +187,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -185,7 +199,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -197,70 +211,70 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
 
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>restat-util</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-util</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml</groupId>
             <artifactId>classmate</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-base</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-jaxb-annotations</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
               <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -272,23 +286,23 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind.external</groupId>
             <artifactId>relaxng-datatype</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>btf</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -300,7 +314,7 @@
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>jackson-coreutils</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -312,13 +326,13 @@
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>json-patch</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.github.fge</groupId>
             <artifactId>msg-simple</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -330,55 +344,55 @@
         <dependency>
             <groupId>com.github.spullara.mustache.java</groupId>
             <artifactId>compiler</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>azure-storage</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-impl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -390,13 +404,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.sun.istack</groupId>
             <artifactId>istack-commons-tools</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -408,7 +422,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -420,7 +434,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -432,19 +446,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>codemodel</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>jakarta.security.enterprise</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -456,7 +470,7 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -468,7 +482,7 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -480,7 +494,7 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -492,13 +506,13 @@
                     <groupId>*</groupId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
             <artifactId>FastInfoset</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -510,85 +524,85 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>txw2</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>com.sun.xml.bind.external</groupId>
             <artifactId>rngom</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>xsom</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>commons-cli</groupId>
             <artifactId>commons-cli</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>gnu.getopt</groupId>
             <artifactId>java-getopt</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.openjdk-orb</groupId>
             <artifactId>openjdk-orb</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>javax.jws</groupId>
             <artifactId>jsr181-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -600,7 +614,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -612,25 +626,25 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>jboss.jaxbintros</groupId>
             <artifactId>jboss-jaxb-intros</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -642,13 +656,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>net.jcip</groupId>
             <artifactId>jcip-annotations</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -660,38 +674,38 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <!-- DO NOT MOVE the JBossWS dependencies here below; they need to come BEFORE the Apache CXF ones (see WFLY-5067) -->
         <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-common</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-common-tools</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ws</groupId>
             <artifactId>jbossws-spi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -703,7 +717,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -715,20 +729,20 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-factories</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ws.cxf</groupId>
             <artifactId>jbossws-cxf-resources</artifactId>
             <classifier>wildfly1900</classifier>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -740,7 +754,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -752,25 +766,25 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-coloc</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-soap</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-bindings-xml</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -782,31 +796,31 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-features-logging</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-aegis</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-databinding-jaxb</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-features-clustering</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -818,37 +832,37 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-simple</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-management</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-security</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-security-saml</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -860,19 +874,19 @@
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-local</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-jms</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -884,37 +898,37 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-addr</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-mex</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-policy</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-rm</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-security</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -926,7 +940,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -938,7 +952,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -950,7 +964,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -962,7 +976,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -974,7 +988,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -986,49 +1000,49 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.services.sts</groupId>
             <artifactId>cxf-services-sts-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.services.ws-discovery</groupId>
             <artifactId>cxf-services-ws-discovery-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.xjc-utils</groupId>
             <artifactId>cxf-xjc-runtime</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-boolean</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-bug986</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-dv</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.cxf.xjcplugins</groupId>
             <artifactId>cxf-xjc-ts</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1040,37 +1054,37 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>restat-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>restat-integration</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>restat-bridge</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.compensations</groupId>
             <artifactId>compensations</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.txframework</groupId>
             <artifactId>txframework</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1082,7 +1096,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.jboss</groupId>
@@ -1093,7 +1107,7 @@
                 testsuite classpath. While the artifact being part of the maven repo and license generation should
                 still work.
             -->
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1105,7 +1119,7 @@
         <dependency>
             <groupId>org.jboss.ejb3</groupId>
             <artifactId>jboss-ejb3-ext-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1117,7 +1131,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
        <dependency>
@@ -1129,7 +1143,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1141,19 +1155,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5-legacy</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-hibernate5-3-legacy</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1165,7 +1179,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1177,7 +1191,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1189,13 +1203,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>jipijapa-openjpa</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1207,13 +1221,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-transaction-spi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1225,7 +1239,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1237,7 +1251,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1249,19 +1263,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-common-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-common-spi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1273,7 +1287,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1285,7 +1299,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1297,44 +1311,44 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.ironjacamar</groupId>
             <artifactId>ironjacamar-validator</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
             <artifactId>narayana-jts-idlj</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.jts</groupId>
             <artifactId>narayana-jts-integration</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana</groupId>
             <artifactId>jbosstxbridge</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
             <artifactId>jbossxts</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.narayana.xts</groupId>
             <artifactId>jbossxts</artifactId>
             <classifier>api</classifier>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1346,7 +1360,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1358,23 +1372,23 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-load-spi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1386,25 +1400,25 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>io.agroal</groupId>
             <artifactId>agroal-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>io.agroal</groupId>
             <artifactId>agroal-narayana</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>io.agroal</groupId>
             <artifactId>agroal-pool</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1416,7 +1430,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1428,7 +1442,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <!--
@@ -1438,7 +1452,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1450,7 +1464,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1462,7 +1476,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1474,7 +1488,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1486,7 +1500,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1498,7 +1512,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1510,7 +1524,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1522,7 +1536,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1534,13 +1548,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1552,7 +1566,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1564,7 +1578,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1576,7 +1590,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1588,7 +1602,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1600,7 +1614,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1612,37 +1626,37 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>io.undertow.js</groupId>
             <artifactId>undertow-js</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
             <artifactId>jboss-jaxrs-api_2.1_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>jose-jwt</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client-microprofile</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1654,7 +1668,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1666,13 +1680,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-atom-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1684,7 +1698,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1696,13 +1710,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jackson-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1714,19 +1728,19 @@
                     <artifactId>jboss-logging</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-json-binding-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-json-p-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1738,31 +1752,31 @@
                     <artifactId>jaxb-core</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jettison-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jsapi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-multipart-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-rxjava2</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1774,25 +1788,25 @@
                     <artifactId>hibernate-validator</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-yaml-provider</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.seam.integration</groupId>
             <artifactId>jboss-seam-int-jbossas</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.security</groupId>
             <artifactId>jbossxacml</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1804,43 +1818,43 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.ejb</groupId>
             <artifactId>jboss-ejb-api_3.2_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.faces</groupId>
             <artifactId>jboss-jsf-api_2.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_2.0_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.management.j2ee</groupId>
             <artifactId>jboss-j2eemgmt-api_1.1_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.resource</groupId>
             <artifactId>jboss-connector-api_1.7_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
 	    <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -1852,25 +1866,25 @@
         <dependency>
             <groupId>org.jboss.spec.javax.xml.bind</groupId>
             <artifactId>jboss-jaxb-api_2.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.rpc</groupId>
             <artifactId>jboss-jaxrpc-api_1.1_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.soap</groupId>
             <artifactId>jboss-saaj-api_1.4_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.xml.ws</groupId>
             <artifactId>jboss-jaxws-api_2.3_spec</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1882,19 +1896,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-core-impl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-ejb</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
                 <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
@@ -1908,13 +1922,13 @@
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jsf</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-jta</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <!-- TODO remove this exclusion once this supports Jakarta Transactions 1.3 -->
                 <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.3_spec -->
@@ -1928,13 +1942,13 @@
         <dependency>
             <groupId>org.jboss.weld.module</groupId>
             <artifactId>weld-web</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss.weld.probe</groupId>
             <artifactId>weld-probe-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1946,13 +1960,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1964,7 +1978,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1976,7 +1990,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -1988,7 +2002,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2000,44 +2014,44 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
 
         <dependency>
             <groupId>org.jctools</groupId>
             <artifactId>jctools-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jgroups.azure</groupId>
             <artifactId>jgroups-azure</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jgroups.kubernetes</groupId>
             <artifactId>jgroups-kubernetes</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-impl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2049,43 +2063,43 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-common</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-config</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-idm-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-idm-impl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>wsdl4j</groupId>
             <artifactId>wsdl4j</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2097,7 +2111,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2109,7 +2123,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2121,7 +2135,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2133,7 +2147,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2145,7 +2159,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2157,7 +2171,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2169,7 +2183,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2181,7 +2195,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2193,7 +2207,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2205,7 +2219,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2217,7 +2231,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2229,7 +2243,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2241,7 +2255,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2253,7 +2267,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2265,7 +2279,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2277,7 +2291,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2289,7 +2303,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2301,7 +2315,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2313,7 +2327,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2325,7 +2339,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2337,7 +2351,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2349,7 +2363,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2361,7 +2375,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2373,7 +2387,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2385,7 +2399,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2397,7 +2411,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2409,7 +2423,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2421,13 +2435,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-artemis-native</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -2445,7 +2459,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2457,7 +2471,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2469,7 +2483,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2481,7 +2495,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2493,7 +2507,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2505,79 +2519,79 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore-nio</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpasyncclient</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.james</groupId>
             <artifactId>apache-mime4j</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-facet</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-misc</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2589,13 +2603,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>proton-j</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2607,7 +2621,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2619,25 +2633,25 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.ws.xmlschema</groupId>
             <artifactId>xmlschema-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity-engine-core</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-bindings</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2649,7 +2663,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2661,7 +2675,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2673,73 +2687,73 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-policy</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-ws-security-policy-stax</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcmail-jdk15on</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-asl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-jaxrs</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-xc</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
             <artifactId>jettison</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2751,7 +2765,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2763,7 +2777,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2775,13 +2789,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator-cdi</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2793,7 +2807,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2805,7 +2819,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2817,7 +2831,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2829,7 +2843,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2841,7 +2855,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         
         <dependency>
@@ -2853,7 +2867,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2865,13 +2879,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>jakarta.security.enterprise</groupId>
             <artifactId>jakarta.security.enterprise-api</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2883,7 +2897,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2895,7 +2909,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2907,7 +2921,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -2919,7 +2933,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2930,7 +2944,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2941,7 +2955,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2952,7 +2966,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2963,7 +2977,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2974,7 +2988,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2985,7 +2999,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -2996,7 +3010,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -3007,7 +3021,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -3018,7 +3032,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.infinispan.protostream</groupId>
@@ -3029,19 +3043,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3053,19 +3067,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-iiop-client</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.reactivestreams</groupId>
             <artifactId>reactive-streams</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3077,7 +3091,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3090,7 +3104,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3102,7 +3116,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3114,7 +3128,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3126,7 +3140,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3138,7 +3152,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3149,7 +3163,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3160,7 +3174,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3171,7 +3185,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3182,7 +3196,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3194,7 +3208,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3205,7 +3219,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3217,7 +3231,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3228,7 +3242,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3239,7 +3253,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3250,7 +3264,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3262,7 +3276,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3273,7 +3287,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3284,7 +3298,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3296,7 +3310,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3307,7 +3321,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3318,7 +3332,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3330,7 +3344,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3342,7 +3356,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3354,7 +3368,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3365,7 +3379,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3377,7 +3391,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3389,7 +3403,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3400,7 +3414,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3411,7 +3425,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3422,7 +3436,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3433,7 +3447,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3444,7 +3458,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3455,7 +3469,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -3466,7 +3480,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3478,7 +3492,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3490,13 +3504,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.jboss.hal</groupId>
             <artifactId>hal-console</artifactId>
             <classifier>resources</classifier>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3508,7 +3522,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3520,7 +3534,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3532,7 +3546,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3544,7 +3558,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3556,7 +3570,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3568,7 +3582,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3580,7 +3594,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3592,7 +3606,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3604,7 +3618,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3616,7 +3630,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3628,13 +3642,13 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-jsf-injection</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3646,7 +3660,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3658,7 +3672,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3670,7 +3684,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3682,7 +3696,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3694,7 +3708,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3706,7 +3720,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3718,7 +3732,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3730,7 +3744,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3742,7 +3756,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3754,7 +3768,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3766,7 +3780,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3778,7 +3792,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3790,7 +3804,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3802,7 +3816,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3814,7 +3828,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3826,7 +3840,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3838,7 +3852,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3850,7 +3864,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3862,7 +3876,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3874,7 +3888,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3886,7 +3900,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3898,7 +3912,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3910,7 +3924,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3922,7 +3936,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3934,7 +3948,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3946,7 +3960,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3958,7 +3972,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3970,7 +3984,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3982,7 +3996,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -3994,7 +4008,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -4006,19 +4020,19 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink</groupId>
             <artifactId>picketlink-idm-simple-schema</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
             <groupId>org.picketlink.distribution</groupId>
             <artifactId>picketlink-wildfly8</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
 
         <dependency>
@@ -4030,7 +4044,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.taglibs</groupId>
@@ -4041,7 +4055,7 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.taglibs</groupId>
@@ -4052,12 +4066,12 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>xml-resolver</groupId>
             <artifactId>xml-resolver</artifactId>
-            <scope>provided</scope>
+            <!--<scope>provided</scope>-->
         </dependency>
     </dependencies>
 
@@ -4077,6 +4091,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>license-maven-plugin</artifactId>
+                        <!-- Don't execute in child 'feature-pack' module!-->
                         <inherited>false</inherited>
                         <executions>
                             <execution>
@@ -4180,6 +4195,8 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${version.javadoc.plugin}</version>
+                        <!-- Don't execute in child 'feature-pack' module!-->
+                        <inherited>false</inherited>
                         <executions>
                             <execution>
                                 <id>javadocs-dist</id>
