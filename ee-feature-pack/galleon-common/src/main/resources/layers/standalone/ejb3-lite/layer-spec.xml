@@ -8,6 +8,9 @@
              Users can exclude this layer and include ejb-dist-cache to get
              a distributed cache.  But some cache must be configured. -->
         <layer name="ejb-local-cache" optional="true"/>
+
+        <!-- Used in outbound remote invocations -->
+        <layer name="remoting"/>
     </dependencies>
     <feature spec="subsystem.discovery"/>
     <feature spec="subsystem.ejb3">
