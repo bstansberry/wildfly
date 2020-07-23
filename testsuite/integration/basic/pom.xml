@@ -1471,6 +1471,7 @@
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
                                         <include>org/jboss/as/test/integration/ejb/exception/AppExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/localview/EjbLocalViewTestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
@@ -1498,6 +1499,9 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
                             <!-- Tests against the install with ejb3-iiop -->
