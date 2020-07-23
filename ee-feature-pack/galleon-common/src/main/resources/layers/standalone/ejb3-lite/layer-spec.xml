@@ -5,12 +5,17 @@
     <dependencies>
         <layer name="transactions"/>
         <!-- SFSB requires a cache, so we depend on a layer for local infinispan caching.
-             Users can exclude this layer and include ejb-stateful-dist-cache to get
+             Users can exclude this layer and include ejb-dist-cache to get
              a distributed cache.  But some cache must be configured. -->
         <layer name="ejb-local-cache" optional="true"/>
     </dependencies>
+    <feature spec="subsystem.discovery"/>
     <feature spec="subsystem.ejb3">
         <param name="default-security-domain" value="other"/>
+        <feature spec="subsystem.ejb3.application-security-domain">
+            <param name="application-security-domain" value="other"/>
+            <param name="security-domain" value="ApplicationDomain"/>
+        </feature>
         <param name="log-system-exceptions" value="true"/>
         <param name="statistics-enabled" value="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
         <param name="default-slsb-instance-pool" value="slsb-strict-max-pool"/>

@@ -3,11 +3,22 @@
     <!-- Aggregates EJB3 functionality, excluding ejb-iiop. -->
     <dependencies>
         <layer name="ejb3-lite"/>
+        <layer name="resource-adapters"/>
         <layer name="jms-activemq"/>
-        <layer name="remoting"/>
     </dependencies>
-    <!-- TODO is discovery relevant to ejb3-lite? -->
-    <feature spec="subsystem.discovery"/>
+
+    <!-- TODO may need to import feature-group for embedded activemq -->
+
+    <feature-group name="remoting">
+        <feature spec="subsystem.remoting">
+            <feature spec="subsystem.remoting.http-connector">
+                <param name="http-connector" value="http-remoting-connector"/>
+                <param name="connector-ref" value="default"/>
+                <param name="security-realm" value="ApplicationRealm"/>
+            </feature>
+        </feature>
+    </feature-group>
+
     <feature spec="subsystem.ejb3">
         <param name="default-resource-adapter-name" value="${ejb.resource-adapter-name:activemq-ra.rar}"/>
         <param name="default-mdb-instance-pool" value="mdb-strict-max-pool"/>
@@ -18,7 +29,7 @@
             <param name="timeout-unit" value="MINUTES"/>
         </feature>
         <feature spec="subsystem.ejb3.service.remote">
-            <param name="connector-ref" value="http-remoting-connector"/>
+            <param name="connectors" value="[http-remoting-connector]"/>
             <param name="thread-pool-name" value="default"/>
             <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
                 <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>
