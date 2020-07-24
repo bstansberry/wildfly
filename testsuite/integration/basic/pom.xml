@@ -1490,8 +1490,52 @@
                                         <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/order/PostConstructOrderTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/interceptor/method/EjbMethodInterceptorTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/interceptor/regex/*TestCase.java</include>
-
+                                        <include>org/jboss/as/test/integration/ejb/java8/Java8InterfacesEJBTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/localview/EjbLocalViewTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/log/InvalidTransactionAttributeTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/packaging/injection/CrossModuleInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/packaging/jbossall/JBossAllEjbJarTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/remove/RemoveTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/reentrant/SingletonReentrantTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/dependson/DependsOnSingletonUnitTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/creation/SingletonReentrantPostConstructTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/concurrency/SingletonBeanTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/singleton/concurrency/inheritance/SingletonConcurrencyInheritanceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/timeout/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/serialization/StatefulSerializationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/remove/RemoveMethodOnSFSBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/passivation/store/TwoPassivationStoresTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/locking/reentrant/ReentrantLockTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateful/locking/AccessSerializationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/stateless/systemexception/SystemExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/aroundtimeout/TimerServiceInterceptorOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/cancelation/TimerServiceCancellationTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/cdi/requestscope/CDIRequestScopeTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/count/ActiveTimerServiceCountTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/database/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/expired/ExpiredTimerTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/GetTimersTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/overlap/OverlapTimerTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/persistence/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/schedule/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/security/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/serialization/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/simple/SimpleTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/suspend/TimerServiceSuspendTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/tx/retry/TimerRetryTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/timerservice/view/ViewTimerServiceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/annotation/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/bmt/BeanManagedTransactionsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/beforecompletion/BeforeCompletionExceptionDestroysBeanTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/inheritance/TransactionAttributeTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/lifecycle/LifecycleMethodTransactionManagementTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/mandatory/SFSBMandatoryTransactionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/cmt/never/NeverTransactionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/methodparams/TxMethodParamsTest.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/transaction/usertransaction/UserTransactionAccessTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/view/duplicateview/DuplicateViewDefinitionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/view/javapackage/ViewFromJavaPackageTestCase.java</include>
+
                                         <include>org/jboss/as/test/integration/ee/interceptors/exceptions/ExceptionsFromInterceptorsTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/mappedname/MappedNameInjectionTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/injection/ztatic/StaticInjectionTestCase.java</include>
