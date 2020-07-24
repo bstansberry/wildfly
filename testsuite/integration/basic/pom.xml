@@ -1470,8 +1470,39 @@
                                     </environmentVariables>
                                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                                     <includes>
+                                        <include>org/jboss/as/test/integration/ejb/annotationprocessing/ResourceAnnotationsProcessingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/bridgemethods/EjbBridgeMethodsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/descriptor/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/exception/AppExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/compenvbindings/EjbJavaCompBindingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/duplicate/EjbDuplicateBindingTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/ejb/EjbInjectionSameEjbNameTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/ejbs/EjbsInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/injection/injectiontarget/EjbRefInjectionTargetTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/aroundconstruct/nocreate/AroundConstructNoCreateTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/aroundconstruct/simple/AroundConstructSimpleTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/defaultinterceptor/DefaultInterceptorsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/exception/EjbInterceptorExceptionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/inheritorder/MoreInterceptorInheritanceTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/invocationcontext/InvocationContextTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/chains/InterceptorLifecycleSFSBTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/destroy/PreDestroyInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/lifecycle/order/PostConstructOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/method/EjbMethodInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ejb/interceptor/regex/*TestCase.java</include>
+
                                         <include>org/jboss/as/test/integration/ejb/localview/EjbLocalViewTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/interceptors/exceptions/ExceptionsFromInterceptorsTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/mappedname/MappedNameInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/ztatic/StaticInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/ejblocalref/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/multipleinterceptors/BindingsOnInterceptorTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/superclass/SuperClassInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/injection/resource/url/URLConnectionFactoryResourceInjectionTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/initializeinorder/InitializeInOrderTestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/datasourcedefinition/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/concurrent/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/ee/altdd/AltDDTestCase.java</include>
                                     </includes>
                                 </configuration>
                             </execution>
