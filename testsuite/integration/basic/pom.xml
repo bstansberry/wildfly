@@ -1512,7 +1512,6 @@
                                         <include>org/jboss/as/test/integration/ejb/timerservice/cancelation/TimerServiceCancellationTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/cdi/requestscope/CDIRequestScopeTimerServiceTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/count/ActiveTimerServiceCountTestCase.java</include>
-                                        <include>org/jboss/as/test/integration/ejb/timerservice/database/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/expired/ExpiredTimerTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/gettimers/GetTimersTestCase.java</include>
                                         <include>org/jboss/as/test/integration/ejb/timerservice/overlap/OverlapTimerTestCase.java</include>
