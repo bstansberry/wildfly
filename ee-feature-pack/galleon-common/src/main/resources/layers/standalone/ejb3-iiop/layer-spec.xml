@@ -5,8 +5,19 @@
         <layer name="ejb3-lite"/>
         <layer name="iiop-openjdk"/>
     </dependencies>
-    <feature spec="subsystem.ejb3.service.iiop">
-        <param name="enable-by-default" value="false"/>
-        <param name="use-qualified-name" value="false"/>
+    <feature spec="subsystem.ejb3">
+        <feature spec="subsystem.ejb3.service.remote">
+            <param name="connectors" value="[http-remoting-connector]"/>
+            <param name="thread-pool-name" value="default"/>
+            <feature spec="subsystem.ejb3.service.remote.channel-creation-options">
+                <param name="channel-creation-options" value="MAX_OUTBOUND_MESSAGES"/>
+                <param name="value" value="1234"/>
+                <param name="type" value="remoting"/>
+            </feature>
+        </feature>
+        <feature spec="subsystem.ejb3.service.iiop">
+            <param name="enable-by-default" value="true"/>
+            <param name="use-qualified-name" value="false"/>
+        </feature>
     </feature>
 </layer-spec>
