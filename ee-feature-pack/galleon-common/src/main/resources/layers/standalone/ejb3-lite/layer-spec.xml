@@ -73,4 +73,7 @@
         <param name="module" value="org.jboss.ejb-client"/>
         <param name="class-name" value="org.jboss.ejb.client.RemoteEJBPermission"/>
     </feature>
+    <feature spec="subsystem.naming">
+        <feature spec="subsystem.naming.service.remote-naming"/>
+    </feature>
 </layer-spec>
