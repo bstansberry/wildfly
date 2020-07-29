@@ -1575,6 +1575,7 @@
                                     </includes>
                                     <excludes>
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/timerservice/database/*TestCase.java</exclude>
                                     </excludes>
                                 </configuration>
                             </execution>
