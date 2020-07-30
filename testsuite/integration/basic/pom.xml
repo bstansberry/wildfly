@@ -1596,7 +1596,13 @@
                                         <include>org/jboss/as/test/integration/ee/datasourcedefinition/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/concurrent/**/*TestCase.java</include>
                                         <include>org/jboss/as/test/integration/ee/altdd/AltDDTestCase.java</include>
+
+                                        <include>org/jboss/as/test/integration/jpa/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <!-- JpaJarFileTestCase requires custom hibernate module -->
+                                        <exclude>org/jboss/as/test/integration/jpa/jarfile/JpaJarFileTestCase.java</exclude>
+                                    </excludes>
                                 </configuration>
                             </execution>
                             <!-- Tests against the install with ejb3 -->
