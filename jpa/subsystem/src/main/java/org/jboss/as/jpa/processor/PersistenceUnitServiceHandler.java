@@ -336,6 +336,8 @@ public class PersistenceUnitServiceHandler {
                 if (css.hasCapability("org.wildfly.bean-validation")) {
                     // Get the CDI-enabled ValidatorFactory
                     validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                } else if (ValidationMode.CALLBACK.equals(pu.getValidationMode())) {
+                    throw ROOT_LOGGER.beanValidatioNotPresentforCallbackValidationModel(pu.getPersistenceUnitName(), deploymentUnit.getName());
                 }
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);
@@ -579,6 +581,8 @@ public class PersistenceUnitServiceHandler {
                 if (capabilitySupport.hasCapability("org.wildfly.bean-validation")) {
                     // Get the CDI-enabled ValidatorFactory
                     validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+                } else if (ValidationMode.CALLBACK.equals(pu.getValidationMode())) {
+                    throw ROOT_LOGGER.beanValidatioNotPresentforCallbackValidationModel(pu.getPersistenceUnitName(), deploymentUnit.getName());
                 }
             }
             BeanManagerAfterDeploymentValidation beanManagerAfterDeploymentValidation = registerJPAEntityListenerRegister(deploymentUnit, capabilitySupport);

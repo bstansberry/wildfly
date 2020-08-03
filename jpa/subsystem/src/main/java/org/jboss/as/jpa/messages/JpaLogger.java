@@ -762,4 +762,8 @@ public interface JpaLogger extends BasicLogger {
     @Message(id = 74, value = "Deprecated Hibernate51CompatibilityTransformer is enabled for all application deployments.")
     void hibernate51CompatibilityTransformerEnabled();
 
+    @Message(id = 75, value = "Persistence unit '%s' in deployment '%s' is configured with ValidationMode.CALLBACK but the bean-validation subsystem is not present.")
+    DeploymentUnitProcessingException beanValidatioNotPresentforCallbackValidationModel(String persistenceUnit, String deployment);
+
+
 }
