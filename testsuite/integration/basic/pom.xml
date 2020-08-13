@@ -1065,13 +1065,51 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <executions>
+                        <executions combine.children="append">
                             <execution>
                                 <id>ts.copy-wildfly</id>
                                 <goals>
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <phase>none</phase>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ejb3-lite.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb3-lite/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <!-- Copy users and roles config from shared resources. -->
+                            <execution>
+                                <id>ejb3.ts.config-as.copy-mgmt-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/wildfly-ejb3/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>../../shared/src/main/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -1256,8 +1294,8 @@
                                     <feature-packs>
                                         <feature-pack>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <artifactId>wildfly-test-galleon-pack</artifactId>
+                                            <version>${ee.maven.version}</version>
                                             <inherit-configs>false</inherit-configs>
                                             <inherit-packages>false</inherit-packages>
                                         </feature-pack>
@@ -1270,6 +1308,7 @@
                                                 <layer>cloud-server</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>ejb3</layer>
+                                                <layer>ejb-elytron-testsuite</layer>
                                             </layers>
                                         </config>
                                     </configurations>
@@ -1312,51 +1351,6 @@
                                             </layers>
                                         </config>
                                     </configurations>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
-                            <!-- Copy users and roles config from shared resources. -->
-                            <execution>
-                                <id>ejb3-lite.ts.config-as.copy-mgmt-users</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <outputDirectory>${basedir}/target/wildfly-ejb3-lite/standalone/configuration</outputDirectory>
-                                    <overwrite>true</overwrite>
-                                    <resources>
-                                        <resource>
-                                            <directory>../../shared/src/main/resources</directory>
-                                            <includes><include>*.properties</include></includes>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                            <!-- Copy users and roles config from shared resources. -->
-                            <execution>
-                                <id>ejb3.ts.config-as.copy-mgmt-users</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <inherited>true</inherited>
-                                <configuration>
-                                    <outputDirectory>${basedir}/target/wildfly-ejb3/standalone/configuration</outputDirectory>
-                                    <overwrite>true</overwrite>
-                                    <resources>
-                                        <resource>
-                                            <directory>../../shared/src/main/resources</directory>
-                                            <includes><include>*.properties</include></includes>
-                                        </resource>
-                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
@@ -1624,6 +1618,7 @@
                                         <module.path>${project.build.directory}/wildfly-ejb3/modules${path.separator}${basedir}/target/modules</module.path>
                                         <!-- EJB client library hack, see WFLY-4973-->
                                         <org.jboss.ejb.client.wildfly-testsuite-hack>true</org.jboss.ejb.client.wildfly-testsuite-hack>
+                                        <elytron>true</elytron>
                                     </systemPropertyVariables>
                                     <environmentVariables>
                                         <JBOSS_HOME>${project.build.directory}/wildfly-ejb3</JBOSS_HOME>
@@ -1636,8 +1631,40 @@
                                         <include>org/jboss/as/test/integration/ejb/**/*TestCase.java</include>
                                     </includes>
                                     <excludes>
+                                        <!-- IIOP is not available -->
                                         <exclude>org/jboss/as/test/integration/ejb/iiop/**/*TestCase.java</exclude>
+
+                                        <!-- Unable to persist timers in data base -->
                                         <exclude>org/jboss/as/test/integration/ejb/timerservice/database/*TestCase.java</exclude>
+
+                                        <!-- These tests use legacy security.
+
+                                            Instead of excluding them here, it would be better to work on AssumeTestGroupUtil.assumeElytronProfileEnabled()
+                                            Although we are using elytron=true system property in this surefire execution, this value is not retrieved on
+                                            AssumeTestGroupUtil.assumeElytronProfileEnabled() check, not sure why, maybe because it is RunAsClient?
+                                        -->
+                                        <exclude>org/jboss/as/test/integration/ejb/container/**/SwitchIdentityTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/LdapLegacyTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsPrincipalCustomDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/EJBContextMultipleSDTestCase.java</exclude>
+
+                                        <!-- Excluded temporarily because they are using using mdb -->
+                                        <exclude>org/jboss/as/test/integration/ejb/singleton/dependson/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/pool/**/PooledEJBLifecycleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/transaction/mdb/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbInvocationStatisticsTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbJarInEarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/management/**/EjbJarRuntimeResourcesTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/MDBRoleTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/GetCallerPrincipalTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsEjbMdbTestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsMDBUnitTestCase.java</exclude>
+
+                                        <!-- Needs batch jberet -->
+                                        <exclude>org/jboss/as/test/integration/ejb/security/**/RunAsWithElytronEJBContextPropagationTestCase.java</exclude>
+
                                     </excludes>
                                 </configuration>
                             </execution>
