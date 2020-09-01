@@ -4,6 +4,8 @@
     <dependencies>
         <layer name="ejb3-lite"/>
         <layer name="iiop-openjdk"/>
+        <layer name="remoting"/>
+        <layer name="undertow"/>
     </dependencies>
     <feature spec="subsystem.ejb3">
         <feature spec="subsystem.ejb3.service.remote">

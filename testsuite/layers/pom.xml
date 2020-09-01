@@ -2342,6 +2342,9 @@
                                                 <layer>discovery</layer>
                                                 <layer>ee</layer>
                                                 <layer>ee-security</layer>
+                                                <layer>ejb3</layer>
+                                                <layer>ejb3-iiop</layer>
+                                                <layer>ejb3-lite</layer>
                                                 <layer>elytron</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
@@ -2431,14 +2434,14 @@
                                                 <layer>discovery</layer>
                                                 <layer>ee</layer>
                                                 <layer>ee-security</layer>
+                                                <layer>ejb3</layer>
+                                                <layer>ejb3-iiop</layer>
+                                                <layer>ejb3-lite</layer>
                                                 <layer>elytron</layer>
                                                 <layer>h2-datasource</layer>
                                                 <layer>h2-default-datasource</layer>
                                                 <layer>h2-driver</layer>
                                                 <layer>io</layer>
-                                                <layer>ejb3</layer>
-                                                <layer>ejb3-iiop</layer>
-                                                <layer>ejb3-lite</layer>
                                                 <layer>jaxrs</layer>
                                                 <layer>jaxrs-server</layer>
                                                 <layer>jms-activemq</layer>

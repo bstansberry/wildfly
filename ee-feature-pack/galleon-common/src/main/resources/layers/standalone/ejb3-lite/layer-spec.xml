@@ -9,9 +9,6 @@
              a distributed cache.  But some cache must be configured. -->
         <layer name="ejb-local-cache" optional="true"/>
         <layer name="naming"/>
-
-        <!-- Used in outbound remote invocations -->
-        <layer name="remoting"/>
     </dependencies>
     <feature spec="subsystem.discovery"/>
     <feature spec="subsystem.ejb3">
@@ -73,8 +70,5 @@
         <param name="permission-set" value="default-permissions"/>
         <param name="module" value="org.jboss.ejb-client"/>
         <param name="class-name" value="org.jboss.ejb.client.RemoteEJBPermission"/>
-    </feature>
-    <feature spec="subsystem.naming">
-        <feature spec="subsystem.naming.service.remote-naming"/>
     </feature>
 </layer-spec>
