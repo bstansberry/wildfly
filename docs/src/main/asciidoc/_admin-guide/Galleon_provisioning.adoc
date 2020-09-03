@@ -129,7 +129,6 @@ Basic layers:
 * _ee-security_: Support for EE Security. Depends on _cdi_.
 * _ejb-lite_: Support for Jakarta Enterprise Beans Lite.
 * _ejb_: Support for Jakarta Enterprise Beans, excluding IIOP protocol.
-* _ejb-iiop_: Support for Jakarta Enterprise Beans with IIOP protocol.
 * _jaxrs_: Support for JAXRS. Depends on _web-server_ (defined in the WildFly servlet feature-pack).
 * _jms-activemq_: Support for connections to a remote JMS broker.
 * _jpa_: Support for JPA (using the latest WildFly supported Hibernate release).
