@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb3">
-    <!-- Aggregates EJB3 functionality, excluding ejb-iiop. -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb">
+    <!-- Aggregates EJB functionality, excluding ejb-iiop. -->
     <dependencies>
-        <layer name="ejb3-lite"/>
+        <layer name="ejb-lite"/>
         <layer name="resource-adapters"/>
         <layer name="jms-activemq"/>    <!-- change to messaging-activemq when available -->
         <layer name="remoting"/>

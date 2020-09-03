@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
-<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb3-iiop">
-    <!-- Aggregates all EJB3 functionality, including ejb-iiop. -->
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-iiop">
+    <!-- Aggregates all EJB functionality, including ejb-iiop. -->
     <dependencies>
-        <layer name="ejb3-lite"/>
+        <layer name="ejb-lite"/>
         <layer name="iiop-openjdk"/>
         <layer name="remoting"/>
         <layer name="undertow"/>
