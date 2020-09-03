@@ -171,8 +171,6 @@ Includes Health support (optional), _microprofile-config_ (optional), _microprof
 
 * _ejb-dist-cache_: Infinispan-based distributed cache for stateful session bean.
 
-* _iiop-openjdk_: Support for IIOP protocol based on OpenJDK.
-
 ==== WildFly servlet layers
 
 Basic layers:
