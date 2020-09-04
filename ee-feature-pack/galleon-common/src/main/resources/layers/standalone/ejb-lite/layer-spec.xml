@@ -28,7 +28,6 @@
             <param name="timeout" value="5"/>
             <param name="timeout-unit" value="MINUTES"/>
         </feature>
-        <param name="default-sfsb-cache" value="simple"/>
         <param name="default-sfsb-passivation-disabled-cache" value="simple"/>
         <param name="default-stateful-bean-access-timeout" value="5000"/>
         <feature spec="subsystem.ejb3.cache">

@@ -7,6 +7,10 @@
         <layer name="transactions"/>
     </dependencies>
 
+    <feature spec="subsystem.ejb3">
+        <param name="default-sfsb-cache" value="distributable"/>
+    </feature>
+
     <origin name="org.wildfly:wildfly-servlet-galleon-pack">
         <feature-group name="private-interface"/>
     </origin>

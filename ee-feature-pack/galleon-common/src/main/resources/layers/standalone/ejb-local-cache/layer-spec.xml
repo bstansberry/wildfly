@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <layer-spec xmlns="urn:jboss:galleon:layer-spec:1.0" name="ejb-local-cache">
+    <feature spec="subsystem.ejb3">
+        <param name="default-sfsb-cache" value="simple"/>
+    </feature>
     <!-- Infinispan cache configuration used for local SFSB caching -->
     <feature-group name="infinispan-local-ejb"/>
     <packages>
