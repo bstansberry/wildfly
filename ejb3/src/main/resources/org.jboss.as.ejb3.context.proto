@@ -1,0 +1,10 @@
+package org.jboss.as.ejb3.context;
+
+// IDs: 400 - 409
+
+/**
+ * @TypeId(400)
+ */
+message SessionContextImpl {
+  required	bytes	componentInstance	= 1;
+}

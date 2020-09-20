@@ -119,5 +119,10 @@
         <module name="org.jboss.as.weld.common" optional="true"/>
         <module name="org.hibernate.validator" optional="true"/>
         <module name="org.hibernate.validator.cdi" optional="true"/>
+
+        <!-- Allow marshalling/unmarshalling of SessionContextImpl which has a different interface in EE 9 -->
+        <module name="org.wildfly.clustering.marshalling.api"/>
+        <module name="org.wildfly.clustering.marshalling.protostream"/>
+        <module name="org.infinispan.protostream"/>
     </dependencies>
 </module>

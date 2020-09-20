@@ -22,8 +22,14 @@
 package org.jboss.as.ejb3.context;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.SessionContext;
@@ -31,6 +37,9 @@ import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
 import javax.xml.rpc.handler.MessageContext;
 
+import org.infinispan.protostream.FileDescriptorSource;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
@@ -42,6 +51,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.invocation.InterceptorContext;
 import org.kohsuke.MetaInfServices;
 import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.marshalling.protostream.ExternalizerMarshaller;
 
 /**
  * Implementation of the SessionContext interface.
@@ -135,7 +145,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
 
 
     @MetaInfServices(Externalizer.class)
-    public static class SessionContextImplExternalizer implements Externalizer<SessionContextImpl> {
+    public static final class SessionContextImplExternalizer implements Externalizer<SessionContextImpl> {
         @Override
         public void writeObject(ObjectOutput output, SessionContextImpl object) throws IOException {
             EjbLogger.ROOT_LOGGER.info("Externalizing!!");
@@ -152,6 +162,46 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         @Override
         public Class<SessionContextImpl> getTargetClass() {
             return SessionContextImpl.class;
+        }
+    }
+
+    @MetaInfServices(SerializationContextInitializer.class)
+    public static final class SessionContextImplContextInitializer implements SerializationContextInitializer {
+
+        @Override
+        public String getProtoFileName() {
+            return this.getClass().getPackage().getName() + ".proto";
+        }
+
+        @Override
+        public String getProtoFile() {
+            return getResourceAsString(this.getClass(), "/" + this.getProtoFileName());
+        }
+
+        @Override
+        public void registerMarshallers(SerializationContext context) {
+            context.registerMarshaller(new ExternalizerMarshaller<>(new SessionContextImplExternalizer()));
+        }
+
+        @Override
+        public void registerSchema(SerializationContext context) {
+            context.registerProtoFiles(FileDescriptorSource.fromString(this.getProtoFileName(), this.getProtoFile()));
+        }
+
+        private static String getResourceAsString(Class<?> c, String name) throws UncheckedIOException {
+            try (InputStream is = c.getResourceAsStream(name)) {
+                try (Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                    StringWriter writer = new StringWriter();
+                    char[] buffer = new char[1024];
+                    int count;
+                    while ((count = reader.read(buffer)) != -1) {
+                        writer.write(buffer, 0, count);
+                    }
+                    return writer.toString();
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 }
