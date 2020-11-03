@@ -251,6 +251,18 @@
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.wildfly.extras.batavia</groupId>
+                        <artifactId>transformer-api</artifactId>
+                        <version>${version.org.wildfly.extras.batavia}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.wildfly.extras.batavia</groupId>
+                        <artifactId>transformer-impl-eclipse</artifactId>
+                        <version>${version.org.wildfly.extras.batavia}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -326,6 +338,30 @@
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
             <artifactId>wildfly-ee-9-deployment-transformer</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.extras.batavia</groupId>
+            <artifactId>transformer-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.extras.batavia</groupId>
+            <artifactId>transformer-impl-eclipse</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>biz.aQute.bnd.transform</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.transformer</groupId>
+            <artifactId>org.eclipse.transformer</artifactId>
             <scope>provided</scope>
         </dependency>
 
