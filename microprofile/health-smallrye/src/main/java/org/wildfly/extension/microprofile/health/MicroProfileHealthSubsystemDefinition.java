@@ -106,6 +106,8 @@ public class MicroProfileHealthSubsystemDefinition extends PersistentResourceDef
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
+        MigrateOperation.registerOperations(resourceRegistration);
+
         if (registerRuntimeOperations) {
             CheckOperations.register(resourceRegistration);
         }

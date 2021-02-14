@@ -24,6 +24,7 @@ package org.wildfly.extension.microprofile.health._private;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -52,4 +53,10 @@ public interface MicroProfileHealthLogger extends BasicLogger {
 
     @Message(id = 2, value = "Deployment %s requires use of the '%s' capability but it is not currently registered")
     DeploymentUnitProcessingException deploymentRequiresCapability(String deploymentName, String capabilityName);
+
+    @Message(id = 3, value = "The migrate operation can not be performed: the server must be in admin-only mode")
+    OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
+
+    @Message(id = 4, value = "Migration failed, see results for more details.")
+    String migrationFailed();
 }
