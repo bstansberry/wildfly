@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.capability.RuntimeCapability;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -87,5 +88,12 @@ public class MicroProfileMetricsSubsystemDefinition extends PersistentResourceDe
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         return Arrays.asList(ATTRIBUTES);
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+
+        MigrateOperation.registerOperations(resourceRegistration);
     }
 }

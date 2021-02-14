@@ -26,6 +26,7 @@ import static org.jboss.logging.Logger.Level.INFO;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -67,4 +68,10 @@ public interface MicroProfileMetricsLogger extends BasicLogger {
     // no longer used
     // @Message(id = 5, value = "Metric attribute %s on %s is undefined and will not be exposed.")
     // IllegalStateException undefinedMetric(String attributeName, PathAddress address);
+
+    @Message(id = 6, value = "The migrate operation can not be performed: the server must be in admin-only mode")
+    OperationFailedException migrateOperationAllowedOnlyInAdminOnly();
+
+    @Message(id = 7, value = "Migration failed, see results for more details.")
+    String migrationFailed();
 }
