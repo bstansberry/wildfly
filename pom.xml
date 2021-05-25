@@ -10094,6 +10094,15 @@
                 <modular.jdk.args>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.reflect=ALL-UNNAMED
                     --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
+                    --add-exports=java.desktop/sun.awt=ALL-UNNAMED
+                    --add-opens=java.base/java.lang=ALL-UNNAMED
+                    --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+                    --add-opens=java.base/java.io=ALL-UNNAMED
+                    --add-opens=java.base/java.util=ALL-UNNAMED
+                    --add-opens=java.base/java.security=ALL-UNNAMED
+                    --add-opens=java.base/javax.crypto=ALL-UNNAMED
+                    --add-opens=java.naming/javax.naming=ALL-UNNAMED
+                    --add-opens=java.management/javax.management=ALL-UNNAMED
                     --add-modules=java.se</modular.jdk.args>
             </properties>
         </profile>
