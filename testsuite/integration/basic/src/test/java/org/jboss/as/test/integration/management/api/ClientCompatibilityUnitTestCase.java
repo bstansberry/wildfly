@@ -65,6 +65,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore
 @ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
 public class ClientCompatibilityUnitTestCase {
     static class ClientCompatibilityUnitTestCaseServerSetup implements ServerSetupTask {
