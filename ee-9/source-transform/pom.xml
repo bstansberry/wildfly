@@ -53,20 +53,6 @@
         <module>mail</module>
     </modules>
 
-    <dependencyManagement>
-
-        <dependencies>
-
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>wildfly-naming</artifactId>
-                <classifier>sources</classifier>
-                <version>${project.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.eclipse.transformer</groupId>
