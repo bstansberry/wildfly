@@ -40,7 +40,103 @@
         <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
         <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
+
+        <!-- Version properties for dependency management items -->
+        <version.jakarta.annotation.jakarta-annotation-api>2.0.0</version.jakarta.annotation.jakarta-annotation-api>
+        <version.jakarta.authorization.jakarta-authorization-api>2.0.0</version.jakarta.authorization.jakarta-authorization-api>
+        <version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>2.0.0</version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api>
+        <version.jakarta.interceptor.jakarta-interceptors-api>2.0.0</version.jakarta.interceptor.jakarta-interceptors-api>
+        <version.jakarta.mail>2.0.0</version.jakarta.mail>
+        <version.jakarta.transaction.jakarta-transaction-api>2.0.0</version.jakarta.transaction.jakarta-transaction-api>
+        <version.org.glassfish.jakarta.el>4.0.0</version.org.glassfish.jakarta.el>
+        <version.org.glassfish.jakarta.enterprise.concurrent>2.0.0</version.org.glassfish.jakarta.enterprise.concurrent>
+
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>jakarta.mail</artifactId>
+                <version>${version.jakarta.mail}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${version.jakarta.annotation.jakarta-annotation-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.authorization</groupId>
+                <artifactId>jakarta.authorization-api</artifactId>
+                <version>${version.jakarta.authorization.jakarta-authorization-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.servlet</groupId>
+                        <artifactId>jakarta.servlet-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.enterprise.concurrent</groupId>
+                <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                <version>${version.jakarta.enterprise.concurrent.jakarta-enterprise.concurrent-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.interceptor</groupId>
+                <artifactId>jakarta.interceptor-api</artifactId>
+                <version>${version.jakarta.interceptor.jakarta-interceptors-api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.annotation</groupId>
+                        <artifactId>jakarta.annotation-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${version.jakarta.transaction.jakarta-transaction-api}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>jakarta.enterprise.concurrent</artifactId>
+                <version>${version.org.glassfish.jakarta.enterprise.concurrent}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>jakarta.enterprise.concurrent</groupId>
+                        <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.platform</groupId>
+                        <artifactId>jakarta.jakartaee-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-mail-jakarta</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
 
     <profiles>
         <profile>
@@ -52,6 +148,7 @@
             </activation>
 
             <modules>
+                <module>source-transform</module>
                 <module>build</module>
                 <module>deployment-transformer</module>
                 <module>dist</module>
