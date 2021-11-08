@@ -121,7 +121,8 @@ public class IIOPTimeoutTestCase {
             // expected: enlistment of the resource to a timed out transaction should fail
             // the SystemException from wildfly transaction client is transfered to ServerException
             Assert.assertTrue("Timeout failure expects one of the exception "
-                    + ServerException.class.getName() + " or " + TransactionRolledbackException.class.getName(),
+                    + ServerException.class.getName() + " or " + TransactionRolledbackException.class.getName()
+                    + " but received " + e,
                     ServerException.class.equals(e.getClass()) || TransactionRolledbackException.class.equals(e.getClass()));
         }
 
