@@ -29,9 +29,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.shared.integration.ejb.security.PermissionUtils.createPermissionsXmlAsset;
 import static org.junit.Assert.assertEquals;
+import static org.wildfly.test.security.common.SecureExpressionUtil.getCoreManagmentClient;
+import static org.wildfly.test.security.common.SecureExpressionUtil.setupCredentialStoreExpressions;
+import static org.wildfly.test.security.common.SecureExpressionUtil.teardownCredentialStoreExpressions;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.PropertyPermission;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -56,6 +61,8 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.test.security.common.SecureExpressionUtil;
+
 
 /**
  * Verify that MDB activation config properties can be vaulted.
@@ -72,11 +79,18 @@ public class MDBWithVaultedPropertiesTestCase {
 
     private static final String QUEUE_NAME = "vaultedproperties_queue";
     static final String CLEAR_TEXT_DESTINATION_LOOKUP = "java:jboss/messaging/vaultedproperties/queue";
+    static final String UNIQUE_NAME = "MDBWithVaultedPropertiesTestCase";
+    static final String CREDENTIAL_EXPRESSION_PROP = "MDBWithVaultedPropertiesTestCase.destination";
+    static final String SYS_PROP_EXPRESSION = "${MDBWithVaultedPropertiesTestCase.destination}";
+    static final Set<SecureExpressionUtil.SecureExpressionData> EXPRESSION_DATA_SET =
+            Collections.singleton(new SecureExpressionUtil.SecureExpressionData(CLEAR_TEXT_DESTINATION_LOOKUP, CREDENTIAL_EXPRESSION_PROP));
 
     static class StoreVaultedPropertyTask implements ServerSetupTask {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            setupCredentialStoreExpressions(getCoreManagmentClient(managementClient), UNIQUE_NAME, EXPRESSION_DATA_SET);
+
             createJMSQueue(managementClient, QUEUE_NAME, CLEAR_TEXT_DESTINATION_LOOKUP);
 
             updateAnnotationPropertyReplacement(managementClient, true);
@@ -86,6 +100,8 @@ public class MDBWithVaultedPropertiesTestCase {
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             removeJMSQueue(managementClient, QUEUE_NAME);
+
+            teardownCredentialStoreExpressions(getCoreManagmentClient(managementClient), UNIQUE_NAME, EXPRESSION_DATA_SET);
 
             updateAnnotationPropertyReplacement(managementClient, false);
         }
@@ -118,6 +134,8 @@ public class MDBWithVaultedPropertiesTestCase {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "MDBWithVaultedPropertiesTestCase.jar")
                 .addClass(StoreVaultedPropertyTask.class)
+                .addClass(SecureExpressionUtil.class)
+                .addClass(SecureExpressionUtil.SecureExpressionData.class)
                 .addClass(MDB.class)
                 .addClass(TimeoutUtil.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
