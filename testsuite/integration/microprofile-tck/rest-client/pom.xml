@@ -559,6 +559,13 @@
                 <!-- Enable galleon provisioning -->
                 <ts.microprofile-tck-provisioning.phase>compile</ts.microprofile-tck-provisioning.phase>
             </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec.javax.ws.rs</groupId>
+                    <artifactId>jboss-jaxrs-api_3.0_spec</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -568,17 +575,6 @@
                             <execution>
                                 <!-- Disable the default provisioning -->
                                 <id>mp-server-provisioning</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <!--Disable the default surefire execution until WFLY-14136 is sorted. -->
-                            <execution>
-                                <id>default-test</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
