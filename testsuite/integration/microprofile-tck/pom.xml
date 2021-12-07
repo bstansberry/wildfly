@@ -178,6 +178,30 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!--
+                    Here because for some tests we need some helper classes which need to access the javax/jakarta
+                    APIs.
+                    In these cases use test/javax/java for the EE8 version, and test/jakarta/java for the EE9+ version.
+                    The latter is set up by the ee9.test.profile which is enabled by -Dts.ee9
+                -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-test-source-directory</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/test/javax/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -309,6 +333,24 @@
                             <execution>
                                 <id>default-test</id>
                                 <phase>test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>add-test-source-directory</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/test/jakarta/java</source>
+                                    </sources>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
