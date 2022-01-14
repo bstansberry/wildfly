@@ -27,6 +27,7 @@ import static org.wildfly.extension.messaging.activemq.logging.MessagingLogger.R
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
@@ -43,9 +44,18 @@ public abstract class AbstractJMSContext implements Serializable {
     private final Map<String, JMSContext> contexts = new ConcurrentHashMap<>();
 
     JMSContext getContext(String injectionPointId, JMSInfo info, ConnectionFactory connectionFactory) {
-        return contexts.computeIfAbsent(injectionPointId, key -> {
-            return createContext(info, connectionFactory);
+        final AtomicReference<JMSContext> computedRef = new AtomicReference<>();
+        JMSContext result = contexts.computeIfAbsent(injectionPointId, key -> {
+            JMSContext computed = createContext(info, connectionFactory);
+            computedRef.set(computed);
+            return computed;
         });
+        // If the map created a context but didn't store it, close it
+        JMSContext computed = computedRef.get();
+        if (computed != null && computed != result) {
+            computed.close();
+        }
+        return result;
     }
 
     private JMSContext createContext(JMSInfo info, ConnectionFactory connectionFactory) {
