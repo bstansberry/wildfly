@@ -32,7 +32,7 @@ import javax.security.auth.AuthPermission;
 
 import org.jboss.as.test.shared.integration.ejb.security.PermissionUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -53,7 +53,7 @@ import org.wildfly.security.permission.ElytronPermission;
  * A simple IIOP invocation for one AS7 server to another
  */
 @RunWith(Arquillian.class)
-@Ignore("[WFLY-15272] Update to use Elytron for authentication and identity propagation.")
+//@Ignore("[WFLY-15272] Update to use Elytron for authentication and identity propagation.")
 public class IIOPSecurityInvocationTestCase {
 
 

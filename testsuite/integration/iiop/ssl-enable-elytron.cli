@@ -17,4 +17,9 @@ run-batch
 /subsystem=iiop-openjdk:write-attribute(name=server-requires-ssl,value=false)
 /subsystem=iiop-openjdk:write-attribute(name=ssl-socket-binding,value=iiop-ssl)
 
+/subsystem=elytron/sasl-authentication-factory=application-sasl-authentication:list-add(name=mechanism-configurations,value={mechanism-name=PLAIN})
+/subsystem=elytron/authentication-configuration=ejb-outbound-configuration:add(security-domain=ApplicationDomain,sasl-mechanism-selector="PLAIN")
+/subsystem=elytron/authentication-context=ejb-iiop-outbound-context:add(match-rules=[{authentication-configuration=ejb-outbound-configuration}])
+/subsystem=elytron:write-attribute(name=default-authentication-context,value=ejb-iiop-outbound-context)
+
 stop-embedded-server
