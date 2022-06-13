@@ -27,9 +27,11 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.enterprise.inject.Produces;
@@ -81,6 +83,31 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     private static final String EJB_ENTITY_CONTEXT_CLASS_NAME = "javax.ejb.EntityContext";
 
     private static final String WEB_SERVICE_CONTEXT_CLASS_NAME = "javax.xml.ws.WebServiceContext";
+
+    public static final Set<String> SIMPLE_ENTRIES;
+
+    static {
+        final Set<String> simpleEntries = new HashSet<String>();
+        simpleEntries.add("boolean");
+        simpleEntries.add("char");
+        simpleEntries.add("byte");
+        simpleEntries.add("short");
+        simpleEntries.add("int");
+        simpleEntries.add("long");
+        simpleEntries.add("double");
+        simpleEntries.add("float");
+        simpleEntries.add("java.lang.Boolean");
+        simpleEntries.add("java.lang.Character");
+        simpleEntries.add("java.lang.Byte");
+        simpleEntries.add("java.lang.Short");
+        simpleEntries.add("java.lang.Integer");
+        simpleEntries.add("java.lang.Long");
+        simpleEntries.add("java.lang.Double");
+        simpleEntries.add("java.lang.Float");
+        simpleEntries.add("java.lang.String");
+        simpleEntries.add("java.lang.Class");
+        SIMPLE_ENTRIES = Collections.unmodifiableSet(simpleEntries);
+    }
 
     private final Context context;
 
@@ -184,7 +211,13 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         return new ResourceReferenceFactory<Object>() {
             @Override
             public ResourceReference<Object> createResource() {
-                return new SimpleResourceReference<Object>(resolveResource(injectionPoint));
+                try {
+                    Object resolved = resolveResource(injectionPoint);
+                    return new SimpleResourceReference<Object>(resolved);
+                } catch (UnmappedResourceException ure) {
+                    // Jakarta EE 10 5.4.1.2 -- don't inject when an unmapped resource cannot be resolved
+                    return null;
+                }
             }
         };
     }
@@ -214,6 +247,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
                 moduleDescription.getModuleName(), !warModule, result);
     }
 
+    // TODO make this private so we can throw NamingException and don't need to use an exception type for flow control
     public Object resolveResource(InjectionPoint injectionPoint) {
         final Member member = injectionPoint.getMember();
         AnnotatedMember<?> annotatedMember;
@@ -239,6 +273,9 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         try {
             return context.lookup(name);
         } catch (NamingException e) {
+            if (isSimpleUnmappedEntry(injectionPoint)) {
+                throw new UnmappedResourceException();
+            }
             throw WeldLogger.ROOT_LOGGER.couldNotFindResource(name, injectionPoint.getMember().toString(), e);
         }
     }
@@ -250,5 +287,22 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         } catch (NamingException e) {
             throw WeldLogger.ROOT_LOGGER.couldNotFindResource(name, e);
         }
+    }
+
+    private boolean isSimpleUnmappedEntry(InjectionPoint injectionPoint) {
+        // TODO non-field injection
+        if (!(injectionPoint.getAnnotated() instanceof AnnotatedField) ||
+                !isEnvEntryType(((AnnotatedField<?>) injectionPoint.getAnnotated()).getJavaMember().getType())) {
+            return false;
+        }
+        Resource resource = getResourceAnnotated(injectionPoint).getAnnotation(Resource.class);
+        return resource.mappedName().isEmpty() && resource.lookup().isEmpty();
+    }
+
+    private static boolean isEnvEntryType(final Class type) {
+        return type.isEnum() || SIMPLE_ENTRIES.contains(type.getName());
+    }
+
+    static final class UnmappedResourceException extends RuntimeException {
     }
 }
