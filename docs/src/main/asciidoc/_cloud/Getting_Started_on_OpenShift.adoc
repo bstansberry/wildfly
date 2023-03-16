@@ -1,3 +1,11 @@
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 # Getting Started with WildFly on OpenShift
 
 This guide is designed to assist you through obtaining an OpenShift instance and installing WildFly, complete with a deployed application. It is not intended to cover all possible configurations, as links to more detailed documentation will be provided.
