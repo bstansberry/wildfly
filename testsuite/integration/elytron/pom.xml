@@ -765,6 +765,19 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <version>${version.org.wildfly.plugin}</version>
+                        <configuration>
+                            <!-- Disable the standard enable-embedded-messaging.cli script as we have disabled
+                                 the tests that need it and the script doesn't work well with the config we provision here.
+                                 TODO fix the script and re-enable the tests. -->
+                            <scripts combine.children="override">
+                                <script>modify-elytron-config.cli</script>
+                            </scripts>
+                        </configuration>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
