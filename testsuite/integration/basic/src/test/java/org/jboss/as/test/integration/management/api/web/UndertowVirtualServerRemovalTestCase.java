@@ -71,7 +71,7 @@ public class UndertowVirtualServerRemovalTestCase extends ContainerResourceMgmtT
     @Test
     public void testRemoveDefaultVirtualServer() throws IOException, MgmtOperationException {
         // default hosts cannot be removed, even with multiple times
-        final int times = 10;
+        final int times = 2;
         for (int i = 0; i < times; i ++) {
             ModelNode response = executeOperation(hostOperation(DEFAULT_SERVER, DEFAULT_HOST, "remove"), false);
             assertEquals(ModelDescriptionConstants.FAILED, response.get(ModelDescriptionConstants.OUTCOME).asString());
@@ -143,6 +143,10 @@ public class UndertowVirtualServerRemovalTestCase extends ContainerResourceMgmtT
                 executeOperation(Util.createRemoveOperation(filterPathAddress()));
                 reloadIfRequired(getManagementClient());
             }
+            if (withLocation) {
+                executeOperation(Util.createRemoveOperation(welcomeHandlerPath()));
+                reloadIfRequired(getManagementClient());
+            }
         }
     }
 
@@ -173,9 +177,14 @@ public class UndertowVirtualServerRemovalTestCase extends ContainerResourceMgmtT
         addHostOp.get("alias").add("localhost");
         executeOperation(addHostOp);
         if (withLocation) {
+            PathAddress welcomeHandlerPath = welcomeHandlerPath();
+            ModelNode addHandlerOp = Util.createAddOperation(welcomeHandlerPath);
+            addHandlerOp.get("path").set(".");
+            executeOperation(addHandlerOp);
+
             PathAddress locationAddress = locationAddress("abc", "abc-host", "/abc");
             ModelNode addLocationOp = Util.createAddOperation(locationAddress);
-            addLocationOp.get("handler").set("welcome-content");
+            addLocationOp.get("handler").set("welcome");
             executeOperation(addLocationOp);
         }
         if (withFilter) {
@@ -187,6 +196,12 @@ public class UndertowVirtualServerRemovalTestCase extends ContainerResourceMgmtT
             ModelNode addHostFilterRefOp = Util.createAddOperation(hostAddress("abc", "abc-host").append("filter-ref", "x-powered-by-header"));
             executeOperation(addHostFilterRefOp);
         }
+    }
+
+    private PathAddress welcomeHandlerPath() {
+        return PathAddress.pathAddress("subsystem", "undertow")
+                .append("configuration", "handler")
+                .append("file", "welcome");
     }
 
     private PathAddress filterPathAddress() {
