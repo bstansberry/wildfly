@@ -6,4 +6,4 @@ repositories:
   - id: "jboss-public"
     url: "https://repository.jboss.org/nexus/content/groups/public/"
 manifest:
-  maven: "org.wildfly:wildfly-ee-channel:${project.version}"
+  maven: "org.wildfly:${project.artifactId}:${project.version}"
