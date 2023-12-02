@@ -405,7 +405,7 @@
                         <phase>${multi.channel.provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
-                            <record-provisioning-state>false</record-provisioning-state>
+                            <record-provisioning-state>true</record-provisioning-state>
                             <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
                             <offline-provisioning>false</offline-provisioning>
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
@@ -532,6 +532,9 @@
                         <node2>${node2}</node2>
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
+                        <wildfly.ee.channel.groupId>${ee.maven.groupId}</wildfly.ee.channel.groupId>
+                        <wildfly.ee.channel.version>${project.version}</wildfly.ee.channel.version>
+                        <prosppero.channel.version>${version.org.wildfly.prospero}</prosppero.channel.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
