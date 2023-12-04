@@ -33,6 +33,8 @@
         <!-- Byteman -->
         <byteman.host>127.0.0.1</byteman.host>
         <byteman.port>17091</byteman.port>
+
+        <multi.channel.provisioning.phase>process-test-resources</multi.channel.provisioning.phase>
         <manifest.url.prefix>file://</manifest.url.prefix>
     </properties>
 
@@ -400,7 +402,7 @@
                         <goals>
                             <goal>provision</goal>
                         </goals>
-                        <phase>process-test-resources</phase>
+                        <phase>${multi.channel.provisioning.phase}</phase>
                         <configuration>
                             <provisioning-dir>${project.build.directory}/wildfly-multi-channel</provisioning-dir>
                             <record-provisioning-state>false</record-provisioning-state>
@@ -605,7 +607,7 @@
             </build>
         </profile>
         <profile>
-            <id>window.prefxi</id>
+            <id>windows.prefix</id>
             <activation>
                 <os>
                     <family>windows</family>
@@ -613,6 +615,33 @@
             </activation>
             <properties>
                 <manifest.url.prefix>file:///</manifest.url.prefix>
+                <!-- Disable multi-channel-provisioning execution for now, until we figure out how to pass the file:// url manifest -->
+                <!-- TODO figure out why this doesn't work and fix it -->
+                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>external.wildfly.channels</id>
+            <activation>
+                <property>
+                    <name>external.wildfly.channels</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable multi-channel-provisioning execution to avoid interference between external settings and the test -->
+                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>internal.wildfly.channels</id>
+            <activation>
+                <property>
+                    <name>external.wildfly.channels</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Disable multi-channel-provisioning execution to avoid interference between external settings and the test -->
+                <multi.channel.provisioning.phase>none</multi.channel.provisioning.phase>
             </properties>
         </profile>
     </profiles>

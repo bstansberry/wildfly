@@ -15,6 +15,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -27,9 +29,12 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.util.ServerReload;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.as.test.shared.logging.TestLogHandlerSetupTask;
+import org.jboss.as.test.shared.util.AssumeTestGroupUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.core.testrunner.ServerControl;
@@ -53,6 +58,19 @@ public class ChannelProvisioningTestCase {
 
     private static final String OVERRIDE_PROD_NAME = "Just a Test";
     private static final String OVERRIDE_PROD_VERSION = "1.2 GA Update 1";
+
+    @BeforeClass
+    public static void beforeClass() {
+        AssumeTestGroupUtil.assumeNotWildFlyPreview();
+        Properties sysProps = System.getProperties();
+        if (AssumeTestGroupUtil.isBootableJar()
+                || sysProps.contains("external.wildfly.channels")
+                || sysProps.contains("internal.wildfly.channels")
+                // TODO remove this last one
+                || sysProps.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("window")) {
+            throw new AssumptionViolatedException("Unsuitable environment");
+        }
+    }
 
     @ArquillianResource
     private static volatile ContainerController container;
