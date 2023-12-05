@@ -435,7 +435,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <mainClass>org.wildfly.prospero.cli.CliMainNoExit</mainClass>
                             <commandlineArgs>install --dir=${project.build.directory}/wildfly-multi-channel --fpl=${ee.maven.groupId}:wildfly-ee-galleon-pack:${ee.maven.version} --channel=${ee.maven.groupId}:wildfly-ee-channel:${ee.maven.version}</commandlineArgs>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
@@ -447,7 +447,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <mainClass>org.wildfly.prospero.cli.CliMainNoExit</mainClass>
                             <commandlineArgs>channel add --dir=${project.build.directory}/wildfly-multi-channel --channel-name=prospero --manifest=org.wildfly.prospero:prospero-wildfly-galleon-pack:${version.org.wildfly.prospero} --repositories=https://repo1.maven.org/maven2/,${maven.repository.url}</commandlineArgs>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
@@ -460,7 +460,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <mainClass>org.wildfly.prospero.cli.CliMainNoExit</mainClass>
                             <commandlineArgs>channel add --dir=${project.build.directory}/wildfly-multi-channel --channel-name=universe --manifest=file://${project.build.directory}/test-classes/community-universe-manifest.yaml --repositories=${maven.repository.url}</commandlineArgs>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
@@ -472,7 +472,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <mainClass>org.wildfly.prospero.cli.CliMainNoExit</mainClass>
                             <commandlineArgs>feature-pack add --dir=${project.build.directory}/wildfly-multi-channel --fpl=org.wildfly.prospero:prospero-wildfly-galleon-pack --layers=prospero --yes</commandlineArgs>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
@@ -484,7 +484,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <mainClass>org.wildfly.prospero.cli.CliMainNoExit</mainClass>
                             <commandlineArgs>channel add --dir=${project.build.directory}/wildfly-multi-channel --channel-name=override --manifest=file://${project.build.directory}/test-classes/product-conf-override-manifest.yaml --repositories=${maven.repository.url}</commandlineArgs>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
@@ -496,7 +496,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.wildfly.test.prospero.cli.ProsperoCliWrapper</mainClass>
+                            <mainClass>org.wildfly.prospero.cli.CliMainNoExit</mainClass>
                             <commandlineArgs>update perform --dir=${project.build.directory}/wildfly-multi-channel --yes</commandlineArgs>
                             <cleanupDaemonThreads>false</cleanupDaemonThreads>
                         </configuration>
