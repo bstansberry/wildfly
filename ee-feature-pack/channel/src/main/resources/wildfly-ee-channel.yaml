@@ -6,4 +6,7 @@ repositories:
   - id: "jboss-public"
     url: "https://repository.jboss.org/nexus/content/groups/public/"
 manifest:
-  maven: "org.wildfly:${project.artifactId}:${project.version}"
+  maven:
+    groupId: org.wildfly
+    artifactId: ${project.artifactId}
+    version: ${project.version}
