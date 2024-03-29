@@ -504,6 +504,7 @@
             </activation>
             <properties>
                 <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
+                <surefire.excluded.groups>org.jboss.as.test.shared.categories.EE10</surefire.excluded.groups>
             </properties>
         </profile>
 
