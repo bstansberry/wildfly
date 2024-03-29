@@ -8,25 +8,27 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.shared.categories.EE10;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * A test for injection via env-entry in web.xml
+ * A test for managed bean injection via env-entry in web.xml
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
+@Category(EE10.class) // This tests injection in to EE managed beans, which don't exist after EE 10
 public class EnvEntryInjectionTestCase {
 
     @Deployment
     public static WebArchive deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
         war.addClasses(
-                EnvEntryInjectionServlet.class,
                 EnvEntryManagedBean.class,
                 EnvEntryInjectionTestCase.class
         );
