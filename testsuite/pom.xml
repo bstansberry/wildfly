@@ -534,6 +534,8 @@
             <properties>
                 <testsuite.test.galleon.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.galleon.pack.artifactId>
                 <surefire.excluded.groups>org.jboss.as.test.shared.categories.EE10</surefire.excluded.groups>
+                <!-- For WFP, if there are EE-version-specific test sources, uses the ee11 ones -->
+                <additional.ee.test.source>ee11</additional.ee.test.source>
             </properties>
         </profile>
 
