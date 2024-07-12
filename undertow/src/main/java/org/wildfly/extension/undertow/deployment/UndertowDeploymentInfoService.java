@@ -226,7 +226,31 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final Supplier<SecurityDomain> rawSecurityDomain,
             final Supplier<HttpServerAuthenticationMechanismFactory> rawMechanismFactory,
             final Supplier<BiFunction<DeploymentInfo, Function<String, RunAsIdentityMetaData>, Registration>> applySecurityFunction,
-            final JBossWebMetaData mergedMetaData, final String deploymentName, final HashMap<String, TagLibraryInfo> tldInfo, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupHandler> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions, SharedSessionManagerConfig sharedSessionManagerConfig, WebSocketDeploymentInfo webSocketDeploymentInfo, File tempDir, List<File> externalResources, List<Predicate> allowSuspendedRequests) {
+            final JBossWebMetaData mergedMetaData,
+            final String deploymentName,
+            final HashMap<String, TagLibraryInfo> tldInfo,
+            final Module module,
+            final ScisMetaData scisMetaData,
+            final VirtualFile deploymentRoot,
+            final String jaccContextId,
+            final String securityDomain,
+            final List<ServletContextAttribute> attributes,
+            final String contextPath,
+            final List<SetupAction> setupActions,
+            final Set<VirtualFile> overlays,
+            final List<ExpressionFactoryWrapper> expressionFactoryWrappers,
+            List<PredicatedHandler> predicatedHandlers,
+            List<HandlerWrapper> initialHandlerChainWrappers,
+            List<HandlerWrapper> innerHandlerChainWrappers,
+            List<HandlerWrapper> outerHandlerChainWrappers,
+            List<ThreadSetupHandler> threadSetupActions,
+            boolean explodedDeployment,
+            List<ServletExtension> servletExtensions,
+            SharedSessionManagerConfig sharedSessionManagerConfig,
+            WebSocketDeploymentInfo webSocketDeploymentInfo,
+            File tempDir,
+            List<File> externalResources,
+            List<Predicate> allowSuspendedRequests) {
         this.deploymentInfoConsumer = deploymentInfoConsumer;
         this.undertowService = undertowService;
         this.sessionManagerFactory = sessionManagerFactory;
@@ -393,6 +417,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             deploymentInfo.setServerName(serverEnvironment.get().getProductConfig().getPrettyVersionString());
             if (undertowService.get().isStatisticsEnabled()) {
                 deploymentInfo.setMetricsCollector(new UndertowMetricsCollector());
+            }
+
+            if (VirtualThreadDispatch.canRunVirtual()) {
+                deploymentInfo.addInitialHandlerChainWrapper(new VirtualThreadDispatch.VirtualThreadHandler.Wrapper());
             }
 
             deploymentInfoConsumer.accept(this.deploymentInfo = deploymentInfo);
