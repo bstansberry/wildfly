@@ -77,9 +77,6 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             for (Class<? extends BuildCompatibleExtension> extensionClass : loadExtensions(module, buildCompatibleExtensionServices, BuildCompatibleExtension.class)) {
                 extensions.registerBuildCompatibleExtension(extensionClass);
             }
-            // prepare metadata for later registration of LiteExtensionTranslator
-            // NOTE: I chose to register it under the same dep. unit as other extensions, not sure if this is correct
-            extensions.prepareLiteExtensionTranslator(module.getClassLoader(), deploymentUnit);
         } catch (IOException e) {
             throw new DeploymentUnitProcessingException(e);
         }

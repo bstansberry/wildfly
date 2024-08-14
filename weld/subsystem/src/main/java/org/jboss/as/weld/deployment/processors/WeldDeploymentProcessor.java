@@ -216,7 +216,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         }
         WeldPortableExtensions portableExtensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit);
         // register LiteExtensionTranslator as the last extension so that we have all info on registered BCEs
-        portableExtensions.registerLiteExtensionTranslatorIfNeeded((classLoader, classes) -> new LiteExtensionTranslator(classes, classLoader));
+        // NOTE: I chose to register it under the dep. unit of the top level deployment, using its CL, not sure if this is correct
+        portableExtensions.registerLiteExtensionTranslatorIfNeeded(classes -> new LiteExtensionTranslator(classes, module.getClassLoader()), deploymentUnit);
         final Collection<Metadata<Extension>> extensions = portableExtensions.getExtensions();
 
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders, deploymentUnit, rootBeanDeploymentModule, eeModuleDescriptors);
