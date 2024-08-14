@@ -266,4 +266,7 @@ public interface WeldLogger extends BasicLogger {
 
     @Message(id = 63, value = "Original %s does not have a module")
     IllegalArgumentException originalClassDoesNotHaveAModule(Class<?> originalClass);
+
+    @Message(id = 64, value = "Incorrect setup for Weld's LiteExtensionTranslator initialization")
+    DeploymentUnitProcessingException incorrectBceTranslatorSetup();
 }

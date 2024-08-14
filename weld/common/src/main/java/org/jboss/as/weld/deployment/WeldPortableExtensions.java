@@ -97,7 +97,7 @@ public class WeldPortableExtensions {
     public synchronized void registerLiteExtensionTranslatorIfNeeded(BiFunction<ClassLoader, List<Class<? extends BuildCompatibleExtension>>,
             Extension> extensionCreator) throws DeploymentUnitProcessingException {
         if (liteExtensionTranslatorDepUnit == null || liteExtensionTranslatorCl == null) {
-            throw new DeploymentUnitProcessingException("Incorrect setup for Weld's LiteExtensionTranslator initialization");
+            throw WeldLogger.ROOT_LOGGER.incorrectBceTranslatorSetup();
         }
 
         // only register if we found any BCE be it via discovery or manual registration
