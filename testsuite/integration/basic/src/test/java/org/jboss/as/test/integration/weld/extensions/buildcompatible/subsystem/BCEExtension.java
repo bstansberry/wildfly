@@ -17,6 +17,7 @@ import org.jboss.as.controller.ResourceRegistration;
 import org.jboss.as.controller.SubsystemModel;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.SubsystemSchema;
+import org.jboss.as.controller.capability.CapabilityServiceSupport;
 import org.jboss.as.controller.descriptions.ParentResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.SubsystemResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -24,11 +25,15 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.xml.VersionedNamespace;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.version.Stability;
+import org.jboss.as.weld.Capabilities;
+import org.jboss.as.weld.WeldCapability;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.IntVersion;
 import org.kohsuke.MetaInfServices;
@@ -125,7 +130,7 @@ public class BCEExtension extends SubsystemExtension<BCEExtension.BCESubsystemSc
                                 context.addStep(new AbstractDeploymentChainStep() {
                                     @Override
                                     protected void execute(DeploymentProcessorTarget processorTarget) {
-                                        processorTarget.addDeploymentProcessor(NAME, Phase.FIXME, Phase.FIXME, new BCEDeploymentUnitProcessor());
+                                        processorTarget.addDeploymentProcessor(NAME, Phase.INSTALL, Phase.INSTALL_WELD_DEPLOYMENT, new BCEDeploymentUnitProcessor());
 
                                     }
                                 }, OperationContext.Stage.RUNTIME);
@@ -149,7 +154,14 @@ public class BCEExtension extends SubsystemExtension<BCEExtension.BCESubsystemSc
 
         @Override
         public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-            FIXME
+            final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+            try {
+                final WeldCapability weldCapability = deploymentUnit.getAttachment(Attachments.CAPABILITY_SERVICE_SUPPORT)
+                        .getCapabilityRuntimeAPI(Capabilities.WELD_CAPABILITY_NAME, WeldCapability.class);
+                weldCapability.registerBuildCompatibleExtension(RegisteredExtension.class, deploymentUnit);
+            } catch (CapabilityServiceSupport.NoSuchCapabilityException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
