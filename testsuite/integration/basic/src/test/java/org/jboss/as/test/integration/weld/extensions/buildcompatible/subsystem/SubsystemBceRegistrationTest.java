@@ -6,7 +6,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.module.util.TestModule;
+import org.jboss.as.test.shared.ServerReload;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -57,11 +60,22 @@ public class SubsystemBceRegistrationTest {
                     .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
                     .addAsServiceProvider(org.jboss.as.controller.Extension.class, BCEExtension.class);
             testModule.create();
+
+            managementClient.getControllerClient().execute(Util.createAddOperation(PathAddress.pathAddress("extension", "test." + MODULE_NAME)));
+            managementClient.getControllerClient().execute(Util.createAddOperation(PathAddress.pathAddress("subsystem", "bce")));
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
 
         @Override
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+
+            managementClient.getControllerClient().execute(Util.createRemoveOperation(PathAddress.pathAddress("subsystem", "bce")));
+            managementClient.getControllerClient().execute(Util.createRemoveOperation(PathAddress.pathAddress("extension", "test." + MODULE_NAME)));
+
             testModule.remove();
+
+            ServerReload.executeReloadAndWaitForCompletion(managementClient);
         }
     }
 }
