@@ -33,6 +33,7 @@
         <module>ejb-client</module>
 		<module>jaxws-client</module>
         <module>jms-client</module>
+        <module>verifier</module>
     </modules>
 
 </project>

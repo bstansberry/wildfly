@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>36.0.0.Beta1-SNAPSHOT</version>
+        <relativePath>../../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-client-bom-verifier</artifactId>
+
+    <name>WildFly BOM Builders -- Client BOM Verification</name>
+
+    <dependencies>
+        <!-- Depend on the generated client boms so the inherited maven-enforcer-plugin
+             ban-bad-dependencies check can run against them -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-ejb-client-bom</artifactId>
+            <type>pom</type>
+            <version>${ee.maven.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jaxws-client-bom</artifactId>
+            <type>pom</type>
+            <version>${ee.maven.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-jms-client-bom</artifactId>
+            <type>pom</type>
+            <version>${ee.maven.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${version.enforcer.plugin}</version>
+                <executions>
+                    <execution>
+                        <!-- Disable the inherited dependency convergence check by excluding all groupIds -->
+                        <!-- TODO use a separate execution in the root pom for the dependencyConvergence check
+                             so here we can just set its phase to 'none' -->
+                        <id>ban-bad-dependencies</id>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence>
+                                    <excludes>
+                                        <exclude>*</exclude>
+                                    </excludes>
+                                </dependencyConvergence>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
