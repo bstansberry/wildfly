@@ -41,24 +41,25 @@ import org.wildfly.extension.undertow.UndertowFilter;
  */
 enum FilterCapabilities implements Capability {
 
-    FILTER_CAPABILITY(CAPABILITY_FILTER, PredicateHandlerWrapper.class),
+    FILTER_CAPABILITY(CAPABILITY_FILTER, PredicateHandlerWrapper.class, UnaryCapabilityNameResolver.DEFAULT),
     FILTER_HOST_REF_CAPABILITY(CAPABILITY_HOST_FILTER_REF, UndertowFilter.class, TernaryCapabilityNameResolver.GRANDPARENT_PARENT_CHILD),
     FILTER_LOCATION_REF_CAPABILITY(CAPABILITY_LOCATION_FILTER_REF, UndertowFilter.class, QuaternaryCapabilityNameResolver.GREATGRANDPARENT_GRANDPARENT_PARENT_CHILD);
 
     private final RuntimeCapability<Void> definition;
-
-    FilterCapabilities(String name, Class<?> serviceValueType) {
-        this.definition = RuntimeCapability.Builder.of(name, true, serviceValueType)
-                .setDynamicNameMapper(UnaryCapabilityNameResolver.DEFAULT).build();
-    }
+    private final Function<PathAddress, String[]> nameResolver;
 
     FilterCapabilities(String name, Class<?> serviceValueType, Function<PathAddress, String[]> nameResolver) {
         this.definition = RuntimeCapability.Builder.of(name, true, serviceValueType)
                 .setDynamicNameMapper(nameResolver).build();
+        this.nameResolver = nameResolver;
     }
 
     @Override
     public RuntimeCapability<Void> getDefinition() {
         return this.definition;
+    }
+
+    public Function<PathAddress, String[]> getDynamicNameMapper() {
+        return nameResolver;
     }
 }
