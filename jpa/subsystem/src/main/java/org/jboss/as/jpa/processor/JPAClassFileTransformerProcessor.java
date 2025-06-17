@@ -5,6 +5,10 @@
 
 package org.jboss.as.jpa.processor;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -41,12 +45,15 @@ public class JPAClassFileTransformerProcessor implements DeploymentUnitProcessor
         DelegatingClassTransformer transformer = deploymentUnit.getAttachment(DelegatingClassTransformer.ATTACHMENT_KEY);
         if ( transformer != null) {
 
+            // Control concurrent transforming of the same class across the deployment
+            ConcurrentMap<String, Lock> classLocks = new ConcurrentHashMap<>();
+
             for (ResourceRoot resourceRoot : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 PersistenceUnitMetadataHolder holder = resourceRoot.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
                 if (holder != null) {
                     for (PersistenceUnitMetadata pu : holder.getPersistenceUnits()) {
                         if (pu.needsJPADelegatingClassFileTransformer()) {
-                            transformer.addTransformer(new JPADelegatingClassFileTransformer(pu));
+                            transformer.addTransformer(new JPADelegatingClassFileTransformer(pu, classLocks));
                         }
                     }
                 }
