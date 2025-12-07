@@ -455,21 +455,24 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
+<!--                    <configuration>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>org.hibernate.orm</groupId>
                                 <artifactId>hibernate-jpamodelgen</artifactId>
+-->
                                 <!-- We declare the version here instead of relying
                                      on dependencyManagement. The testsuite uses the server
                                      build boms for dependency management, not the user boms
                                      like org.wildfly.bom:wildfly-ee that includes this artifact.
                                      Perhaps it should switch; if it does this version config
                                      could be removed. -->
+<!--
                                 <version>${version.org.hibernate}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>
+-->
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
