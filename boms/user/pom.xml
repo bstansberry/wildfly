@@ -191,6 +191,67 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <!--
+                         The central-publishing-maven-plugin can't deal with this project's generated artifacts
+                         because it writes maven-metadata-central-staging.xml files for those components that
+                         Maven Central rejects.
+                         So we hack this by
+                         1) Disabling the central-publishing-maven-plugin
+                         2) Using the nxrm3-maven-plugin's 'stageLocally' feature to write to the dir central-publishing-maven-plugin would
+                         3) and then *after it* add a 'deploy' phase maven-clean-plugin execution to remove
+                         some cruft files that Maven Central will reject.
+                    -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <!--<executions>
+                            <execution>
+                                <id>injected-central-publishing</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>-->
+                    </plugin>
+                   <!-- <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nxrm3-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>central-stage</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>staging-deploy</goal>
+                                </goals>
+                                <configuration>
+                                    <stageLocally>true</stageLocally>
+                                    <altStagingDirectory>${maven.multiModuleProjectDirectory}/target/central-staging</altStagingDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>-->
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>post-stage-clean</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${maven.multiModuleProjectDirectory}/target/central-staging</directory>
+                                            <includes>
+                                                <include>**/maven-metadata-*.xml</include>
+                                            </includes>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
