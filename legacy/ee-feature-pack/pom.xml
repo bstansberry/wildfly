@@ -21,38 +21,58 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-legacy-ee-bom</artifactId>
-    <description>
-        Bill of materials for maven modules that provide traditional capabilities like Jakarta EE
-        and that compile against legacy dependencies
-    </description>
+    <artifactId>wildfly-legacy-ee-feature-pack-parent</artifactId>
+    <description>WildFly ${project.version} Legacy Feature Pack parent</description>
     <packaging>pom</packaging>
 
-    <name>WildFly: Legacy Dependency Management (Base Dependencies)</name>
+    <name>WildFly: Feature Pack Parent</name>
+
+    <modules>
+        <module>build</module>
+        <module>channel</module>
+        <module>dist</module>
+        <module>feature-pack</module>
+        <module>galleon-local</module>
+        <!-- Add this is we define any layers in this FP -->
+        <!--<module>layer-metadata-tests</module>-->
+        <module>product-conf</module>
+    </modules>
 
     <dependencyManagement>
         <dependencies>
 
-            <!--
-                Inherit the common deps.
-             -->
+            <!-- Just import the expansion bom -->
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-common-ee-dependency-management</artifactId>
+                <artifactId>wildfly-legacy-ee-bom</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
 
-            <!-- Dependencies specific to this bom. Keep sorted by maven GA -->
-
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-legacy-ee-feature-pack-product-conf</artifactId>
+                <artifactId>wildfly-legacy-test-bom</artifactId>
                 <version>${ee.maven.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+
+        <!-- Ensure the boms get built. -->
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-common-ee-dependency-management</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>wildfly-legacy-ee-bom</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
 
 </project>

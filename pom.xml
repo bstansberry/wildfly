@@ -76,6 +76,12 @@
         <ee.dist.product.min.stability.level>experimental</ee.dist.product.min.stability.level>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
+        <legacy.dist.product.release.name>WildFly EE 10</legacy.dist.product.release.name>
+        <legacy.jakarta.version>10</legacy.jakarta.version>
+        <!-- Segment of legacy-ee related artifactIds that will change across releases.
+             Used in artifactIds of user-relevant artifacts where we want an artifactId
+             that discloses what the artifact provides -->
+        <legacy.artifactid.segment>ee-${legacy.jakarta.version}</legacy.artifactid.segment>
         <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
         <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
@@ -633,6 +639,14 @@
             </dependency>
 
             <dependency>
+                <groupId>${channels.maven.groupId}</groupId>
+                <artifactId>wildfly-${legacy.artifactid.segment}</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>yaml</type>
+                <classifier>manifest</classifier>
+            </dependency>
+
+            <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-dist</artifactId>
                 <version>${ee.maven.version}</version>
@@ -669,6 +683,34 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared-preview</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-ee-feature-pack-galleon-shared-preview</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-galleon-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
@@ -677,6 +719,20 @@
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
                 <artifactId>wildfly-ee-galleon-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>zip</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-${legacy.artifactid.segment}-galleon-pack</artifactId>
+                <version>${ee.maven.version}</version>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>${ee.maven.groupId}</groupId>
+                <artifactId>wildfly-${legacy.artifactid.segment}-galleon-pack</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -1466,8 +1522,6 @@
                 <module>batch-jberet</module>
                 <module>bean-validation</module>
                 <module>boms/common-ee</module>
-                <module>boms/legacy-ee</module>
-                <module>boms/legacy-test</module>
                 <module>boms/standard-ee</module>
                 <module>boms/standard-test</module>
                 <module>boms/user</module>
@@ -1560,6 +1614,20 @@
             <build>
                 <defaultGoal>clean install</defaultGoal>
             </build>
+        </profile>
+
+        <profile>
+            <id>legacy-ee-build</id>
+            <activation>
+                <property>
+                    <name>!no.legacy.ee.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>boms/legacy-ee</module>
+                <module>boms/legacy-test</module>
+                <module>legacy/ee-feature-pack</module>
+            </modules>
         </profile>
 
         <profile>

@@ -12,7 +12,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-ee-feature-pack-parent</artifactId>
+        <artifactId>wildfly-legacy-ee-feature-pack-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -20,24 +20,23 @@
         <version>39.0.0.Final-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-ee-galleon-pack</artifactId>
+    <artifactId>wildfly-ee-10-galleon-pack</artifactId>
 
-    <name>WildFly: EE Full Galleon Pack</name>
-    <description>Galleon feature pack providing full platform Jakarta EE functionality</description>
+    <name>WildFly: Legacy EE Full Galleon Pack</name>
+    <description>Galleon feature pack providing full platform Jakarta EE ${legacy.jakarta.version} functionality</description>
     <packaging>pom</packaging>
 
     <properties>
-        <galleon.shared.resources.directory>${basedir}/../galleon-shared/src/main/resources</galleon.shared.resources.directory>
-        <galleon.shared.generated.resources.directory>${basedir}/../galleon-shared/target/index</galleon.shared.generated.resources.directory>
-        <galleon.shared.legacy.resources.directory>${basedir}/../galleon-shared-legacy/src/main/resources</galleon.shared.legacy.resources.directory>
-        <galleon.shared.preview.resources.directory>${basedir}/../galleon-shared-preview/src/main/resources</galleon.shared.preview.resources.directory>
+        <galleon.shared.resources.directory>${basedir}/../../../ee-feature-pack/galleon-shared/src/main/resources</galleon.shared.resources.directory>
+        <galleon.shared.generated.resources.directory>${basedir}/../../../ee-feature-pack/galleon-shared/target/index</galleon.shared.generated.resources.directory>
+        <galleon.shared.legacy.resources.directory>${basedir}/../../../ee-feature-pack/galleon-shared-legacy/src/main/resources</galleon.shared.legacy.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
-        <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
+        <galleon.client.resources.directory>${basedir}/../../../client/shade/target/resources</galleon.client.resources.directory>
         <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
     </properties>
 
     <build>
-        <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-feature-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <!-- Feature pack generation is vulnerable to leftover files in the target
@@ -172,22 +171,6 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-galleon-shared-preview-feature-pack-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${galleon.shared.preview.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>copy-galleon-local-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
@@ -242,7 +225,7 @@
                             </licensesConfigFiles>
                             <licensesOutputFile>${license.directory}/wildfly-ee-feature-pack-licenses.xml</licensesOutputFile>
                             <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                            <excludedArtifacts>wildfly-standard-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
+                            <excludedArtifacts>wildfly-legacy-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -263,7 +246,7 @@
                                  Note that package dependencies that are only valid for
                                  a minimum stability level are ignored. -->
                             <forbid-lower-stability-level-package-reference>true</forbid-lower-stability-level-package-reference>
-                            <release-name>${ee.dist.product.release.name}</release-name>
+                            <release-name>${legacy.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
@@ -338,15 +321,7 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-galleon-shared-preview</artifactId>
-            <version>${ee.maven.version}</version>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-galleon-local</artifactId>
+            <artifactId>wildfly-legacy-ee-feature-pack-galleon-local</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
