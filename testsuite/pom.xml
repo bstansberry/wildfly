@@ -523,6 +523,26 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>legacy-ee-server-tests</id>
+            <activation><property><name>legacy-ee-server-tests</name></property></activation>
+            <modules>
+                <module>build-demander-legacy-ee</module> <!-- Ensure base server build/dist modules used by tests are built -->
+                <module>aggregator-legacy-ee</module>
+                <module>integration</module>
+            </modules>
+            <dependencies>
+                <!-- Include a dependency on the build demander because in concurrent builds the order
+                     of items in the 'modules' element doesn't ensure earlier modules are
+                     built before later ones. So use a dependency make sure it is executed. -->
+                <dependency>
+                    <groupId>${ee.maven.groupId}</groupId>
+                    <artifactId>wildfly-ts-build-demander-legacy-ee</artifactId>
+                    <version>${ee.maven.version}</version>
+                    <type>pom</type>
+                </dependency>
+            </dependencies>
+        </profile>
         <!-- These execute in all feature pack contexts, so declare them here instead
              of repeating this in the aggregator modules -->
         <profile>

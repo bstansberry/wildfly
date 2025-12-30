@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ Copyright The WildFly Authors
   ~ SPDX-License-Identifier: Apache-2.0
@@ -11,7 +12,7 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-preview-parent</artifactId>
+        <artifactId>wildfly-legacy-ee-feature-pack-parent</artifactId>
         <!--
         Maintain separation between the artifact id and the version to help prevent
         merge conflicts between commits changing the GA and those changing the V.
@@ -19,28 +20,23 @@
         <version>40.0.0.Beta1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>wildfly-preview-feature-pack</artifactId>
+    <artifactId>wildfly-ee-10-galleon-pack</artifactId>
 
-    <name>WildFly Preview: Galleon Feature Pack</name>
-    <description>Tech Preview Galleon feature pack providing possibly experimental functionality</description>
+    <name>WildFly: Legacy EE Full Galleon Pack</name>
+    <description>Galleon feature pack providing full platform Jakarta EE ${legacy.jakarta.version} functionality</description>
     <packaging>pom</packaging>
 
     <properties>
-        <!-- Some paths below reference target/ directories from other Maven modules, bypassing Maven's dependency management. -->
-        <!-- Any module referenced by these paths MUST be explicitly declared as a <dependency> in this POM to ensure the reactor schedules it to complete BEFORE this module's build starts! -->
-        <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
-
-        <!-- WildFly and ee galleon contents -->
-        <ee.galleon.shared.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared/src/main/resources</ee.galleon.shared.resources.directory>
-        <full.galleon.shared.resources.directory>${basedir}/../../galleon-pack/galleon-shared/src/main/resources</full.galleon.shared.resources.directory>
-        <ee.galleon.shared.preview.resources.directory>${basedir}/../../ee-feature-pack/galleon-shared-preview/src/main/resources</ee.galleon.shared.preview.resources.directory>
-        <galleon.client.resources.directory>${basedir}/../../client/shade/target/resources</galleon.client.resources.directory>
-        <!-- WildFly Preview modules -->
+        <galleon.shared.resources.directory>${basedir}/../../../ee-feature-pack/galleon-shared/src/main/resources</galleon.shared.resources.directory>
+        <galleon.shared.generated.resources.directory>${basedir}/../../../ee-feature-pack/galleon-shared/target/index</galleon.shared.generated.resources.directory>
+        <galleon.shared.legacy.resources.directory>${basedir}/../../../ee-feature-pack/galleon-shared-legacy/src/main/resources</galleon.shared.legacy.resources.directory>
         <galleon.local.resources.directory>${basedir}/../galleon-local/src/main/resources</galleon.local.resources.directory>
+        <galleon.client.resources.directory>${basedir}/../../../client/shade/target/resources</galleon.client.resources.directory>
+        <license.directory>${project.build.directory}/resources/content/docs/licenses</license.directory>
     </properties>
 
     <build>
-        <finalName>${server.output.dir.prefix}-galleon-pack-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-feature-pack-${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <!-- Feature pack generation is vulnerable to leftover files in the target
@@ -84,11 +80,6 @@
                                     <type>zip</type>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.wildfly</groupId>
-                                    <artifactId>mvc-krazo-galleon-shared</artifactId>
-                                    <type>zip</type>
-                                </artifactItem>
-                                <artifactItem>
                                     <groupId>org.wildfly.core</groupId>
                                     <artifactId>wildfly-cli</artifactId>
                                     <classifier>shaded-model</classifier>
@@ -100,16 +91,11 @@
                                     <classifier>shaded-model</classifier>
                                     <type>zip</type>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.wildfly.extras.vertx</groupId>
-                                    <artifactId>wildfly-vertx-feature-pack-content</artifactId>
-                                    <type>zip</type>
-                                </artifactItem>
                             </artifactItems>
                             <!-- The feature pack build seems to ignore such things anyway, but to be
                                  robust exclude artifact metadata content -->
                             <excludes>**/pom.xml,META-INF,META-INF/**</excludes>
-                            <outputDirectory>${basedir}/target/unpacked-dependency-galleon-resources</outputDirectory>
+                            <outputDirectory>${basedir}/target/unpacked-wildfly-core-galleon-resources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -119,7 +105,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-unpacked-galleon-resources</id>
+                        <id>copy-unpacked-wildfly-core-galleon-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -129,48 +115,14 @@
                             <escapeString>\</escapeString>
                             <resources>
                                 <resource>
-                                    <directory>${basedir}/target/unpacked-dependency-galleon-resources</directory>
+                                    <directory>${basedir}/target/unpacked-wildfly-core-galleon-resources</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-ee-galleon-shared-feature-pack-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <escapeString>\</escapeString>
-                            <resources>
-                                <resource>
-                                    <directory>${ee.galleon.shared.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-full-galleon-shared-feature-pack-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/target/resources</outputDirectory>
-                            <escapeString>\</escapeString>
-                            <resources>
-                                <resource>
-                                    <directory>${full.galleon.shared.resources.directory}</directory>
-                                </resource>
-                            </resources>
-                            <overwrite>true</overwrite>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-galleon-shared-preview-feature-pack-resources</id>
+                        <id>copy-galleon-shared-feature-pack-resources</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -179,7 +131,40 @@
                             <outputDirectory>${basedir}/target/resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${ee.galleon.shared.preview.resources.directory}</directory>
+                                    <directory>${galleon.shared.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-feature-pack-generated-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Just copy here rather than trying to get from the shared zip, since nothing else is using the zip -->
+                            <outputDirectory>${basedir}/target/resources/packages/unstable-api-annotation-index.wildfly-ee-feature-pack/pm/wildfly</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.generated.resources.directory}</directory>
+                                </resource>
+                            </resources>
+                            <overwrite>true</overwrite>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-galleon-shared-legacy-feature-pack-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${galleon.shared.legacy.resources.directory}</directory>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
@@ -196,9 +181,14 @@
                             <resources>
                                 <resource>
                                     <directory>${galleon.local.resources.directory}</directory>
+                                    <filtering>true</filtering>
                                 </resource>
                             </resources>
                             <overwrite>true</overwrite>
+                            <!-- Limit build-time resource filtering to @xxx@ expressions to avoid ambiguity with runtime expressions -->
+                            <delimiters>
+                                <delimiter>@@</delimiter>
+                            </delimiters>
                         </configuration>
                     </execution>
                     <execution>
@@ -223,11 +213,6 @@
                 <groupId>org.wildfly.maven.plugins</groupId>
                 <artifactId>licenses-plugin</artifactId>
                 <inherited>false</inherited>
-                <configuration>
-                    <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
-                    <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
-                    <excludedArtifacts>wildfly-ee-galleon-pack|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-core-feature-pack-galleon-common|wildfly-elytron\z|wildfly-feature-pack-galleon-shared|wildfly-preview-feature-pack-galleon-local</excludedArtifacts>
-                </configuration>
                 <executions>
                     <execution>
                         <id>update-licenses-xml</id>
@@ -236,16 +221,16 @@
                         </goals>
                         <phase>process-resources</phase>
                         <configuration>
+                            <generateVersionProperty>true</generateVersionProperty>
+                            <sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
                             <licensesConfigFiles>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-common-licenses.xml</licensesConfigFile>
                                 <licensesConfigFile>${basedir}/target/resources/license/core-feature-pack-ee-10-api-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-mvc-krazo-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${basedir}/target/resources/license/wildfly-vertx-extension-licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${ee.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${full.galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
-                                <licensesConfigFile>${galleon.local.resources.directory}/license/licenses.xml</licensesConfigFile>
+                                <licensesConfigFile>${galleon.shared.resources.directory}/license/licenses.xml</licensesConfigFile>
                             </licensesConfigFiles>
-                            <licensesOutputFile>${license.directory}/wildfly-preview-feature-pack-licenses.xml</licensesOutputFile>
+                            <licensesOutputFile>${license.directory}/wildfly-ee-feature-pack-licenses.xml</licensesOutputFile>
+                            <excludedGroups>org.wildfly.galleon-plugins</excludedGroups>
+                            <excludedArtifacts>wildfly-legacy-ee-bom|wildfly-ee-feature-pack-galleon-shared|wildfly-ee-feature-pack-galleon-local|wildfly-common-ee-dependency-management|wildfly-jar-boot|wildfly-core-feature-pack-common|wildfly-elytron\z</excludedArtifacts>
                         </configuration>
                     </execution>
                 </executions>
@@ -266,12 +251,10 @@
                                  Note that package dependencies that are only valid for
                                  a minimum stability level are ignored. -->
                             <forbid-lower-stability-level-package-reference>true</forbid-lower-stability-level-package-reference>
-                            <release-name>${preview.dist.product.release.name}</release-name>
+                            <release-name>${legacy.dist.product.release.name}</release-name>
                             <fork-embedded>${galleon.fork.embedded}</fork-embedded>
                             <generate-channel-manifest>true</generate-channel-manifest>
                             <deploy-channel-manifest>false</deploy-channel-manifest>
-                            <generate-complete-model>true</generate-complete-model>
-                            <copyright>The WildFly authors</copyright>
                         </configuration>
                     </execution>
                 </executions>
@@ -307,108 +290,23 @@
             <artifactId>wildfly-producers</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jboss.galleon</groupId>
-            <artifactId>galleon-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- module and copy artifact dependencies -->
-
-        <!-- Deps from the source modules we copy in -->
 
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-feature-pack-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
-            <exclusions>
-                <!-- Exclude deps that have been replaced with different artifacts in this FP.
-                     TODO perhaps put these in a different maven module that we don't pull in -->
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-jacc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-jaspi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-audit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-http-oidc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-json-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-mechanism-oauth2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-realm-token</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-tool</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.wildfly.security</groupId>
-                    <artifactId>wildfly-elytron-x500-cert-acme</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
+        <!-- WFLY-19671. DO NOT include 'galleon content only' dependencies
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-feature-pack-galleon-common</artifactId>
             <type>pom</type>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${full.maven.groupId}</groupId>
-            <artifactId>wildfly-feature-pack-galleon-shared</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- n.b. Add at 'test' scope to ensure wildfly-client-all is built first but is NOT included in the artifact-list.txt or manifest. -->
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-client-all</artifactId>
-            <version>${ee.maven.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Workaround for https://issues.redhat.com/browse/WFGP-308 to support building WildFly with `mvn -T`
-             The wildfly-galleon-maven-plugin and galleon itself is not thread-safe.
-             Both this module and wildfly-ee-galleon-pack use the plugin, and when built in parallel they concurrently access the same ZIP artifacts.
-             This reliably causes ClosedFileSystemException due to thread-safety issues in ZIP FileSystem access.
-             This dependency forces Maven's reactor to serialize the builds: wildfly-ee-galleon-pack completes first, then this module builds, preventing concurrent plugin execution.
-             It must be added in test scope so that it is NOT included in the resulting wildfly-preview-feature-pack-x.y.z-artifact-list.txt file. -->
-        <dependency>
-            <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
-            <version>${ee.maven.version}</version>
-            <type>zip</type>
-            <scope>test</scope>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
@@ -420,40 +318,20 @@
 
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-ee-feature-pack-galleon-shared-preview</artifactId>
+            <artifactId>wildfly-ee-feature-pack-galleon-shared-legacy</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Bring in all the WildFly Preview Galleon Local deps in one go -->
         <dependency>
             <groupId>${ee.maven.groupId}</groupId>
-            <artifactId>wildfly-preview-feature-pack-galleon-local</artifactId>
+            <artifactId>wildfly-legacy-ee-feature-pack-galleon-local</artifactId>
+            <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>mvc-krazo-galleon-shared</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.extras.vertx</groupId>
-            <artifactId>wildfly-vertx-feature-pack-content</artifactId>
-            <type>pom</type>
-            <scope>provided</scope>
-            <exclusions>
-                <!-- TODO When a version with https://github.com/wildfly-extras/wildfly-vertx-feature-pack/issues/57
-                     fixed is integrated, remove this exclusion.  -->
-                <exclusion>
-                    <groupId>org.wildfly.galleon-plugins</groupId>
-                    <artifactId>transformer</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <profiles>
@@ -516,10 +394,7 @@
                                                      transitives. Those poms ban transitives at their level -->
                                                 <exclude>org.wildfly.core:wildfly-core-feature-pack-common</exclude>
                                                 <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-shared</exclude>
-                                                <exclude>${full.maven.groupId}:wildfly-feature-pack-galleon-shared</exclude>
-                                                <exclude>${ee.maven.groupId}:wildfly-preview-feature-pack-galleon-local</exclude>
-                                                <exclude>org.wildfly:mvc-krazo-galleon-shared</exclude>
-                                                <exclude>org.wildfly.extras.vertx:wildfly-vertx-feature-pack-content</exclude>
+                                                <exclude>${ee.maven.groupId}:wildfly-ee-feature-pack-galleon-local</exclude>
                                             </excludes>
                                         </banTransitiveDependencies>
                                     </rules>
