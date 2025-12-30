@@ -159,5 +159,17 @@
                 <module>preview</module>
             </modules>
         </profile>
+
+        <profile>
+            <id>skip.legacy</id>
+            <activation>
+                <property>
+                    <name>!no.legacy.ee.build</name>
+                </property>
+            </activation>
+            <modules>
+                <module>legacy</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
