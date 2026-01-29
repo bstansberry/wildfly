@@ -26,7 +26,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.io.FileUtils;
 import static org.jboss.as.test.shared.FileUtils.computeHash;
 import static org.jboss.as.test.shared.FileUtils.unzipFile;
+import static org.junit.Assume.assumeFalse;
 
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.logging.Logger;
 import org.junit.Assume;
 import org.junit.BeforeClass;
