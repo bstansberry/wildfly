@@ -9,6 +9,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import java.lang.invoke.MethodHandles;
 
+import jakarta.persistence.PersistenceException;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
@@ -109,5 +110,8 @@ public interface JipiLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 20252, value = "second level cache not integrated - %s")
     void cannotUseSecondLevelCache(String scopedPuName);
+
+    @Message(id = 20253, value = "Cannot unwrap '%s' as '%s'")
+    PersistenceException cannotUnwrapStatelessSession(String sessionType, String targetType);
 
 }
