@@ -85,10 +85,10 @@
                                 <relativePath/>
                             </bomParent>
                             <bomGroupId>${bomGroupId}</bomGroupId>
-                            <bomArtifactId>${bomArtifactIdPrefix}-expansion</bomArtifactId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-expansion-ee-10</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>${full.dist.product.release.name} BOMs: EE 10 plus Expansion</bomName>
-                            <bomDescription>${full.dist.product.release.name}: EE 10 Plus Expansion Dependency Management</bomDescription>
+                            <bomName>${full.dist.product.release.name} BOMs: Expansion with EE 10</bomName>
+                            <bomDescription>${full.dist.product.release.name}: Expansion with EE 10 Dependency Management</bomDescription>
                             <channels>
                                 <channel>
                                     <manifest>

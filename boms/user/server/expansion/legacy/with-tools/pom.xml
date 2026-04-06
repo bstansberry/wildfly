@@ -63,15 +63,15 @@
                             <bomParent>
                                 <!-- parent is the BOM built by parent builder -->
                                 <groupId>${bomGroupId}</groupId>
-                                <artifactId>${bomArtifactIdPrefix}-expansion</artifactId>
+                                <artifactId>${bomArtifactIdPrefix}-expansion-ee-10</artifactId>
                                 <version>${project.version}</version>
                                 <relativePath/>
                             </bomParent>
                             <bomGroupId>${bomGroupId}</bomGroupId>
-                            <bomArtifactId>${bomArtifactIdPrefix}-expansion-with-tools</bomArtifactId>
+                            <bomArtifactId>${bomArtifactIdPrefix}-expansion-ee-10-with-tools</bomArtifactId>
                             <bomVersion>${project.version}</bomVersion>
-                            <bomName>${full.dist.product.release.name} BOMs: Expansion With Tools</bomName>
-                            <bomDescription>${full.dist.product.release.name}: Expansion Dependency Management, with useful tools</bomDescription>
+                            <bomName>${full.dist.product.release.name} BOMs: Expansion with EE 10 and Tools</bomName>
+                            <bomDescription>${full.dist.product.release.name}: Expansion with EE 10 Dependency Management, with useful tools</bomDescription>
                             <!-- ensure no deps are re-included from parent -->
                             <includeDependencies combine.self="override"/>
                             <!-- the only entry in the BOM's dep mngmnt should be an import for the tools BOM -->
