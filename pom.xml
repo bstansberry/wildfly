@@ -169,7 +169,7 @@
             This list should only be modified if we are making a change to our general
             recommendation of what settings an external *client* application should use
             *in order to utilize our client-side libraries*. It is not meant to cover
-            settings a client app might need to support it's own code.
+            settings a client app might need to support its own code.
 
             This list is not meant to control server-side JPMS settings.
 
@@ -214,14 +214,6 @@
         <!-- Version suffix that is appended to directories. Default is the maven GAV version but this can be edited to use a short form version -->
         <server.output.dir.version>${project.version}</server.output.dir.version>
 
-        <!-- Properties related to the directory from which testsuite modules that don't create their own dists
-             should obtain the dist to test -->
-        <!-- First, prefix to add to the standard maven child project whose output should be used.
-             An empty value means no prefix.
-             Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
-        <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
-        <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
-
         <!-- Protocol to use for communication with remote maven repositories.
              You can set to 'http' if you are using a maven proxy and 'https'
              interferes with that. Use 'https' for builds that will be released
@@ -238,25 +230,6 @@
         <arquillian.servlet.protocol>Servlet 5.0</arquillian.servlet.protocol>
         <testLogToFile>true</testLogToFile>
         <maven.test.redirectTestOutputToFile>${testLogToFile}</maven.test.redirectTestOutputToFile>
-
-        <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
-             that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
-             Test jobs can override this using -D to test using different feature pack.
-        -->
-        <testsuite.ee.galleon.pack.groupId>${full.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-        <testsuite.ee.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.ee.galleon.pack.artifactId>
-        <testsuite.ee.galleon.pack.version>${full.maven.version}</testsuite.ee.galleon.pack.version>
-        <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
-             that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
-             Test jobs can override this using -D to test using a different feature pack.
-        -->
-        <testsuite.full.galleon.pack.groupId>${full.maven.groupId}</testsuite.full.galleon.pack.groupId>
-        <testsuite.full.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.full.galleon.pack.artifactId>
-        <testsuite.full.galleon.pack.version>${full.maven.version}</testsuite.full.galleon.pack.version>
-        <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
-             Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
-        -->
-        <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack</testsuite.test.feature.pack.artifactId>
 
         <!-- WildFly Channels based provisioning configuration.
              By default, if channels drive the provisioning we use the 'wildfly' channel.
@@ -1859,21 +1832,6 @@
         </profile>
 
         <profile>
-            <id>preview.server.test</id>
-            <activation>
-                <property>
-                    <name>preview-server-tests</name>
-                </property>
-            </activation>
-            <properties>
-                <wildfly.build.output.dir>preview/build/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
-                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
-                <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
-            </properties>
-        </profile>
-
-        <profile>
             <id>preview.test.profile</id>
             <activation>
                 <property>
@@ -2117,49 +2075,6 @@
                     <layout>default</layout>
                 </pluginRepository>
             </pluginRepositories>
-        </profile>
-
-        <!-- Configures testsuite to use the latest non-default Galleon pack to provision EE content.
-             This profile is meant to eliminate the need to use -D to see all three parts of the GAV
-             in order to test provisioning using a different feature pack. -->
-        <profile>
-            <id>test.latest.ee.galleon.pack.profile</id>
-            <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>${latest.ee.feature.pack.artifactId}</value>
-                </property>
-            </activation>
-            <properties>
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
-                <!-- If we are using channel-driven provisioning, use the legacy wildfly-ee channel -->
-                <channel.maven.artifactId>wildfly-${legacy.ee.artifactid.segment}</channel.maven.artifactId>
-                <channel.maven.version>${ee.maven.version}</channel.maven.version>
-            </properties>
-        </profile>
-
-        <!-- Configures testsuite to use the legacy non-default Galleon pack to provision EE content.
-             This profile is meant to eliminate the need to use -D to see all three parts of the GAV
-             in order to test provisioning using a different feature pack. -->
-        <profile>
-            <id>test.legacy.ee.galleon.pack.profile</id>
-            <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>${legacy.ee.feature.pack.artifactId}</value>
-                </property>
-            </activation>
-            <properties>
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
-                <!-- If we are using channel-driven provisioning, use the wildfly-ee channel -->
-                <channel.maven.artifactId>wildfly-${latest.ee.artifactid.segment}</channel.maven.artifactId>
-                <channel.maven.version>${ee.maven.version}</channel.maven.version>
-                <!-- If we are using this feature pack to provision testsuite installations, assume that
-                     for testsuites that use pre-built installations we want the corresponding ones. -->
-                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
-            </properties>
         </profile>
 
         <!-- Disable standard compilation execution.
