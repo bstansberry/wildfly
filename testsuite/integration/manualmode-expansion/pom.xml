@@ -198,7 +198,7 @@
                                 <feature-pack>
                                     <transitive>true</transitive>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
+                                    <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
@@ -351,11 +351,26 @@
             </properties>
         </profile>
         <profile>
-            <id>ignore-ee-feature-pack</id>
+            <id>ignore-latest-ee-feature-pack</id>
             <activation>
                 <property>
                     <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
+                    <value>${latest.ee.feature.pack.artifactId}</value>
+                </property>
+            </activation>
+            <properties>
+                <!-- Don't run expansion tests if we're configured to test wildfly-ee -->
+                <surefire.default-test.phase>none</surefire.default-test.phase>
+                <!-- No point provisioning as we won't test -->
+                <channel.provisioning.phase>none</channel.provisioning.phase>
+            </properties>
+        </profile>
+        <profile>
+            <id>ignore-legacy-ee-feature-pack</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>${legacy.ee.feature.pack.artifactId}</value>
                 </property>
             </activation>
             <properties>

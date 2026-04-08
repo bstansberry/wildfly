@@ -12,7 +12,7 @@
     </formats>
     <files>
         <file>
-            <source>../feature-pack/target/wildfly-${legacy.artifactid.segment}-feature-pack-${project.version}-manifest.yaml</source>
+            <source>../feature-pack/target/${legacy.ee.feature.pack.artifactId}-${project.version}-manifest.yaml</source>
             <outputDirectory>./</outputDirectory>
             <destName>${project.artifactId}-${project.version}-manifest.yaml</destName>
         </file>

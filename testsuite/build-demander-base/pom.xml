@@ -89,21 +89,41 @@
         </profile>
 
         <!--
-           If we're using wildfly-ee-galleon-pack for provisioning in the testsuite,
+           If we're using latest wildfly-ee feature pack for provisioning in the testsuite,
            assume the pre-built server we'd use is wildfly-ee-build
          -->
         <profile>
-            <id>test.ee.galleon.pack.profile</id>
+            <id>test.latest.ee.galleon.pack.profile</id>
             <activation>
                 <property>
                     <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
+                    <value>${latest.ee.feature.pack.artifactId}</value>
                 </property>
             </activation>
             <properties>
                 <testsuite.default.base.build.groupId>${ee.maven.groupId}</testsuite.default.base.build.groupId>
-                <testsuite.default.base.build.artifactId>wildfly-ee-build</testsuite.default.base.build.artifactId>
-                <testsuite.default.base.dist.artifactId>wildfly-ee-dist</testsuite.default.base.dist.artifactId>
+                <testsuite.default.base.build.artifactId>wildfly-${latest.ee.artifactid.segment}-build</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.dist.artifactId>wildfly-${latest.ee.artifactid.segment}-dist</testsuite.default.base.dist.artifactId>
+                <testsuite.default.base.build.version>${ee.maven.version}</testsuite.default.base.build.version>
+            </properties>
+        </profile>
+
+        <!--
+           If we're using legacy wildfly-ee feature pack for provisioning in the testsuite,
+           assume the pre-built server we'd use is wildfly-ee-build
+         -->
+        <profile>
+            <id>test.legacy.ee.galleon.pack.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>${legacy.ee.feature.pack.artifactId}</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.default.base.build.groupId>${ee.maven.groupId}</testsuite.default.base.build.groupId>
+                <testsuite.default.base.build.artifactId>wildfly-${legacy.ee.artifactid.segment}-build</testsuite.default.base.build.artifactId>
+                <testsuite.default.base.dist.artifactId>wildfly-${legacy.ee.artifactid.segment}-dist</testsuite.default.base.dist.artifactId>
                 <testsuite.default.base.build.version>${ee.maven.version}</testsuite.default.base.build.version>
             </properties>
         </profile>

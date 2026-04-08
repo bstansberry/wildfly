@@ -27,14 +27,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -79,9 +79,9 @@
                             <overwrite-provisioned-server>true</overwrite-provisioned-server>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-ee-galleon-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
+                                    <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
                                     </included-packages>

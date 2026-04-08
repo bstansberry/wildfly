@@ -41,7 +41,7 @@
 
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <type>pom</type>
             <exclusions>
                 <exclusion>

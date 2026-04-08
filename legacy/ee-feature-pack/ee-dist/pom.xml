@@ -46,14 +46,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -64,7 +64,7 @@
         </dependency>
         <dependency>
             <groupId>${channels.maven.groupId}</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}</artifactId>
+            <artifactId>wildfly-${legacy.ee.artifactid.segment}</artifactId>
             <classifier>manifest</classifier>
             <type>yaml</type>
             <scope>provided</scope>
@@ -128,7 +128,7 @@
                             </galleon-options>
                             <channels>
                                 <channel>
-                                    <name>wildfly-${legacy.artifactid.segment}</name>
+                                    <name>wildfly-${legacy.ee.artifactid.segment}</name>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
                                         <artifactId>wildfly-ee-10</artifactId>
@@ -138,9 +138,9 @@
                             </channels>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
-                                    <version>${project.version}</version>
+                                    <groupId>${ee.maven.groupId}</groupId>
+                                    <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
+                                    <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
                                     </included-packages>
@@ -236,9 +236,9 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <offline>true</offline>
-                                    <fpGroupId>${project.groupId}</fpGroupId>
-                                    <fpArtifactId>wildfly-${legacy.artifactid.segment}-feature-pack</fpArtifactId>
-                                    <fpVersion>${project.version}</fpVersion>
+                                    <fpGroupId>${ee.maven.groupId}</fpGroupId>
+                                    <fpArtifactId>${legacy.ee.feature.pack.artifactId}</fpArtifactId>
+                                    <fpVersion>${ee.maven.version}</fpVersion>
                                 </configuration>
                             </execution>
                         </executions>
@@ -324,7 +324,7 @@
             <id>external.channel.profile</id>
             <activation><property><name>external.wildfly.channels</name></property></activation>
             <properties>
-                <wildfly.channels>${channels.maven.groupId}:wildfly-${legacy.artifactid.segment}:${ee.maven.version}</wildfly.channels>
+                <wildfly.channels>${channels.maven.groupId}:wildfly-${legacy.ee.artifactid.segment}:${ee.maven.version}</wildfly.channels>
             </properties>
         </profile>
     </profiles>

@@ -42,13 +42,13 @@
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.channels</groupId>
-            <artifactId>wildfly-ee</artifactId>
+            <groupId>${channels.maven.groupId}</groupId>
+            <artifactId>wildfly-${latest.ee.artifactid.segment}</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
         </dependency>

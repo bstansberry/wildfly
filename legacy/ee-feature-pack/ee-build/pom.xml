@@ -29,13 +29,13 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+            <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+            <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>${channels.maven.groupId}</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}</artifactId>
+            <artifactId>wildfly-${legacy.ee.artifactid.segment}</artifactId>
             <type>yaml</type>
             <classifier>manifest</classifier>
             <exclusions>
@@ -81,7 +81,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${project.groupId}</groupId>
-                                    <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+                                    <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
                                     <version>${project.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>

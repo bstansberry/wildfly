@@ -96,12 +96,16 @@
         <ee.dist.product.min.stability.level>experimental</ee.dist.product.min.stability.level>
         <ee.maven.groupId>${project.groupId}</ee.maven.groupId>
         <ee.maven.version>${project.version}</ee.maven.version>
-        <legacy.dist.product.release.name>WildFly EE 10</legacy.dist.product.release.name>
         <legacy.jakarta.version>10</legacy.jakarta.version>
+        <legacy.dist.product.release.name>WildFly EE ${legacy.jakarta.version}</legacy.dist.product.release.name>
         <!-- Segment of legacy-ee related artifactIds that will change across releases.
              Used in artifactIds of user-relevant artifacts where we want an artifactId
              that discloses what the artifact provides -->
-        <legacy.artifactid.segment>ee-${legacy.jakarta.version}</legacy.artifactid.segment>
+        <legacy.ee.artifactid.segment>ee-${legacy.jakarta.version}</legacy.ee.artifactid.segment>
+        <legacy.ee.feature.pack.artifactId>wildfly-${legacy.ee.artifactid.segment}-feature-pack</legacy.ee.feature.pack.artifactId>
+        <latest.jakarta.version>11</latest.jakarta.version> <!-- for downstream use -->
+        <latest.ee.artifactid.segment>ee</latest.ee.artifactid.segment>
+        <latest.ee.feature.pack.artifactId>wildfly-${latest.ee.artifactid.segment}-galleon-pack</latest.ee.feature.pack.artifactId>
         <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
         <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
@@ -659,7 +663,7 @@
 
             <dependency>
                 <groupId>${channels.maven.groupId}</groupId>
-                <artifactId>wildfly-ee</artifactId>
+                <artifactId>wildfly-${latest.ee.artifactid.segment}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -667,7 +671,7 @@
 
             <dependency>
                 <groupId>${channels.maven.groupId}</groupId>
-                <artifactId>wildfly-${legacy.artifactid.segment}</artifactId>
+                <artifactId>wildfly-${legacy.ee.artifactid.segment}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>yaml</type>
                 <classifier>manifest</classifier>
@@ -738,28 +742,28 @@
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-galleon-pack</artifactId>
+                <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-ee-galleon-pack</artifactId>
+                <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+                <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>${ee.maven.groupId}</groupId>
-                <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+                <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
                 <version>${ee.maven.version}</version>
                 <type>zip</type>
             </dependency>
@@ -2115,22 +2119,42 @@
             </pluginRepositories>
         </profile>
 
-        <!-- Configures testsuite to use the non-default Galleon pack to provision EE content.
+        <!-- Configures testsuite to use the latest non-default Galleon pack to provision EE content.
              This profile is meant to eliminate the need to use -D to see all three parts of the GAV
              in order to test provisioning using a different feature pack. -->
         <profile>
-            <id>test.ee.galleon.pack.profile</id>
+            <id>test.latest.ee.galleon.pack.profile</id>
             <activation>
                 <property>
                     <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
+                    <value>${latest.ee.feature.pack.artifactId}</value>
+                </property>
+            </activation>
+            <properties>
+                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
+                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <!-- If we are using channel-driven provisioning, use the legacy wildfly-ee channel -->
+                <channel.maven.artifactId>wildfly-${legacy.ee.artifactid.segment}</channel.maven.artifactId>
+                <channel.maven.version>${ee.maven.version}</channel.maven.version>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the legacy non-default Galleon pack to provision EE content.
+             This profile is meant to eliminate the need to use -D to see all three parts of the GAV
+             in order to test provisioning using a different feature pack. -->
+        <profile>
+            <id>test.legacy.ee.galleon.pack.profile</id>
+            <activation>
+                <property>
+                    <name>testsuite.ee.galleon.pack.artifactId</name>
+                    <value>${legacy.ee.feature.pack.artifactId}</value>
                 </property>
             </activation>
             <properties>
                 <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
                 <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
                 <!-- If we are using channel-driven provisioning, use the wildfly-ee channel -->
-                <channel.maven.artifactId>wildfly-ee</channel.maven.artifactId>
+                <channel.maven.artifactId>wildfly-${latest.ee.artifactid.segment}</channel.maven.artifactId>
                 <channel.maven.version>${ee.maven.version}</channel.maven.version>
                 <!-- If we are using this feature pack to provision testsuite installations, assume that
                      for testsuites that use pre-built installations we want the corresponding ones. -->

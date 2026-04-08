@@ -80,7 +80,7 @@
              in this module are from that feature pack.
         -->
         <ee.feature.pack.groupId>${testsuite.ee.galleon.pack.groupId}</ee.feature.pack.groupId>
-        <ee.feature.pack.artifactId>wildfly-ee-galleon-pack</ee.feature.pack.artifactId>
+        <ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</ee.feature.pack.artifactId>
         <ee.feature.pack.version>${testsuite.ee.galleon.pack.version}</ee.feature.pack.version>
 
         <!-- Where to look for artifacts when provisioning and running. -->

@@ -31,12 +31,16 @@
     <name>WildFly: EE Feature Pack Channel</name>
     <packaging>pom</packaging>
 
+    <properties>
+        <ee.maven.groupId>${project.parent.groupId}</ee.maven.groupId>
+    </properties>
+
     <dependencies>
 
         <!-- We need the feature pack built first as that generates the manifest -->
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-ee-galleon-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>

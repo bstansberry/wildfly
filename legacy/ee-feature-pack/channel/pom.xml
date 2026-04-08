@@ -31,12 +31,16 @@
     <name>WildFly: Legacy EE Feature Pack Channel</name>
     <packaging>pom</packaging>
 
+    <properties>
+        <ee.maven.groupId>${project.parent.groupId}</ee.maven.groupId>
+    </properties>
+
     <dependencies>
 
         <!-- We need the feature pack built first as that generates the manifest -->
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-${legacy.artifactid.segment}-feature-pack</artifactId>
+            <groupId>${ee.maven.groupId}</groupId>
+            <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
             <version>${ee.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
@@ -93,7 +97,7 @@
                                 <resource>
                                     <directory>${project.basedir}/src/main/resources</directory>
                                     <includes>
-                                        <include>wildfly-${legacy.artifactid.segment}-channel.yaml</include>
+                                        <include>wildfly-${legacy.ee.artifactid.segment}-channel.yaml</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
