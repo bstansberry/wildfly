@@ -88,7 +88,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-${legacy.ee.output.qualifier}${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>

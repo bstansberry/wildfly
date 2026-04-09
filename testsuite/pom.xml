@@ -86,11 +86,16 @@
 
         <!-- Properties related to the directory from which testsuite modules that don't create their own dists
                      should obtain the dist to test -->
-        <!-- First, prefix to add to the standard maven child project whose output should be used.
+        <!-- First, the path, relative to the source root, where the parent of the maven child project
+             whose output should be used is found. An empty value means the source root. -->
+        <testsuite.default.build.project.root></testsuite.default.build.project.root>
+        <!-- Second, prefix to add to the standard maven child project whose output should be used.
              An empty value means no prefix.
              Custom test jobs can override this using -D, e.g. -Dtestsuite.default.build.project.prefix=ee- -->
         <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
-        <wildfly.build.output.dir>${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.version}</wildfly.build.output.dir>
+        <!-- 'Qualifier' segment to include in the name of the directory containing the pre-built server -->
+        <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+        <wildfly.build.output.dir>${testsuite.default.build.project.root}/${testsuite.default.build.project.prefix}build/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</wildfly.build.output.dir>
         <!-- Used to provide an absolute location for the distribution under test. -->
         <!-- This value is overridden in modules with the correct relative pathname. -->
         <jboss.dist>${project.basedir}/../${wildfly.build.output.dir}</jboss.dist>
@@ -619,6 +624,9 @@
                 <!-- If we are using this feature pack to provision testsuite installations, assume that
                      for testsuites that use pre-built installations we want the corresponding ones. -->
                 <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
+                <!-- The pre-built legacy installations are not found under the top-level source root -->
+                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
             </properties>
         </profile>
 
@@ -631,8 +639,10 @@
                 </property>
             </activation>
             <properties>
-                <!-- Use the WFP pre-built artifact -->
-                <wildfly.build.output.dir>preview/build/target/${server.output.dir.prefix}-preview-${server.output.dir.version}</wildfly.build.output.dir>
+                <!-- The pre-built legacy installations are not found under the top-level source root -->
+                <testsuite.default.build.project.root>preview</testsuite.default.build.project.root>
+                <!-- The pre-built server directory includes 'preview-' in its name -->
+                <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
                 <!-- Use the WFP feature pack -->
                 <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
                 <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>

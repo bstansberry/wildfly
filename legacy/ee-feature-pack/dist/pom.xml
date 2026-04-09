@@ -21,7 +21,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-ee-1-expansion-dist</artifactId>
+    <artifactId>wildfly-ee-10-expansion-dist</artifactId>
     <name>WildFly: Legacy EE + Expansion Distribution</name>
     <packaging>jar</packaging>
 
@@ -107,7 +107,7 @@
     </dependencies>
 
     <build>
-        <finalName>${server.output.dir.prefix}-${server.output.dir.version}</finalName>
+        <finalName>${server.output.dir.prefix}-${legacy.ee.output.qualifier}${server.output.dir.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
