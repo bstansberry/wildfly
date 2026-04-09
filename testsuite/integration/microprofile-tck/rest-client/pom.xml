@@ -261,6 +261,29 @@
     </dependencies>
     <build>
         <finalName>microprofile-rest-client-${project.version}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.wildfly.glow</groupId>
+                    <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                    <configuration>
+                        <feature-packs>
+                            <!-- We repeat this from the parent in order to add 'included-packages' -->
+                            <!-- NOTE: various profiles override this, but all need to do the included-packages bit -->
+                            <feature-pack>
+                                <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                <version>${testsuite.full.galleon.pack.version}</version>
+                                <included-packages>
+                                    <package>org.apache.commons.lang3</package>
+                                </included-packages>
+                            </feature-pack>
+                        </feature-packs>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -533,23 +556,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.wildfly.glow</groupId>
-                <artifactId>wildfly-glow-arquillian-plugin</artifactId>
-                <configuration>
-                    <feature-packs>
-                        <!-- We repeat this from the parent in order to add 'included-packages' -->
-                        <feature-pack>
-                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.full.galleon.pack.version}</version>
-                            <included-packages>
-                                <package>org.apache.commons.lang3</package>
-                            </included-packages>
-                        </feature-pack>
-                    </feature-packs>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -574,6 +580,80 @@
         </plugins>
     </build>
     <profiles>
+
+        <!-- Override the glow-arquillian feature pack setting in this profile
+             to specify inclusion of the org.apache.commons.lang3 module. -->
+        <profile>
+            <id>latest-ee-full-server-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.galleon.pack.version}</version>
+                                        <!-- All this just for this bit -->
+                                        <included-packages>
+                                            <package>org.apache.commons.lang3</package>
+                                        </included-packages>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.galleon.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <!-- Override the glow-arquillian feature pack setting in this profile
+             to specify inclusion of the org.apache.commons.lang3 module. -->
+        <profile>
+            <id>legacy-ee-full-server-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.wildfly.glow</groupId>
+                            <artifactId>wildfly-glow-arquillian-plugin</artifactId>
+                            <configuration>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.galleon.pack.version}</version>
+                                        <!-- All this just for this bit -->
+                                        <included-packages>
+                                            <package>org.apache.commons.lang3</package>
+                                        </included-packages>
+                                    </feature-pack>
+                                    <feature-pack>
+                                        <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.galleon.pack.version}</version>
+                                    </feature-pack>
+                                </feature-packs>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
 
         <!-- Test against slimmed servers provisioned by Galleon -->
         <profile>

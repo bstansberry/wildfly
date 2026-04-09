@@ -102,13 +102,6 @@
                 <groupId>org.wildfly.glow</groupId>
                 <artifactId>wildfly-glow-arquillian-plugin</artifactId>
                 <configuration>
-                    <feature-packs>
-                        <feature-pack>
-                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.full.galleon.pack.version}</version>
-                        </feature-pack>
-                    </feature-packs>
                     <config-name>${ts.microprofile-tck-glow.config.name}</config-name>
                     <dependenciesToScan>
                         <dependency>${ts.microprofile-tck-tests-dependency}</dependency>
