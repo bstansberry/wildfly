@@ -608,7 +608,7 @@
         -->
 
         <!--
-             First are five profiles that set things up testing different combinations of feature packs.
+             There are five profiles that set things up for testing different combinations of feature packs.
 
              1) Test the latest ee feature pack + the wildfly feature pack
              2) Test the latest ee feature pack alone. Using this also requires setting -P-expansion-server-tests
@@ -630,30 +630,7 @@
              from changes in defaults.
         -->
 
-        <!-- Configures testsuite to use the latest non-default Galleon pack to provision EE content.
-             Test installations do not include functionality provided by the wildfly feature pack,
-             so using -P!expansion-server-tests must be used. -->
-        <profile>
-            <id>latest-ee-only-server-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <!-- Use the latest version of the wildfly-ee FP -->
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
-                <!-- If we are using channel-driven provisioning, use the latest wildfly-ee channel -->
-                <channels.maven.artifactId>wildfly-${latest.ee.artifactid.segment}</channels.maven.artifactId>
-                <channels.maven.version>${ee.maven.version}</channels.maven.version>
-                <!-- For pre-built servers, use 'ee-'' builds pulled from the root of the source tree -->
-                <testsuite.default.build.project.root></testsuite.default.build.project.root>
-                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
-                <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
-            </properties>
-        </profile>
-
-        <!-- Configures testsuite to use the latest non-default Galleon pack to provision EE content
+        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content
              and to also use wildfly feature pack content. -->
         <profile>
             <id>latest-ee-full-server-tests</id>
@@ -701,29 +678,30 @@
             </build>
         </profile>
 
-        <!-- Configures testsuite to use the legacy non-default Galleon pack to provision EE content.
+        <!-- Configures testsuite to use the latest non-default feature pack to provision EE content.
              Test installations do not include functionality provided by the wildfly feature pack,
-             so -P!expansion-server-tests must be used. -->
+             so using -P!expansion-server-tests must be used. -->
         <profile>
-            <id>legacy-ee-only-server-tests</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
+                <!-- Use the latest version of the wildfly-ee FP -->
                 <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.ee.galleon.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
                 <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
-                <!-- If we are using channel-driven provisioning, use the legacy wildfly-ee channel -->
-                <channels.maven.artifactId>wildfly-${legacy.ee.artifactid.segment}</channels.maven.artifactId>
+                <!-- If we are using channel-driven provisioning, use the latest wildfly-ee channel -->
+                <channels.maven.artifactId>wildfly-${latest.ee.artifactid.segment}</channels.maven.artifactId>
                 <channels.maven.version>${ee.maven.version}</channels.maven.version>
-                <!-- For pre-built servers, use 'ee-' builds pulled from the legacy/ee-feature-pack source tree -->
-                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <!-- For pre-built servers, use 'ee-'' builds pulled from the root of the source tree -->
+                <testsuite.default.build.project.root></testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
-                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
             </properties>
         </profile>
 
-        <!-- Configures testsuite to use the legacy non-default Galleon pack to provision EE content.
+        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
              and to also use wildfly feature pack content. -->
         <profile>
             <id>legacy-ee-full-server-tests</id>
@@ -770,7 +748,29 @@
             </build>
         </profile>
 
-        <!-- Settings applicable to all execution modes for testing WFP (ts.preview, -Dts.bootable.preview, -Dts.layers, -Dts.galleon) -->
+        <!-- Configures testsuite to use the legacy non-default feature pack to provision EE content.
+             Test installations do not include functionality provided by the wildfly feature pack,
+             so -P!expansion-server-tests must be used. -->
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
+                <testsuite.ee.galleon.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <!-- If we are using channel-driven provisioning, use the legacy wildfly-ee channel -->
+                <channels.maven.artifactId>wildfly-${legacy.ee.artifactid.segment}</channels.maven.artifactId>
+                <channels.maven.version>${ee.maven.version}</channels.maven.version>
+                <!-- For pre-built servers, use 'ee-' builds pulled from the legacy/ee-feature-pack source tree -->
+                <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
+                <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
+                <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+            </properties>
+        </profile>
+
+        <!-- Configures testsuite to use the wildfly-preview feature pack to provision EE content -->
         <profile>
             <id>preview-server-tests-config</id>
             <activation>
