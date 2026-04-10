@@ -131,10 +131,10 @@
                             </galleon-options>
                             <channels>
                                 <channel>
-                                    <name>wildfly-ee-10</name>
+                                    <name>wildfly-${legacy.ee.artifactid.segment}</name>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee-10</artifactId>
+                                        <artifactId>wildfly-${legacy.ee.artifactid.segment}</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
@@ -151,7 +151,7 @@
                                 <feature-pack>
                                     <transitive>true</transitive>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>wildfly-ee-10-feature-pack</artifactId>
+                                    <artifactId>${legacy.ee.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>

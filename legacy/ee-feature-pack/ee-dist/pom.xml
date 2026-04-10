@@ -131,7 +131,7 @@
                                     <name>wildfly-${legacy.ee.artifactid.segment}</name>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee-10</artifactId>
+                                        <artifactId>wildfly-${legacy.ee.artifactid.segment}</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>

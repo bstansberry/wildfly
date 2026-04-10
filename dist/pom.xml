@@ -131,6 +131,14 @@
                             </galleon-options>
                             <channels>
                                 <channel>
+                                    <name>wildfly-${latest.ee.artifactid.segment}</name>
+                                    <manifest>
+                                        <groupId>${channels.maven.groupId}</groupId>
+                                        <artifactId>wildfly-${latest.ee.artifactid.segment}</artifactId>
+                                        <version>${ee.maven.version}</version>
+                                    </manifest>
+                                </channel>
+                                <channel>
                                     <name>wildfly</name>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>

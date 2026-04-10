@@ -597,9 +597,9 @@
                             <configuration>
                                 <feature-packs>
                                     <feature-pack>
-                                        <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.ee.galleon.pack.version}</version>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
                                         <!-- All this just for this bit -->
                                         <included-packages>
                                             <package>org.apache.commons.lang3</package>
@@ -634,9 +634,9 @@
                             <configuration>
                                 <feature-packs>
                                     <feature-pack>
-                                        <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.ee.galleon.pack.version}</version>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
                                         <!-- All this just for this bit -->
                                         <included-packages>
                                             <package>org.apache.commons.lang3</package>

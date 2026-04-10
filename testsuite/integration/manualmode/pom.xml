@@ -431,7 +431,7 @@
                                 <channel>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly-ee</artifactId>
+                                        <artifactId>${channels.maven.artifactId}</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
@@ -444,7 +444,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
+                                    <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                 </feature-pack>
                             </feature-packs>

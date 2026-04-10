@@ -613,9 +613,9 @@
                                     <provisioning-dir>${project.build.directory}/${wildfly.instance.name}</provisioning-dir>
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.galleon.pack.version}</version>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
                                             <excluded-packages>
                                                 <name>product.conf</name>
                                             </excluded-packages>
@@ -1088,8 +1088,7 @@
             <id>preview.layers.test.profile</id>
             <activation>
                 <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-preview-feature-pack</value>
+                    <name>preview-server-tests</name>
                 </property>
             </activation>
             <properties>

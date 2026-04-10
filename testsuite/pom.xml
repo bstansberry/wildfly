@@ -108,9 +108,9 @@
              that *could* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
              Test jobs can override this using -D to test using different feature pack.
         -->
-        <testsuite.ee.galleon.pack.groupId>${full.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-        <testsuite.ee.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.ee.galleon.pack.artifactId>
-        <testsuite.ee.galleon.pack.version>${full.maven.version}</testsuite.ee.galleon.pack.version>
+        <testsuite.ee.feature.pack.groupId>${full.maven.groupId}</testsuite.ee.feature.pack.groupId>
+        <testsuite.ee.feature.pack.artifactId>wildfly-galleon-pack</testsuite.ee.feature.pack.artifactId>
+        <testsuite.ee.feature.pack.version>${full.maven.version}</testsuite.ee.feature.pack.version>
         <!-- Galleon feature pack to use in testsuite provisioning executions that provide content
              that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
              Test jobs can override this using -D to test using a different feature pack.
@@ -366,9 +366,9 @@
                              should override this part of the plugin config. -->
                         <feature-packs>
                             <feature-pack>
-                                <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                <version>${testsuite.ee.galleon.pack.version}</version>
+                                <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                <version>${testsuite.ee.feature.pack.version}</version>
                             </feature-pack>
                         </feature-packs>
                     </configuration>
@@ -639,9 +639,9 @@
             </activation>
             <properties>
                 <!-- Use the latest version of the wildfly-ee FP -->
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
                 <!-- If we are using channel-driven provisioning, use the latest wildfly-ee channel -->
                 <channels.maven.artifactId>wildfly-${latest.ee.artifactid.segment}</channels.maven.artifactId>
                 <channels.maven.version>${ee.maven.version}</channels.maven.version>
@@ -661,9 +661,9 @@
                                      on the wildfly FP's static dependency -->
                                 <feature-packs>
                                     <feature-pack>
-                                        <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.ee.galleon.pack.version}</version>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
                                     </feature-pack>
                                     <feature-pack>
                                         <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
@@ -688,9 +688,9 @@
             </activation>
             <properties>
                 <!-- Use the latest version of the wildfly-ee FP -->
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${latest.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
                 <!-- If we are using channel-driven provisioning, use the latest wildfly-ee channel -->
                 <channels.maven.artifactId>wildfly-${latest.ee.artifactid.segment}</channels.maven.artifactId>
                 <channels.maven.version>${ee.maven.version}</channels.maven.version>
@@ -709,9 +709,9 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
                 <!-- If we are using channel-driven provisioning, use the legacy wildfly-ee channel -->
                 <channels.maven.artifactId>wildfly-${legacy.ee.artifactid.segment}</channels.maven.artifactId>
                 <channels.maven.version>${ee.maven.version}</channels.maven.version>
@@ -731,9 +731,9 @@
                                      on the wildfly FP's static dependency -->
                                 <feature-packs>
                                     <feature-pack>
-                                        <groupId>${testsuite.ee.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.ee.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.ee.galleon.pack.version}</version>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
                                     </feature-pack>
                                     <feature-pack>
                                         <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
@@ -757,9 +757,9 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <testsuite.ee.galleon.pack.groupId>${ee.maven.groupId}</testsuite.ee.galleon.pack.groupId>
-                <testsuite.ee.galleon.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.galleon.pack.artifactId>
-                <testsuite.ee.galleon.pack.version>${ee.maven.version}</testsuite.ee.galleon.pack.version>
+                <testsuite.ee.feature.pack.groupId>${ee.maven.groupId}</testsuite.ee.feature.pack.groupId>
+                <testsuite.ee.feature.pack.artifactId>${legacy.ee.feature.pack.artifactId}</testsuite.ee.feature.pack.artifactId>
+                <testsuite.ee.feature.pack.version>${ee.maven.version}</testsuite.ee.feature.pack.version>
                 <!-- If we are using channel-driven provisioning, use the legacy wildfly-ee channel -->
                 <channels.maven.artifactId>wildfly-${legacy.ee.artifactid.segment}</channels.maven.artifactId>
                 <channels.maven.version>${ee.maven.version}</channels.maven.version>
@@ -784,7 +784,7 @@
                 <!-- The pre-built server directory includes 'preview-' in its name -->
                 <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
                 <!-- Use the WFP feature pack -->
-                <testsuite.ee.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.galleon.pack.artifactId>
+                <testsuite.ee.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.feature.pack.artifactId>
                 <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- Use the WFP dependencies -->

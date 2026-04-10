@@ -351,12 +351,9 @@
             </properties>
         </profile>
         <profile>
-            <id>ignore-latest-ee-feature-pack</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>${latest.ee.feature.pack.artifactId}</value>
-                </property>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <!-- Don't run expansion tests if we're configured to test wildfly-ee -->
@@ -366,12 +363,9 @@
             </properties>
         </profile>
         <profile>
-            <id>ignore-legacy-ee-feature-pack</id>
+            <id>legacy-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>${legacy.ee.feature.pack.artifactId}</value>
-                </property>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <!-- Don't run expansion tests if we're configured to test wildfly-ee -->

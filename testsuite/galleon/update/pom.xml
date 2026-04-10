@@ -148,12 +148,9 @@
         </profile>
 
         <profile>
-            <id>latest-ee-galleon-pack.profile</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>${latest.ee.feature.pack.artifactId}</value>
-                </property>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <!-- Skip the WF feature pack test -->
@@ -162,12 +159,9 @@
         </profile>
 
         <profile>
-            <id>legacy-ee-galleon-pack.profile</id>
+            <id>legacy-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>${legacy.ee.feature.pack.artifactId}</value>
-                </property>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <!-- Skip the WF feature pack test -->

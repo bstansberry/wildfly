@@ -314,10 +314,6 @@
                 <executions>
                     <execution>
                         <id>server-provisioning</id>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <phase>${provision.phase}</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -326,59 +322,62 @@
 
     <profiles>
         <profile>
-            <id>use-alt-feature-pack</id>
+            <id>latest-ee-only-server-tests</id>
             <activation>
-                <property>
-                    <name>testsuite.ee.galleon.pack.artifactId</name>
-                    <value>wildfly-ee-galleon-pack</value>
-                </property>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-resources-plugin</artifactId>
-                    </plugin>
                     <plugin>
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>server-provisioning</id>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <phase>${provision.phase}</phase>
-                                <configuration combine.self="override">
-                                    <skip>${ts.skipTests}</skip>
-                                    <provisioning-dir>${project.build.directory}/wildfly</provisioning-dir>
-                                    <record-provisioning-state>true</record-provisioning-state>
-                                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
-                                    <offline-provisioning>${galleon.offline}</offline-provisioning>
-                                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                                <configuration>
+                                    <!-- Override the globally defined set of FPs to limit to just EE -->
                                     <feature-packs>
                                         <feature-pack>
-                                            <groupId>${ee.maven.groupId}</groupId>
-                                            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
-                                            <version>${ee.maven.version}</version>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
                                             <included-packages>
                                                 <name>docs.examples.configs</name>
                                             </included-packages>
                                         </feature-pack>
                                     </feature-packs>
-                                    <galleon-options>
-                                        <!--
-                                            Server used as the DC for the Mixed Domain tests. It is built under default
-                                            stability level and can be reloaded to a lower stability level
-                                        -->
-                                        <config-stability-level>default</config-stability-level>
-                                        <package-stability-level>experimental</package-stability-level>
-                                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    </galleon-options>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>legacy-ee-only-server-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <configuration>
+                                    <!-- Override the globally defined set of FPs to limit to just EE -->
+                                    <feature-packs>
+                                        <feature-pack>
+                                            <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                    </feature-packs>
                                 </configuration>
                             </execution>
                         </executions>
