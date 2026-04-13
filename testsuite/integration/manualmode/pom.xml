@@ -431,7 +431,7 @@
                                 <channel>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>${channels.maven.artifactId}</artifactId>
+                                        <artifactId>${testsuite.ee.only.channel.artifactId}</artifactId>
                                         <version>${ee.maven.version}</version>
                                     </manifest>
                                 </channel>
@@ -444,7 +444,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                    <artifactId>${testsuite.ee.only.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                 </feature-pack>
                             </feature-packs>
@@ -594,6 +594,7 @@
                         <node3>${node3}</node3>
                         <mcast>${mcast}</mcast>
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
+                        <multichannel.ee.feature.pack.artifactId>${testsuite.ee.only.feature.pack.artifactId}</multichannel.ee.feature.pack.artifactId>
                         <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
                         <ee.dist.output.dir>ee-dist/target/${server.output.dir.prefix}-${server.output.dir.version}</ee.dist.output.dir>
                         <build.output.dir>${wildfly.build.output.dir}</build.output.dir>

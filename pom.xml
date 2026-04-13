@@ -103,9 +103,11 @@
              that discloses what the artifact provides -->
         <legacy.ee.artifactid.segment>ee-${legacy.jakarta.version}</legacy.ee.artifactid.segment>
         <legacy.ee.feature.pack.artifactId>wildfly-${legacy.ee.artifactid.segment}-feature-pack</legacy.ee.feature.pack.artifactId>
+        <legacy.ee.channel.artifactId>wildfly-${legacy.ee.artifactid.segment}</legacy.ee.channel.artifactId>
         <latest.jakarta.version>11</latest.jakarta.version> <!-- for downstream use -->
         <latest.ee.artifactid.segment>ee</latest.ee.artifactid.segment>
         <latest.ee.feature.pack.artifactId>wildfly-${latest.ee.artifactid.segment}-galleon-pack</latest.ee.feature.pack.artifactId>
+        <latest.ee.channel.artifactId>wildfly-${latest.ee.artifactid.segment}</latest.ee.channel.artifactId>
         <preview.dist.product.release.name>WildFly Preview</preview.dist.product.release.name>
         <preview.dist.product.slot>${full.dist.product.slot}</preview.dist.product.slot>
         <preview.dist.product.release.version>${full.dist.product.release.version}</preview.dist.product.release.version>
