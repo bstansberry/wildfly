@@ -229,15 +229,24 @@ public class AssumeTestGroupUtil {
 
     /**
      * Checks whether tests are running against a full distribution.
-     * Full distributions are available from build/dist modules. It skips tests in case
-     * {@code '-Dtestsuite.default.build.project.prefix'} Maven argument is used with
-     * a non empty value, e.g. testsuite.default.build.project.prefix=ee- which means we
-     * are using ee-build/ee-dist modules as the source where to find the server under test.
+     * Full distributions are available from build/dist modules or custom installations that
+     * use feature packs that provide expansion functionality. The.
      *
-     * @throws {@code true} of system property {@code testsuite.default.build.project.prefix} has a non-empty value
+     * @return {@code true} if system property {@code server.provisioning.profile} does not include
+     *         the string {@code ee-only-server}
      */
     public static boolean isFullDistribution() {
-        return System.getProperty("testsuite.default.build.project.prefix", "").isEmpty();
+        return !System.getProperty("server.provisioning.profile", "").contains("ee-only-server");
+    }
+
+    /**
+     * Checks whether tests are running against a distribution that uses the legacy version of the EE feature pack.
+     *
+     * @return {@code true} if system property {@code server.provisioning.profile} starts with
+     *         the string {@code legacy-ee}
+     */
+    public static boolean isLegacyEEDistribution() {
+        return System.getProperty("server.provisioning.profile", "").startsWith("legacy-ee");
     }
 
     /**

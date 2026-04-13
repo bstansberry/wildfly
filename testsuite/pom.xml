@@ -115,9 +115,9 @@
              that *cannot* be obtained solely from the wildfly-ee-galleon-pack or its dependencies.
              Test jobs can override this using -D to test using a different feature pack.
         -->
-        <testsuite.full.galleon.pack.groupId>${full.maven.groupId}</testsuite.full.galleon.pack.groupId>
-        <testsuite.full.galleon.pack.artifactId>wildfly-galleon-pack</testsuite.full.galleon.pack.artifactId>
-        <testsuite.full.galleon.pack.version>${full.maven.version}</testsuite.full.galleon.pack.version>
+        <testsuite.full.feature.pack.groupId>${full.maven.groupId}</testsuite.full.feature.pack.groupId>
+        <testsuite.full.feature.pack.artifactId>wildfly-galleon-pack</testsuite.full.feature.pack.artifactId>
+        <testsuite.full.feature.pack.version>${full.maven.version}</testsuite.full.feature.pack.version>
         <!-- Galleon feature pack to use in testsuite provisioning executions that install test-specific content.
              Profiles can set this to wildfly-test-feature-pack-preview when testing wildfly-preview.
         -->
@@ -135,6 +135,10 @@
              Default is the EE dependency set. -->
         <dependency.management.import.artifact>wildfly-standard-ee-bom</dependency.management.import.artifact>
         <dependency.management.import.test.artifact>wildfly-standard-test-bom</dependency.management.import.test.artifact>
+
+        <!-- Name of the profile that defines what feature packs were used to provision the test server.
+             Profiles set this; the value here is the profile with settings that much the global default values. -->
+        <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
 
         <!-- IP address defaults. -->
         <node0>127.0.0.1</node0>
@@ -371,6 +375,11 @@
                                 <version>${testsuite.ee.feature.pack.version}</version>
                             </feature-pack>
                         </feature-packs>
+                        <!-- The single FP defined above may be overridden to use multiple
+                             FPs in some contexts. If so, we want Glow to always include
+                             all of those FPs in its generated provisioning.xml, even if
+                             its scanning doesn't detect the need for them all. -->
+                        <enforce-input-feature-packs>true</enforce-input-feature-packs>
                     </configuration>
                 </plugin>
 
@@ -392,6 +401,7 @@
                             <jboss.domain.server.args>${jboss.domain.server.args}</jboss.domain.server.args>
                             <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                             <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
+                            <server.provisioning.profile>${server.provisioning.profile}</server.provisioning.profile>
                         </systemPropertyVariables>
                         <argLine>${surefire.system.args}</argLine>
                         <trimStackTrace>false</trimStackTrace>
@@ -649,6 +659,8 @@
                 <testsuite.default.build.project.root></testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
                 <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>latest-ee-full-server-tests</server.provisioning.profile>
             </properties>
             <build>
                 <pluginManagement>
@@ -666,11 +678,20 @@
                                         <version>${testsuite.ee.feature.pack.version}</version>
                                     </feature-pack>
                                     <feature-pack>
-                                        <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.full.galleon.pack.version}</version>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
                                     </feature-pack>
                                 </feature-packs>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <!-- Parameters to test cases. -->
+                                <systemPropertyVariables combine.children="append">
+                                </systemPropertyVariables>
                             </configuration>
                         </plugin>
                     </plugins>
@@ -698,6 +719,8 @@
                 <testsuite.default.build.project.root></testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
                 <server.output.dir.qualifier>${latest.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>latest-ee-only-server-tests</server.provisioning.profile>
             </properties>
         </profile>
 
@@ -719,6 +742,8 @@
                 <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix></testsuite.default.build.project.prefix>
                 <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>legacy-ee-full-server-tests</server.provisioning.profile>
             </properties>
             <build>
                 <pluginManagement>
@@ -736,9 +761,9 @@
                                         <version>${testsuite.ee.feature.pack.version}</version>
                                     </feature-pack>
                                     <feature-pack>
-                                        <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.full.galleon.pack.version}</version>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
                                     </feature-pack>
                                 </feature-packs>
                             </configuration>
@@ -767,6 +792,8 @@
                 <testsuite.default.build.project.root>legacy/ee-feature-pack</testsuite.default.build.project.root>
                 <testsuite.default.build.project.prefix>ee-</testsuite.default.build.project.prefix>
                 <server.output.dir.qualifier>${legacy.ee.output.qualifier}</server.output.dir.qualifier>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>legacy-ee-only-server-tests</server.provisioning.profile>
             </properties>
         </profile>
 
@@ -785,7 +812,7 @@
                 <server.output.dir.qualifier>${preview.output.qualifier}</server.output.dir.qualifier>
                 <!-- Use the WFP feature pack -->
                 <testsuite.ee.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.ee.feature.pack.artifactId>
-                <testsuite.full.galleon.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.galleon.pack.artifactId>
+                <testsuite.full.feature.pack.artifactId>wildfly-preview-feature-pack</testsuite.full.feature.pack.artifactId>
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- Use the WFP dependencies -->
                 <dependency.management.import.artifact>wildfly-preview-ee-bom</dependency.management.import.artifact>
@@ -794,6 +821,8 @@
                 <testsuite.test.feature.pack.artifactId>wildfly-test-feature-pack-preview</testsuite.test.feature.pack.artifactId>
                 <!-- If there are EE-version-specific test sources, uses the ee11 ones -->
                 <additional.ee.test.source>ee11</additional.ee.test.source>
+                <!-- Tell tests what profile was used for provisioning -->
+                <server.provisioning.profile>preview-server-tests</server.provisioning.profile>
             </properties>
         </profile>
 

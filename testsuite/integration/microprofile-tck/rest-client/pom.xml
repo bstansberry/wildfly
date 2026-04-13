@@ -271,9 +271,9 @@
                             <!-- We repeat this from the parent in order to add 'included-packages' -->
                             <!-- NOTE: various profiles override this, but all need to do the included-packages bit -->
                             <feature-pack>
-                                <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                <version>${testsuite.full.galleon.pack.version}</version>
+                                <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                <version>${testsuite.full.feature.pack.version}</version>
                                 <included-packages>
                                     <package>org.apache.commons.lang3</package>
                                 </included-packages>
@@ -500,9 +500,9 @@
                             </galleon-options>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
+                                    <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.feature.pack.version}</version>
                                     <inherit-configs>false</inherit-configs>
                                     <inherit-packages>false</inherit-packages>
                                     <included-configs>
@@ -540,9 +540,9 @@
                             </packaging-scripts>
                             <feature-packs>
                                 <feature-pack>
-                                    <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                    <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                    <version>${testsuite.full.galleon.pack.version}</version>
+                                    <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                    <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                    <version>${testsuite.full.feature.pack.version}</version>
                                     <!-- The wiremock module we add as part of the test fixture needs Apache Commons Lang
                                     but the layers we want don't result in it being provisioned, so explicitly tell Galleon to
                                     provision it. -->
@@ -606,9 +606,9 @@
                                         </included-packages>
                                     </feature-pack>
                                     <feature-pack>
-                                        <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.full.galleon.pack.version}</version>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
                                     </feature-pack>
                                 </feature-packs>
                             </configuration>
@@ -643,9 +643,9 @@
                                         </included-packages>
                                     </feature-pack>
                                     <feature-pack>
-                                        <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                                        <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                                        <version>${testsuite.full.galleon.pack.version}</version>
+                                        <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.full.feature.pack.version}</version>
                                     </feature-pack>
                                 </feature-packs>
                             </configuration>

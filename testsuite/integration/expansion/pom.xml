@@ -449,9 +449,9 @@
                 <configuration>
                     <feature-packs>
                         <feature-pack>
-                            <groupId>${testsuite.full.galleon.pack.groupId}</groupId>
-                            <artifactId>${testsuite.full.galleon.pack.artifactId}</artifactId>
-                            <version>${testsuite.full.galleon.pack.version}</version>
+                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                            <version>${testsuite.full.feature.pack.version}</version>
                         </feature-pack>
                     </feature-packs>
                     <config-name>${ts.glow.config-name}</config-name>
