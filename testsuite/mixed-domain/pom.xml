@@ -266,18 +266,9 @@
                                 <overwrite-provisioned-server>true</overwrite-provisioned-server>
                                 <feature-packs>
                                     <feature-pack>
-                                        <transitive>true</transitive>
-                                        <groupId>${ee.maven.groupId}</groupId>
-                                        <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
-                                        <version>${ee.maven.version}</version>
-                                        <included-packages>
-                                            <name>docs.examples.configs</name>
-                                        </included-packages>
-                                    </feature-pack>
-                                    <feature-pack>
-                                        <groupId>${full.maven.groupId}</groupId>
-                                        <artifactId>wildfly-galleon-pack</artifactId>
-                                        <version>${full.maven.version}</version>
+                                        <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
+                                        <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
+                                        <version>${testsuite.ee.feature.pack.version}</version>
                                         <included-packages>
                                             <name>docs.examples.configs</name>
                                         </included-packages>
@@ -322,7 +313,7 @@
 
     <profiles>
         <profile>
-            <id>latest-ee-only-server-tests</id>
+            <id>latest-ee-full-server-tests</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -335,12 +326,21 @@
                             <execution>
                                 <id>server-provisioning</id>
                                 <configuration>
-                                    <!-- Override the globally defined set of FPs to limit to just EE -->
+                                    <!-- Override the globally defined FP to explicitly require the full FP -->
                                     <feature-packs>
                                         <feature-pack>
+                                            <transitive>true</transitive>
                                             <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
-                                            <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
-                                            <version>${testsuite.ee.feature.pack.version}</version>
+                                            <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
                                             <included-packages>
                                                 <name>docs.examples.configs</name>
                                             </included-packages>
@@ -354,7 +354,7 @@
             </build>
         </profile>
         <profile>
-            <id>legacy-ee-only-server-tests</id>
+            <id>legacy-ee-full-server-tests</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -367,12 +367,21 @@
                             <execution>
                                 <id>server-provisioning</id>
                                 <configuration>
-                                    <!-- Override the globally defined set of FPs to limit to just EE -->
+                                    <!-- Override the globally defined FP to explicitly require the full FP -->
                                     <feature-packs>
                                         <feature-pack>
+                                            <transitive>true</transitive>
                                             <groupId>${testsuite.ee.feature.pack.groupId}</groupId>
                                             <artifactId>${testsuite.ee.feature.pack.artifactId}</artifactId>
                                             <version>${testsuite.ee.feature.pack.version}</version>
+                                            <included-packages>
+                                                <name>docs.examples.configs</name>
+                                            </included-packages>
+                                        </feature-pack>
+                                        <feature-pack>
+                                            <groupId>${testsuite.full.feature.pack.groupId}</groupId>
+                                            <artifactId>${testsuite.full.feature.pack.artifactId}</artifactId>
+                                            <version>${testsuite.full.feature.pack.version}</version>
                                             <included-packages>
                                                 <name>docs.examples.configs</name>
                                             </included-packages>
@@ -385,6 +394,7 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
             <id>mixed-domain-server-provision</id>
             <activation>
