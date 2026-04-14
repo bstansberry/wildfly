@@ -501,7 +501,7 @@
                             <feature-packs>
                                 <feature-pack>
                                     <groupId>${ee.maven.groupId}</groupId>
-                                    <artifactId>${latest.ee.feature.pack.artifactId}</artifactId>
+                                    <artifactId>${testsuite.ee.only.feature.pack.artifactId}</artifactId>
                                     <version>${ee.maven.version}</version>
                                     <included-packages>
                                         <name>docs.examples.configs</name>
@@ -596,7 +596,8 @@
                         <multichannel.jboss.home>${multichannel.jboss.home}</multichannel.jboss.home>
                         <multichannel.ee.feature.pack.artifactId>${testsuite.ee.only.feature.pack.artifactId}</multichannel.ee.feature.pack.artifactId>
                         <oidc.jboss.home>${oidc.jboss.home}</oidc.jboss.home>
-                        <ee.dist.output.dir>ee-dist/target/${server.output.dir.prefix}-${server.output.dir.version}</ee.dist.output.dir>
+                        <!-- Tell ProvisioningConsistenceTestCase the location of the pre-built server -->
+                        <ee.dist.output.dir>${testsuite.default.build.project.root}/ee-dist/target/${server.output.dir.prefix}-${server.output.dir.qualifier}${server.output.dir.version}</ee.dist.output.dir>
                         <build.output.dir>${wildfly.build.output.dir}</build.output.dir>
                     </systemPropertyVariables>
                 </configuration>
