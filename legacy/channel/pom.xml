@@ -87,32 +87,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Use the resources plugin to apply expression replacement filtering to the channel.yaml -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-channel-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.basedir}/target/resources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}/src/main/resources</directory>
-                                    <includes>
-                                        <include>wildfly-channel.yaml</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
@@ -134,24 +108,6 @@
                             </artifacts>
                         </configuration>
                     </execution>
-                    <!-- Attach the channel.yaml to the build.
-                         NOTE: Commented out until we have a concrete need. -->
-                    <!--<execution>
-                        <id>attach-channel</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>${project.build.directory}/resources/${project.artifactId}.yaml</file>
-                                    <type>yaml</type>
-                                    <classifier>channel</classifier>
-                                </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>-->
                 </executions>
             </plugin>
             <!-- change the manifest metadata -->
