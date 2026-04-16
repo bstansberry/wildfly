@@ -62,11 +62,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Depends on the org.wildfly.channels:wildfly artifact to ensure
+        <!-- Depends on the org.wildfly.channels:wildfly-compat-ee-10 artifact to ensure
              that this channel is built first before the distribution is created -->
         <dependency>
             <groupId>org.wildfly.channels</groupId>
-            <artifactId>wildfly</artifactId>
+            <artifactId>wildfly-compat-ee-10</artifactId>
             <version>${full.maven.version}</version>
             <classifier>manifest</classifier>
             <type>yaml</type>
@@ -142,7 +142,7 @@
                                     <name>wildfly</name>
                                     <manifest>
                                         <groupId>${channels.maven.groupId}</groupId>
-                                        <artifactId>wildfly</artifactId>
+                                        <artifactId>wildfly-compat-ee-10</artifactId>
                                         <version>${full.maven.version}</version>
                                     </manifest>
                                 </channel>

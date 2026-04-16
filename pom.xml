@@ -1670,6 +1670,7 @@
                 <module>boms/legacy-ee</module>
                 <module>boms/legacy-test</module>
                 <module>legacy/ee-feature-pack</module>
+                <module>legacy/channel</module>
             </modules>
         </profile>
 
