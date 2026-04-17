@@ -31,13 +31,16 @@
     <name>WildFly: Channel for EE 10 compatibility</name>
     <packaging>pom</packaging>
 
+    <properties>
+        <full.maven.groupId>${parent.groupId}</full.maven.groupId>
+    </properties>
+
     <dependencies>
 
         <!-- We need the feature pack built first as that generates the manifest -->
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>${full.maven.groupId}</groupId>
             <artifactId>wildfly-galleon-pack</artifactId>
-            <version>${full.maven.version}</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
@@ -45,9 +48,8 @@
              that this channel is built first as it is required by the channel
              built by this module -->
         <dependency>
-            <groupId>org.wildfly.channels</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>${legacy.ee.channel.artifactId}</artifactId>
-            <version>${ee.maven.version}</version>
             <classifier>manifest</classifier>
             <type>yaml</type>
             <scope>provided</scope>
