@@ -46,7 +46,7 @@ public enum ContainerConfig {
     ARTEMIS_BROKER("testsuite.activemq-artemis-broker.image", "quay.io/arkmq-org/activemq-artemis-broker:artemis.2.42.0"),
 
     /** Keycloak container configuration. */
-    KEYCLOAK("testsuite.keycloak.image", "quay.io/keycloak/keycloak:24.0.5");
+    KEYCLOAK("testsuite.keycloak.image", "quay.io/keycloak/keycloak:26.7.4");
 
     private static final Logger logger = Logger.getLogger(ContainerConfig.class.getName());
 

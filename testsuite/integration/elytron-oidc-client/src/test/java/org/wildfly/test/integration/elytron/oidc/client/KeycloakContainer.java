@@ -21,6 +21,7 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
     public static final String ADMIN_PASSWORD = "admin";
     private static final int PORT_HTTP = 8080;
     private static final int PORT_HTTPS = 8443;
+    private static final int PORT_MANAGEMENT = 9000;
 
     private boolean useHttps;
 
@@ -35,9 +36,11 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
     @Override
     protected void configure() {
-        withExposedPorts(PORT_HTTP, PORT_HTTPS);
-        withEnv("KEYCLOAK_ADMIN", ADMIN_USER);
-        withEnv("KEYCLOAK_ADMIN_PASSWORD", ADMIN_PASSWORD);
+        withExposedPorts(PORT_HTTP, PORT_HTTPS, PORT_MANAGEMENT);
+//        withEnv("KEYCLOAK_ADMIN", ADMIN_USER);
+//        withEnv("KEYCLOAK_ADMIN_PASSWORD", ADMIN_PASSWORD);
+        withEnv("KC_BOOTSTRAP_ADMIN_USERNAME", ADMIN_USER);
+        withEnv("KC_BOOTSTRAP_ADMIN_PASSWORD", ADMIN_PASSWORD);
         withEnv("SSO_ADMIN_USERNAME", ADMIN_USER);
         withEnv("SSO_ADMIN_PASSWORD", ADMIN_PASSWORD);
         if (isUsedRHSSOImage()) {
@@ -45,15 +48,16 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
         } else {
             withCommand("start-dev", "--health-enabled=true");
             waitingFor(Wait.forHttp("/health/ready")
-                    .forPort(PORT_HTTP)
+                    .forPort(PORT_MANAGEMENT)
                     .forStatusCode(200)
                     .withStartupTimeout(Duration.ofSeconds(180)));
         }
     }
 
     public String getAuthServerUrl() {
+        String scheme = useHttps ? "https" : "http";
         Integer port = useHttps ? getMappedPort(PORT_HTTPS) : getMappedPort(PORT_HTTP);
-        String authServerUrl = String.format("http://%s:%s", getContainerIpAddress(), port);
+        String authServerUrl = String.format("%s://%s:%s", scheme, getContainerIpAddress(), port);
         if(isUsedRHSSOImage()){
             authServerUrl += "/auth";
         }

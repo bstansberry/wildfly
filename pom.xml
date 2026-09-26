@@ -383,7 +383,8 @@
         <version.org.jboss.shrinkwrap.resolvers>2.2.7</version.org.jboss.shrinkwrap.resolvers>
         <version.org.jboss.shrinkwrap.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap.shrinkwrap>
         <version.org.junit>5.14.4</version.org.junit>
-        <version.org.keycloak>26.7.3</version.org.keycloak>
+        <!-- Keep the keycloak container version in org.jboss.as.test.config.ContainerConfig in sync with this -->
+        <version.org.keycloak>26.7.4</version.org.keycloak>
         <version.org.mockito>5.21.0</version.org.mockito>
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.testcontainers>2.0.5</version.org.testcontainers>

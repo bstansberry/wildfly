@@ -24,19 +24,26 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.http.Header;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
+import org.apache.http.util.EntityUtils;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
@@ -145,8 +152,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                                   int expectedStatusCode, String expectedText,
                                   boolean loginToKeycloak, URI requestUri) throws Exception {
 
+        System.out.println("Login request URI: " + requestUri);
         HttpGet getMethod = new HttpGet(requestUri);
-        HttpContext context = new BasicHttpContext();
+        HttpClientContext context = HttpClientContext.create();
         CloseableHttpResponse response = null;
         Form keycloakLoginForm = null;
 
@@ -161,7 +169,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                 response = httpClient.execute(getMethod, context);
                 if (response.getStatusLine().getStatusCode() == expectedStatusCode) {
                     try {
-                        keycloakLoginForm = new Form(response);
+                        keycloakLoginForm = new Form(response, context);
                         retryAgain = false;
                     } catch (IOException ee) {
                         HttpClientUtils.closeQuietly(response);
@@ -180,7 +188,11 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                         keycloakLoginForm, username, password, "Sign In")) {
 
                     afterLoginClickResponse.getEntity().getContent();
-                    assertEquals(expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
+                    if (expectedStatusCode != afterLoginClickResponse.getStatusLine().getStatusCode()) {
+                        System.out.println(afterLoginClickResponse);
+                        System.out.println(EntityUtils.toString(afterLoginClickResponse.getEntity()));
+                    }
+                    assertEquals(afterLoginClickResponse.toString(), expectedStatusCode, afterLoginClickResponse.getStatusLine().getStatusCode());
 
                     if (expectedText != null) {
                         String responseString = new BasicResponseHandler().handleResponse(afterLoginClickResponse);
@@ -313,6 +325,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
     }
 
     private CloseableHttpResponse simulateClickingOnButton(CloseableHttpClient client, Form form, String username, String password, String buttonValue) throws IOException {
+
+        System.out.println(form.getAction());
+
         final URL url = new URL(form.getAction());
         final HttpPost request = new HttpPost(url.toString());
         final List<NameValuePair> params = new LinkedList<>();
@@ -327,7 +342,21 @@ public class LoginLogoutBasics extends EnvSetupUtils {
             }
         }
         request.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
-        return client.execute(request);
+
+        BasicCookieStore cookieStore = new BasicCookieStore();
+        for (Cookie cookie : form.getCookies()) {
+            cookieStore.addCookie(cookie);
+            System.out.println("Added cookie: " + cookie);
+        }
+        HttpClientContext httpClientContext = HttpClientContext.create();
+        httpClientContext.setCookieStore(cookieStore);
+
+        System.out.println(request);
+        CloseableHttpResponse response = client.execute(request, httpClientContext);
+        for (Header header: request.getHeaders("Cookie")) {
+            System.out.println("Cookie header: " + header);
+        }
+        return response;
     }
 
     private static final class Form {
@@ -342,8 +371,9 @@ public class LoginLogoutBasics extends EnvSetupUtils {
 
         final String action;
         final List<Input> inputFields = new LinkedList<>();
+        final List<Cookie> cookies;
 
-        public Form(CloseableHttpResponse response) throws IOException {
+        public Form(CloseableHttpResponse response, HttpClientContext context) throws IOException {
             final String responseString = new BasicResponseHandler().handleResponse(response);
             if (!responseString.startsWith("<!DOCTYPE html>")) {
                 throw new IOException("Form is not the login doc");
@@ -363,6 +393,7 @@ public class LoginLogoutBasics extends EnvSetupUtils {
                 }
                 inputFields.add(new Input(input.attr(NAME), input.attr(VALUE), type));
             }
+            cookies = context.getCookieStore().getCookies().stream().peek(LoginLogoutBasics::cookieToString).map(LoginLogoutBasics::insecureCookie).collect(Collectors.toList());
         }
 
         public String getAction() {
@@ -371,6 +402,24 @@ public class LoginLogoutBasics extends EnvSetupUtils {
 
         public List<Input> getInputFields() {
             return inputFields;
+        }
+
+        public List<Cookie> getCookies() {
+            return cookies;
+        }
+    }
+
+    private static String cookieToString(Cookie cookie) {
+        return cookie.toString() + "[secure=" + cookie.isSecure() + "]";
+    }
+
+    private static Cookie insecureCookie(Cookie cookie) {
+        try {
+            BasicClientCookie clone = (BasicClientCookie) ((BasicClientCookie) cookie).clone();
+            clone.setSecure(false);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
         }
     }
 
